@@ -1,5 +1,19 @@
 Csaransh v0.1
-=======================================
+==================================
+
+## What is this?
+
+The sofware suite to post-process, explore and visualize Molecular Dynamics (MD) simulations of collision cascades.
+It is an elaborate software solution for studing MD results of radiation damage simulations, starting from identifying defects from xyz file to finding correlations, visualizing subcascades to pattern matching clusters and the list goes on. There are many novel methods. The algorithms employed are fast and there is a refreshing interactive webapp to explore the results. You can check the web page for the project and read the manual to go through the different sections of the analysis. The web page shows the results for the MD [database of IAEA Challenge on Materials for Fusion 2018](https://www-amdis.iaea.org/CDB/challenge/).
+
+We are in the process of enriching the documentation and submitting a JOSS paper on implementation.
+For detailed discussion on new methods and results on classification of clusters please refer to this [paper](https://arxiv.org/abs/1811.10923).
+
+## Affiliations and Acknowledgements
+
+The initial version was submitted to the
+[IAEA Challenge on Materials for Fusion 2018](https://challenge.iaea.org/challenges/2018-NA-Mat-Fusion) as an
+entry from [Bhabha Atomic Research Center (BARC)](www.barc.gov.in) by Manoj Warrier, Ashok Arya, Harsh Hemani, Utkarsh Bhardwaj and Nancy Semwal. Many thanks to the team, the challenge organizers and the judges for their encouraging words.
 
 ## Installation
 
@@ -186,7 +200,6 @@ We are using DBSCAN algorithm for vacancies to find the vacancy density clusters
 Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. The current direction is to improve the efficiency of the interface using React's DOM unmounting effectively and adding more methods to pattern matching and subcascading and finding out how they relate to number of defects, other cascades etc.
 We hope the current software can help explore many new ideas but we believe that it is just the beginning.
 
+## Citation
 
-## Contact
-
-Send suggestions, improvements and bug reports to haptork@gmail.com.
+You can use the paper for citation of the software code as well until we submit a JOSS paper on the implementation.
