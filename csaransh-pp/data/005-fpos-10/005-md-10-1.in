@@ -1,0 +1,142 @@
+
+Input file for PARCAS MD 
+
+
+NOTE: THIS RUN USED AN UGLY MOVING ATOM APPROXIMATION.
+
+	
+Free format input file - parameters can be in any order, and comments
+can be placed freely among them, as long as the parameters hold the
+9-characters + "="-sign format. Each number must also be followed
+by at least one space (not a tab !!).
+
+debug    = 0
+
+nsteps   = 9991000       Max number of time steps
+tmax     = 40000.0       Maximum time in fs 
+endtemp  = 0.0
+
+seed     = 3044893       Seed for random number generator
+
+Time step criteria and related parameters. Internal time unit
+is 10.1805*sqrt(mass) = 81.15 fs for Au.
+--------------------------------------------------------------
+
+delta    = 0.05          Max time step
+timeEt   = 300.0         MDRANGE 50 keV Ni->Ni indicates this is good enough
+mass(1)  = 55.84704        Atom mass in u (needed in time step calculation)
+name(1)  = Fe 
+substrate= Fe
+
+potmode  = 2             0 LJ; 1 EAM; 2 EAM, direct Epair; 3 Si SW; 4 Ge SW
+
+Simulation cell
+---------------
+
+latflag  = 5             Lattice flag (0=gen fcc, 1=read from mdlat.in)
+nprtbl   = 100000        Number of steps between pair table calculations
+neiskinr = 1.25          Neighbour list skin thickness ratio, use ~ 1.15
+
+
+pb(1)    = 1.0           Periodicity in X-direction (1=per, 0=non)
+pb(2)    = 1.0           Periodicity in Y-direction (1=per, 0=non)
+pb(3)    = 1.0           Periodicity in Z-direction (1=per, 0=non)
+
+Simulation
+----------
+
+mtemp    = 5             Temp. control (0 none,1=linear,4=set,5=borders)
+temp0    = 1000.0        Initial T for mtemp=6
+ntimeini = 300           Time steps at temp0 before quench
+initemp  = 0.0           Initial temp: > 0 Gaussian, < 0 same v for all
+temp     = 0.0           Desired temperature (Kelvin)
+toll     = 0.0           Tolerance for the temperature control
+btctau   = 50.0          Berendsen temperature control tau (fs)
+trate    = 0.5           Quench rate for mtemp=6 (K/fs)
+
+Ekstart  = 0.003         Energy of neighbour at which to start atom movement
+
+Emaxbrdr = 10.0
+
+bpcbeta  = 5.3d-4        Berendsen pressure control beta, 1/B (1/kbar)
+bpctau   = 0.0           Berendsen pressure control time const. tau (fs)
+bpcP0    = 0.0           Berendsen pressure control desired P (kbar)
+
+damp     = 0.00000       Damping factor
+amp      = 0.00000       Amplitude of initial displacement (Angstroms)
+
+tscaleth = 2.86          (one unitcell) 
+Ebscale  = 0.00          Energy by which border thickness determined
+
+ndump    = 5             Print data every ndump steps
+nmovie   = 99999500      Number of steps btwn writing to md.movie (0=no movie)
+dtmov(1) = 50000.0         Time between writing movie
+ tmov(1)  = 1000.0        
+ dtmov(2) = 20000.0        Time between writing movie
+ tmov(2)  = 5000.0        
+ dtmov(3) = 5000.0        Time between writing movie
+moviemode = 7
+
+nintanal = 10000          Number of steps between interstitial analysis
+nliqanal = 20000           Nsteps between liquid analysis; works in parallell !
+nrestart = 200000          Number of steps between restart output
+
+Epdef    = -3.34         Epot threshold for labeling an atom a defect
+Ekdef    = 0.16          Ekin threshold for labeling an atom a defect
+
+
+Parameters for parallell operation
+----------------------------------
+
+mx Xnodes= 0             Max number of nodes in the X-dir (0 means no max)
+mx Ynodes= 0             Max number of nodes in the Y-dir (0 means no max)
+ 
+
+Recoil calculation definitions
+------------------------------
+
+irec     = -1             Index of recoiling atom (if 0 none)
+
+melstop  = 3              Mode for elstop
+elstopmin= 10.0
+
+
+Lattice structure for latflag=5
+--------------------------------
+
+# This one here is for BCC
+
+nbasis   = 2
+
+offset(1)= 0.25
+offset(2)= 0.25
+offset(3)= 0.25
+
+lx(1,1)  = 0.0  
+lx(1,2)  = 0.0  
+lx(1,3)  = 0.0  
+ltype(1) = 1
+
+lx(2,1)  = 0.5 
+lx(2,2)  = 0.5 
+lx(2,3)  = 0.5 
+ltype(2) = 1
+
+	    
+natoms   = 314928          Number of atoms in simulation
+box(1)   = 154.98           Box size in the X-dir (Angstroms)
+box(2)   = 154.98           Box size in the Y-dir (Angstroms)
+box(3)   = 154.98           Box size in the Z-dir (Angstroms)
+ncell(1) = 54
+ncell(2) = 54
+ncell(3) = 54
+	    
+xrec     = -31.93         Desired initial position
+yrec     = -31.65
+zrec     = -28.38
+	    
+recen    = 10000.0       Initial recoil energy in eV
+rectheta = 58.938        Initial recoil direction in degrees
+recphi   = 47.339          Initial recoil direction in degrees
+	    
+	    
