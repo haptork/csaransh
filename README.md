@@ -13,7 +13,7 @@ For detailed discussion on new methods and results on classification of clusters
 
 The initial version was submitted to the
 [IAEA Challenge on Materials for Fusion 2018](https://challenge.iaea.org/challenges/2018-NA-Mat-Fusion) as an
-entry from [Bhabha Atomic Research Center (BARC)](www.barc.gov.in) by Manoj Warrier, Ashok Arya, Harsh Hemani, Utkarsh Bhardwaj and Nancy Semwal. Many thanks to the team, the challenge organizers and the judges for their encouraging words.
+entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Manoj Warrier, Ashok Arya, Harsh Hemani, Utkarsh Bhardwaj and Nancy Semwal. Many thanks to the team, the challenge organizers and the judges for their encouraging words.
 
 ## Installation
 
