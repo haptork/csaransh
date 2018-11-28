@@ -1,7 +1,7 @@
 Csaransh
 ==================================
 
-## What is this?
+## What is CSaransh?
 
 The sofware suite to post-process, explore and visualize Molecular Dynamics (MD) simulations of collision cascades.
 It is an elaborate software solution for studing MD results of radiation damage simulations, starting from identifying defects from xyz file to finding correlations, visualizing subcascades to pattern matching clusters and the list goes on. There are many novel methods. The algorithms employed are fast and there is a refreshing interactive webapp to explore the results. You can check the web page for the project and read the manual to go through the different sections of the analysis. The web page shows the results for the MD [database of IAEA Challenge on Materials for Fusion 2018](https://www-amdis.iaea.org/CDB/challenge/).
