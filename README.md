@@ -1,4 +1,4 @@
-Csaransh v0.1
+Csaransh
 ==================================
 
 ## What is this?
@@ -61,7 +61,8 @@ After building the application the executable `csaransh_pp` can be found in the 
 #### Load new Processed data
 
 - To view the new processed data with ready to run HTML app copy the cascades-data.js to csaransh-app/CSaransh-files/ directory.
-- To view the new processed data with server app copy the cascades-data.js to csaransh-server/public/js/ directory.
+- To view the new processed data with server app copy the cascades-data.js to csaransh-server/public/js/ directory. Or
+fork the project and replace the cascades-data.js in the gh-pages branch with the new data file.
 
 ### Running the CSaransh interface
 
@@ -74,7 +75,6 @@ After building the application the executable `csaransh_pp` can be found in the 
 
 #### Ready to run app:
 
-- Go to csaransh-app/CSaransh.html
 - The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine in app with server.
 
 ## Getting Started
@@ -202,4 +202,4 @@ We hope the current software can help explore many new ideas but we believe that
 
 ## Citation
 
-You can use the paper for citation of the software code as well until we submit a JOSS paper on the implementation.
+You can use this [paper](https://arxiv.org/abs/1811.10923) for citation until we submit a JOSS paper on the implementation for the use of code, methods or results. Also, please consider to give the link to the github project page.
