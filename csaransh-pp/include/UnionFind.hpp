@@ -1,24 +1,10 @@
- /* UnionFind.cpp
- *
- * Copyright 2015 utkarsh <haptork@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301, USA.
- *
- *
- */
+/*!
+ * @file
+ * class implementing union-find or disjoint set datastructure
+ * */
+
+#ifndef UF_CSARANSH_HPP
+#define UF_CSARANSH_HPP
 
 #include <algorithm>
 #include <functional>
@@ -33,6 +19,8 @@
 using std::map; using std::vector;  using std::transform; using std::make_tuple;
 using std::tuple; using std::tuple_element_t; using std::get; using std::set;
 using std::transform; using std::initializer_list; using std::max_element;
+
+namespace csaransh {
 
 template<size_t Index, class Tobj>
 class UnionFind {
@@ -162,7 +150,7 @@ public:
     map<keyType, valType> parents;
     map<keyType, int> weights;
 };
-
+}
 /*
 int main() {
   UnionFind<0, std::tuple<int>> uf;
@@ -177,3 +165,4 @@ int main() {
   return 0;
 }
 */
+#endif // UF_CSARANSH_HPP

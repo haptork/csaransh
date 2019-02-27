@@ -1,5 +1,3 @@
-/*!
- * */
 #include <algorithm>
 #include <array>
 #include <iostream>
@@ -10,11 +8,10 @@
 #include <vector>
 #include <cmath>
 
-#include <AddOffset.hpp>
+#include <cluster2features.hpp>
 #include <helper.hpp>
-#include <dist.hpp>
 
-using Coords = std::array<double, 3>;
+using Coords = csaransh::Coords;
 
 double dotv(const Coords &a, const Coords &b) {
   auto res = 0.0;
@@ -43,23 +40,12 @@ auto calcAngle(Coords a, Coords b, Coords c) {
   return std::acos(res) * 180.0 / pi;
 }
 
-// modified with a[i] + b[i] as denom
-template <size_t n>
-double chiSqr(const std::array<double, n> &a, const std::array<double, n> &b) {
-  auto res = 0.0;
-  for (size_t i = 0; i < n; ++i) {
-    if (fabs(a[i] + b[i]) > 1e-16) res += ((a[i] - b[i]) * (a[i] - b[i])) / (a[i] + b[i]);
-  }
-  return res;
-}
-
-auto pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bool> &v2, double latConst) {
+csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bool> &v2, double latConst) {
   using std::array; using std::vector;
-  constexpr auto maxDistAssumption = 200.0;  // 
-  constexpr auto distBinSize = 5.0;
-  constexpr auto distBins = (size_t)(maxDistAssumption / distBinSize);
+  constexpr auto maxDistAssumption = 1.0;  // 
+  constexpr size_t distBins = 40;
+  constexpr double distBinSize = maxDistAssumption / distBins;
   array<double, 20> adjacencyHistnn2{};
-  array<double, 40> adjacencyHistnn4{};
   array<double, distBins> distHist{};
   std::fill(begin(distHist), end(distHist), 0.0);
   double total = 0;
@@ -69,6 +55,7 @@ auto pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bo
   auto nn4 = nn * 2;
   for (size_t i = 0; i < v.size(); ++i) {
     //if (v2[i]) continue;
+    std::vector<double> pairDists;
     std::array<int, 2> adjacencyCounts{{0, 0}};
     for (size_t j = 0; j < v.size(); ++j) {
       //if (v2[j]) continue;
@@ -76,22 +63,25 @@ auto pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bo
       if (dist < nn2) adjacencyCounts[0]++;
       if (dist < nn4) adjacencyCounts[1]++;
       if (j > i) {
-        size_t bin  =  dist / distBinSize;
-        if (bin >= distHist.size()) bin = distHist.size() - 1;
-        ++distHist[bin];
-        ++total;
+        if (dist > nn4 * 2) continue; // ?
+        pairDists.push_back(dist / latConst);
       }
     }
     if (adjacencyCounts[0] >= 20) adjacencyCounts[0] = 19;
     if (adjacencyCounts[1] >= 40) adjacencyCounts[1] = 39;
     adjacencyHistnn2[adjacencyCounts[0]]++;
-    adjacencyHistnn4[adjacencyCounts[1]]++;
     totalAdj++;
+    auto mx = std::max_element(begin(pairDists), end(pairDists));
+    for (auto it : pairDists) {
+      size_t bin = (it / *mx) / distBinSize;
+      if (bin >= distHist.size()) bin = distHist.size() - 1;
+      ++distHist[bin];
+      ++total;
+    }
   }
   if (total > 1e-6) for (auto &it : distHist) it /= total;
   if (totalAdj > 1e-6) {
     for (auto &it : adjacencyHistnn2) it /= totalAdj;
-    for (auto &it : adjacencyHistnn4) it /= totalAdj;
   }
   constexpr auto angleBinSize = 5.0;
   constexpr auto maxAngle = 180.0;
@@ -113,5 +103,5 @@ auto pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bo
     }
   }
   if(total > 1e-6) for (auto &it : angleHist) it /= total;
-  return std::make_tuple(distHist, angleHist, adjacencyHistnn2, adjacencyHistnn4);
+  return std::make_tuple(distHist, angleHist, adjacencyHistnn2);
 }

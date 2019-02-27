@@ -1,16 +1,16 @@
 /*!
  * @file
  * class for calculating offset & closest lattice site of an atom
- *
- * Used with interstitialcount example.
  * */
-#ifndef __ADDOFFSET_HPP__
-#define __ADDOFFSET_HPP__
+#ifndef ADDOFFSET_CSARANSH_HPP
+#define ADDOFFSET_CSARANSH_HPP
 
 #include <array>
 #include <string>
 #include <tuple>
 #include <vector>
+
+namespace csaransh {
 
 class AddOffset {
 public:
@@ -29,5 +29,6 @@ private:
   std::array<long double, 3> _origin;
   long double _latConst;
 };
+}
 
-#endif //__ADDOFFSET_HPP__
+#endif //ADDOFFSET_CSARANSH_HPP

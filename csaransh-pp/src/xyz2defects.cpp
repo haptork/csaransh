@@ -12,7 +12,8 @@
 
 #include <AddOffset.hpp>
 #include <helper.hpp>
-#include <dist.hpp>
+#include <results.hpp>
+#include <xyz2defects.hpp>
 
 struct NextExpected {
 double _min, _max, minCur, maxCur;
@@ -92,9 +93,7 @@ auto existAnchorInter(const std::array<double, 3> &t,
   return false;
 }
 
-using coordsT = std::array<double, 3>;
-using defectsT = std::vector<std::tuple<coordsT, bool, int, bool>>;
-auto clean(std::vector<std::tuple<coordsT, coordsT, bool>> &inter, std::vector<std::tuple<coordsT, bool>> &vac, const Info &info) {
+auto clean(std::vector<std::tuple<csaransh::Coords, csaransh::Coords, bool>> &inter, std::vector<std::tuple<csaransh::Coords, bool>> &vac, const csaransh::Info &info) {
   auto thresh = info.latticeConst;// * sqrt(3) / 2;
   for (size_t i = 0; i < vac.size(); ++i) {
     if (!std::get<1>(vac[i])) continue;
@@ -102,7 +101,7 @@ auto clean(std::vector<std::tuple<coordsT, coordsT, bool>> &inter, std::vector<s
     size_t minj = 0;
     for (size_t j = 0; j < inter.size(); ++j) {
       if (!std::get<2>(inter[j])) continue;
-      auto dist = calcDist(std::get<0>(vac[i]), std::get<1>(inter[j]));
+      auto dist = csaransh::calcDist(std::get<0>(vac[i]), std::get<1>(inter[j]));
       if (dist < min) {
         min = dist;
         minj = j;
@@ -115,24 +114,24 @@ auto clean(std::vector<std::tuple<coordsT, coordsT, bool>> &inter, std::vector<s
   }
 }
 
-auto xyz2defects(std::string fname, Info info) {
+csaransh::DefectVecT csaransh::xyz2defects(const std::string &fname, const csaransh::Info &info) {
   using std::string; using std::vector; using std::tuple;
   using std::get;
 
   auto latConst = info.latticeConst;
   auto o = info.origin;
   auto origin = std::array<double, 3> {{o, o, o}};
-  auto obj = AddOffset{latConst, "bcc", origin};
+  auto obj = csaransh::AddOffset{latConst, "bcc", origin};
   /*
   std::cout << "latConst: " << latConst << '\n';
   std::cout << "origin: " << origin << '\n';
   */
   const auto nn = 0.3 * latConst; // for interstitial threshold
-  vector<tuple<coordsT, double, coordsT>> uno;
-  vector<tuple<coordsT, coordsT>> interThresh;
-  vector<tuple<coordsT, coordsT, bool>> interClean;
-  vector<tuple<coordsT, bool>> vacClean;
-  defectsT defects;
+  vector<tuple<csaransh::Coords, double, csaransh::Coords>> uno;
+  vector<tuple<csaransh::Coords, csaransh::Coords>> interThresh;
+  vector<tuple<csaransh::Coords, csaransh::Coords, bool>> interClean;
+  vector<tuple<csaransh::Coords, bool>> vacClean;
+  csaransh::DefectVecT defects;
   uno.reserve(info.ncell * info.ncell * info.ncell * 2);
   // read file and apply object
   std::ifstream infile{fname};
@@ -157,7 +156,7 @@ auto xyz2defects(std::string fname, Info info) {
         break;
       }
     }
-    coordsT c;
+    csaransh::Coords c;
     for (int i = 0; i < 3; ++i) {
       first = std::find_if(second, end(line), [](int ch) {
         return !std::isspace(ch);
@@ -178,8 +177,8 @@ auto xyz2defects(std::string fname, Info info) {
   //std::cout << "min: " << std::get<0>(uno[0])[0] << '\n';
   nextExpected.max(std::get<0>(uno[uno.size() -1])[0]);
   nextExpected.min(std::get<0>(uno[0])[0]);
-  auto expected = coordsT {{nextExpected._min, nextExpected._min, nextExpected._min}};
-  std::tuple<double, coordsT, coordsT> pre;
+  auto expected = csaransh::Coords {{nextExpected._min, nextExpected._min, nextExpected._min}};
+  std::tuple<double, csaransh::Coords, csaransh::Coords> pre;
   bool isPre = false;
   for (const auto& row : uno) {
     // threshold
@@ -187,8 +186,8 @@ auto xyz2defects(std::string fname, Info info) {
       interThresh.emplace_back(get<0>(row), get<2>(row));
     }
     // clean
-    coordsT ar = std::get<0>(row); double x = std::get<1>(row); coordsT c = std::get<2>(row);
-    using vecB = std::vector<std::tuple<coordsT, double, coordsT>>;
+    csaransh::Coords ar = std::get<0>(row); double x = std::get<1>(row); csaransh::Coords c = std::get<2>(row);
+    using vecB = std::vector<std::tuple<csaransh::Coords, double, csaransh::Coords>>;
     if (cmpApprox(ar, expected) == 0) {
       expected = nextExpected(expected);
       pre = std::make_tuple(x, ar, c);
@@ -218,7 +217,7 @@ auto xyz2defects(std::string fname, Info info) {
   
   defects.reserve(2 * vacClean.size());
   auto vacCleanSave = vacClean;
-  auto anchor2coord = [&latConst](coordsT c) { for (auto& x : c) x *= latConst; return c; };
+  auto anchor2coord = [&latConst](csaransh::Coords c) { for (auto& x : c) x *= latConst; return c; };
   auto count = 1;
   for (auto &it : vacClean) {
     for (auto& x : std::get<0>(it)) x *= latConst;
