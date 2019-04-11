@@ -37,8 +37,8 @@ const axis = {
     };
 
 const layout = {
-      height: 1400,
-      width: 1400,
+      height: 1600,
+      width: 1600,
       autosize: false,
       hovermode:'closest',
       dragmode:'select',

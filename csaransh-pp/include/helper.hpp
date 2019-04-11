@@ -20,13 +20,14 @@ enum class readStatus : bool {
   success
 };
 
+enum class SimulationCode : int {
+  parcas
+};
+
 struct Info {
-  std::string infile;
-  std::string name;
-  std::string substrate;
+  int ncell;
   double boxSize;
   double energy;
-  int ncell;
   double rectheta;
   double recphi;
   double xrec;
@@ -34,6 +35,11 @@ struct Info {
   double zrec;
   double latticeConst;
   double origin;
+  std::string structure;
+  std::string infile;
+  std::string name;
+  std::string substrate;
+  SimulationCode simulationCode;
 };
 
 using Coords = std::array<double, 3>;
@@ -93,7 +99,6 @@ static inline bool replaceStr(std::string& str, const std::string& from, const s
   str.replace(start_pos, from.length(), to);
   return true;
 }
-
 /*
 // modified with a[i] + b[i] as denom
 template <size_t n>

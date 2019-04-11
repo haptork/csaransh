@@ -25,43 +25,14 @@ bool csaransh::AddOffset::_isUnitcell(double x, double y, double z, double l,
  * centered atom of the first unitcell.
  * */
 void csaransh::AddOffset::_bccUnitcell() {
-  /*
-  for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 2; j++) {
-      for (int k = 0; k < 2; k++) {
-        if (_isUnitcell(i * lc, j * lc, k * lc, lc, origin)) {
-          std::array<double, 3> p1;
-          p1[0] = (i - origin[0]) * lc, p1[1] = (j - origin[1]) * lc,
-          p1[2] = (k - origin[2]) * lc;
-          v.push_back(std::move(p1));
-        }
-        if (v.size() == 2) return;
-        if (_isUnitcell((i + 0.5) * lc, (j + 0.5) * lc, (k + 0.5) * lc, lc,
-                        origin)) {
-          std::array<double, 3> p1;
-          p1[0] = (i + 0.5 - origin[0]) * lc,
-          p1[1] = (j + 0.5 - origin[1]) * lc,
-          p1[2] = (k + 0.5 - origin[2]) * lc;
-          v.push_back(std::move(p1));
-        }
-        if (v.size() == 2) return;
-      }
-    }
-  }
-  */
   _sites.clear();
   _sites.emplace_back(std::array<long double, 3>{{0.0, 0.0, 0.0}});
   _sites.emplace_back(std::array<long double, 3>{{0.5, 0.5, 0.5}});
-  //_sites.emplace_back(std::array<double, 3>{{-0.5, -0.5, -0.5}});
   for(auto& it : _sites) {
-    //auto i = 0;
     for (auto& jt : it) {
-      //jt += origin[i];
-      //jt = fmodf(jt, 1.0);
-      jt *= _latConst;//lc;
+      jt *= _latConst;
     }
   }
-
 }
 
 /*
@@ -72,38 +43,6 @@ void csaransh::AddOffset::_bccUnitcell() {
  * TODO: Test thoroughly
  * */
 void csaransh::AddOffset::_fccUnitcell() {
-  /*
-  for (int i = -1; i < 3; i++) {
-    for (int j = -1; j < 3; j++) {
-      for (int k = -1; k < 3; k++) {
-        if (_isUnitcell(i * lc, j * lc, k * lc, lc, origin)) {
-          std::array<double, 3> p1;
-          p1[0] = (i - origin[0]) * lc, p1[1] = (j - origin[1]) * lc,
-          p1[2] = (k - origin[2]) * lc;
-          v.push_back(std::move(p1));
-        }
-        if (_isUnitcell(i * lc, (j + 0.5) * lc, (k + 0.5) * lc, lc, origin)) {
-          std::array<double, 3> p1;
-          p1[0] = (i - origin[0]) * lc, p1[1] = (j + 0.5 - origin[1]) * lc,
-          p1[2] = (k + 0.5 - origin[2]) * lc;
-          v.push_back(std::move(p1));
-        }
-        if (_isUnitcell((i + 0.5) * lc, j * lc, (k + 0.5) * lc, lc, origin)) {
-          std::array<double, 3> p1;
-          p1[0] = (i + 0.5 - origin[0]) * lc, p1[1] = (j - origin[1]) * lc,
-          p1[2] = (k + 0.5 - origin[2]) * lc;
-          v.push_back(std::move(p1));
-        }
-        if (_isUnitcell((i + 0.5) * lc, (j + 0.5) * lc, k * lc, lc, origin)) {
-          std::array<double, 3> p1;
-          p1[0] = (i + 0.5 - origin[0]) * lc,
-          p1[1] = (j + 0.5 - origin[1]) * lc, p1[2] = (k - origin[2]) * lc;
-          v.push_back(std::move(p1));
-        }
-      }
-    }
-  }
-  */
   _sites.clear();
   _sites.emplace_back(std::array<long double, 3>{{0.0, 0.0, 0.0}});
   _sites.emplace_back(std::array<long double, 3>{{0.5, 0.5, 0.0}});
@@ -160,7 +99,6 @@ void print(std::array<T, 3> x) {
 }
 
 //constexpr bool debug = false;
-
 std::tuple<std::array<double,3>, double, std::array<double, 3>>
 csaransh::AddOffset::operator()(const std::array<double, 3> &c) {
   std::array<long double, 3> coords {{c[0], c[1], c[2]}};
@@ -200,7 +138,6 @@ csaransh::AddOffset::operator()(const std::array<double, 3> &c) {
         cellPos[i] = floorf(cellPos[i] * 100) / 100;
       }
     }
-    //i++;
   }
   /*
   if (debug) {

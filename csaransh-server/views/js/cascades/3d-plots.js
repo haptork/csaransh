@@ -80,12 +80,13 @@ const cookDataCmp = (c, cmpColorIndex) => {
         type: 'scatter3d',
         marker: {
           color: getColor(cmpColorIndex),//'rgb(23, 190, 207)',
-          size: 3
+          size: 6
         }
     }];
   return data;
 }
-    const layoutCmp = {
+    const layoutCmp = (mn, mx) => {
+      return {
         autosize: true,
         scene: {
             aspectratio: {
@@ -112,25 +113,33 @@ const cookDataCmp = (c, cmpColorIndex) => {
             },
             xaxis: {
                 type: 'linear',
-                zeroline: false
+                zeroline: false,
+                range: [mn, mx]
             },
             yaxis: {
                 type: 'linear',
-                zeroline: false
+                zeroline: false,
+                range: [mn, mx]
             },
             zaxis: {
                 type: 'linear',
-                zeroline: false
+                zeroline: false,
+                range: [mn, mx]
             }
         },
         margin: { l: 30, r: 10, b: 40, t: 30, pad: 1 },
+      };
     };
 
-export const ScatterCmpPlot = props => 
-  <Plot data={cookDataCmp(props.coords, props.colorIndex)} layout={ layoutCmp }
+export const ScatterCmpPlot = props => {
+  let mn = Math.min(...props.coords[0], ...props.coords[1], ...props.coords[2]);
+  let mx = Math.max(...props.coords[0], ...props.coords[1], ...props.coords[2]);
+  return (<Plot data={cookDataCmp(props.coords, props.colorIndex)} layout={ layoutCmp(mn, mx) }
   style={{height: "320px", width: "100%"}}
+  onClick={props.clickHandler}
   useResizeHandler
-  />;
+/>);
+}
 
 const cookData = (row) => {
   let data = [];
@@ -204,9 +213,9 @@ const cookData = (row) => {
                     z: 0
                 },
                 eye: {
-                    x: 1.25,
-                    y: 1.25,
-                    z: 1.25
+                    x: -0.001,
+                    y: -0.25,
+                    z: +1.25
                 },
                 up: {
                     x: 0,
@@ -275,3 +284,48 @@ export const ScatterPlot = props =>
   style={{height: "320px", width: "100%"}}
   useResizeHandler
   />;
+
+// ===============
+
+const cookDataClasses = (c) => {
+  var traces = [];
+  let i = 0;
+  for (const cid in c) {
+    traces.push(
+      {
+        x: c[cid][0],
+        y: c[cid][1],
+        z: c[cid][2],
+        mode: 'markers',
+        type: 'scatter3d',
+        marker: {
+          color: (cid == -1) ? 'rgb(10,10,10)' : getColor(i++),
+          size: 2
+        }
+      }
+    )
+  }
+  return traces;
+}
+
+export class ClassesPlot extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+      return nextProps.mode != this.props.mode;
+  }
+
+  render() {
+    const props = this.props; 
+    return (
+      <Plot data={cookDataClasses(props.coords)} layout={ layout }
+      style={{height: "320px", width: "100%"}}
+      onClick={props.clickHandler}
+      useResizeHandler
+    />
+    );
+  }
+}
+

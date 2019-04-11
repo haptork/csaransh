@@ -9,6 +9,7 @@
 #include <results.hpp>
 #include <UnionFind.hpp>
 
+// group defects into clusters
 csaransh::DefectVecT csaransh::groupDefects
     (const csaransh::DefectVecT &defects, const double &latticeConst) {
   using UF = csaransh::UnionFind<2, csaransh::DefectT>;
@@ -39,7 +40,7 @@ csaransh::DefectVecT csaransh::groupDefects
   // coords, isInterstitial, ClusterId, isSurviving
 }
 
-// clusterId -> surviving size (-ve for vacancy and +ve for interstitials), allsize
+// cluster id and their sizes
 csaransh::ClusterSizeMapT csaransh::clusterSizes(const csaransh::DefectVecT& defects) {
   csaransh::ClusterSizeMapT clusterSize;
   using namespace csaransh::DefectTWrap;
@@ -52,6 +53,7 @@ csaransh::ClusterSizeMapT csaransh::clusterSizes(const csaransh::DefectVecT& def
   return clusterSize;
 }
 
+// ignore dumbbells or similar defects group from cluster list
 void csaransh::ignoreSmallClusters(csaransh::DefectVecT& defects, 
                           csaransh::ClusterSizeMapT& clusterSize,
                           int minSurvived = 2, int minAll = 4) {
@@ -64,6 +66,7 @@ void csaransh::ignoreSmallClusters(csaransh::DefectVecT& defects,
   }
 }
 
+// cluster ids mapped to defect ids that the clusters have
 csaransh::ClusterIdMapT csaransh::clusterMapping(const csaransh::DefectVecT& defects) {
   using namespace csaransh::DefectTWrap;
   csaransh::ClusterIdMapT clusterIds;
@@ -77,6 +80,7 @@ csaransh::ClusterIdMapT csaransh::clusterMapping(const csaransh::DefectVecT& def
   return clusterIds;
 }
 
+// fraction of defects in cluster
 std::tuple<int, double, double> csaransh::getNDefectsAndClusterFractions(const csaransh::DefectVecT& defects) {
   using namespace csaransh::DefectTWrap;
   auto inClusterI = 0;
@@ -99,6 +103,7 @@ std::tuple<int, double, double> csaransh::getNDefectsAndClusterFractions(const c
   return std::make_tuple(nDefects, inClusterFractionI, inClusterFractionV);
 }
 
+// cluster to cluster features mapping
 csaransh::ClusterFeatMapT csaransh::clusterFeatures(const csaransh::DefectVecT& defects,
                         const csaransh::ClusterIdMapT& clusters,
                         csaransh::ClusterSizeMapT& clusterCounts,
@@ -118,6 +123,7 @@ csaransh::ClusterFeatMapT csaransh::clusterFeatures(const csaransh::DefectVecT& 
   return clusterFeats;
 }
 
+// maximum size of the interstitial and vacancy clusters
 std::tuple<int, int> csaransh::getMaxClusterSizes(csaransh::ClusterSizeMapT& clusterCounts,
                   const csaransh::ClusterIdMapT& clusters) {
   auto maxClusterSizeV = 0;
@@ -130,6 +136,7 @@ std::tuple<int, int> csaransh::getMaxClusterSizes(csaransh::ClusterSizeMapT& clu
   return std::make_tuple(maxClusterSizeI, std::abs(maxClusterSizeV));
 }
 
+// distance distribution of defects from PKA origin
 std::array<std::vector<double>, 2> csaransh::getDistanceDistribution(const csaransh::DefectVecT &defects,
                           const csaransh::Info &info) {
   using namespace csaransh::DefectTWrap;
@@ -147,6 +154,7 @@ std::array<std::vector<double>, 2> csaransh::getDistanceDistribution(const csara
   return std::array<std::vector<double>, 2>{{distsI, distsV}};
 }
 
+// angular distribution of defects from PKA origin
 std::array<std::vector<double>, 2> csaransh::getAngularDistribution(const csaransh::DefectVecT &defects,
                          const csaransh::Info &info) {
   using namespace csaransh::DefectTWrap;

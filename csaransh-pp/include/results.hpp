@@ -41,7 +41,6 @@ static inline void clusterId(DefectT &_d, int id) { std::get<2>(_d) = id; }
 static inline void isSurviving(DefectT &_d, bool s) { std::get<3>(_d) = s; }
 static inline auto isVacancy(const DefectT &_d) { return !std::get<1>(_d); }
 }
-// clusterId -> surviving size (-ve for vacancy and +ve for interstitials), totalsize
 
 DefectVecT groupDefects(const DefectVecT &defects, const double &latticeConst);
 
@@ -67,8 +66,6 @@ std::array<std::vector<double>, 2> getDistanceDistribution(const DefectVecT &def
                                                 const Info &info);
 std::array<std::vector<double>, 2> getAngularDistribution(const DefectVecT &defects,
                                              const Info &info);
-
-//auto csaransh::pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bool> &v2, double latConst) {
 
 }
 #endif //CSARANSH_RESULTS_HPP

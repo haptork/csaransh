@@ -4,7 +4,8 @@ const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
 
-    mode: 'production',
+    //mode: 'production',
+    mode: 'development',
     module: {
       rules: [
         {
@@ -54,7 +55,7 @@ resolve: {
     ],
     */
     entry: {
-      cascades: './views/js/cascades/index.js',
+      cascades: './views/js/index.js',
       //statistics: './views/js/statistics/index.js'
     },
     output: {

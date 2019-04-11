@@ -29,8 +29,9 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
-export const getClusterCoord = (row, cid) => {
+const getClusterCoord = (row, cid) => {
   let c = [[],[],[]];
+  cid = "" + cid;
   if (cid.length == 0) cid = getInitialSelection(row);
   if (cid) {
     for (const x of row.eigen_features[cid].coords) {
@@ -42,7 +43,8 @@ export const getClusterCoord = (row, cid) => {
   return c;
 };
 
-export const getClusterVar = (row, cid) => {
+const getClusterVar = (row, cid) => {
+  cid = "" + cid;
   if (cid.length == 0) cid = getInitialSelection(row);
   if (cid) {
     return row.eigen_features[cid].var[0] + ", " + row.eigen_features[cid].var[1];
@@ -59,6 +61,7 @@ export const getCids = (row) => {
   return cids;
   //const curSelection = (cids.length > 0) ? cids[0] : "";
 };
+
 
 export const getInitialSelection = (row) => {
   const cids = getCids(row);
@@ -100,12 +103,32 @@ const getCmpCids = (row, cid, data, mode, isSize) => {
   });
 };
 
+export class Cluster2CmpPlot extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.row.id != nextProps.row.id
+           || this.props.cid != nextProps.cid;
+  }
+
+  render() {
+    const {cid, row} = this.props;
+    const coords = getClusterCoord(row, cid);
+    return (
+        <ScatterCmpPlot coords={coords} colorIndex={parseInt(cid)} />
+    );
+  }
+}
+
 export class ClusterCmpPlot extends React.Component {
   constructor(props) {
     super(props);
     this.allModes = [{label:"Angles", value:"angle"}, 
                      {label:"Adjacency", value:"adjNn2"},
                      {label:"Distances", value:"dist"},
+                     {label:"umap", value:"umap"},
                      {label:"All", value:"all"}
                     ];
     const curMode = "angle";
@@ -116,6 +139,15 @@ export class ClusterCmpPlot extends React.Component {
       isSize : isSize,
       curShow : curShow,
     };
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.row.id != nextProps.row.id
+           || this.props.cid != nextProps.cid
+           || this.state.curMode != nextState.curMode
+           || this.state.curShow != nextState.curShow
+           || this.state.isSize != nextState.isSize
+           ;
   }
 
   handleMode(curMode) {
@@ -138,8 +170,10 @@ export class ClusterCmpPlot extends React.Component {
   }
 
   render() {
-    const cmpCids = getCmpCids(this.props.row, this.props.curSelection, this.props.data, this.state.curMode, this.state.isSize);
-    const cmpCoords = getCmpCoord(this.props.row, this.props.curSelection, this.props.data, this.state.curMode, this.state.isSize, this.state.curShow);
+    const {classes, row, cid, data, allCids} = this.props;
+    const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize);
+    const cmpCoords = getCmpCoord(row, cid, data, this.state.curMode, this.state.isSize, this.state.curShow);
+    const mainVariance = getClusterVar(row, cid);
     return (
     <Card chart>
       <CardHeader color="info">
@@ -149,22 +183,22 @@ export class ClusterCmpPlot extends React.Component {
         <Grid container>
         <GridItem xs={12} sm={12} md={6}>
         <Paper>
-        <ScatterCmpPlot coords={this.props.curCoords} colorIndex={parseInt(this.props.curSelection)} />
-        <Typography  variant="caption" style={{textAlign:"center"}}>eigen dimensional var:{this.props.curVar}</Typography>
+        <Cluster2CmpPlot row={row} cid={cid}/>
+        <Typography  variant="caption" style={{textAlign:"center"}}>eigen dimensional var:{mainVariance}</Typography>
         <Grid container justify="center">
         <GridItem xs={12} sm={12} md={12} >
         <FormGroup column>
          <FormControl>
           <InputLabel htmlFor="cid-select">Cluster Id</InputLabel>
           <Select
-            value={this.props.curSelection}
-            onChange={(event) => { this.props.setCurSelection(event.target.value); }}
+            value={cid}
+            onChange={(event) => { this.props.handleClusterCmp(event.target.value); }}
             inputProps={{
               name: 'cluster-selection',
               id: 'cid-select',
             }}
           >
-          {this.props.cids.map((o, i) => <MenuItem key={i} value={o.value}>{o.label}</MenuItem>)}
+          {allCids.map((o, i) => <MenuItem key={i} value={o.value}>{o.label}</MenuItem>)}
           </Select>
           </FormControl>
          <FormControl>
@@ -197,7 +231,7 @@ export class ClusterCmpPlot extends React.Component {
         </Paper>
         </GridItem>
        <GridItem xs={12} sm={12} md={6}>
-        <ScatterCmpPlot coords={cmpCoords} colorIndex={parseInt(this.props.curSelection)}/>
+        <ScatterCmpPlot coords={cmpCoords} colorIndex={parseInt(cid)}/>
         <Stepper alternativeLabel nonLinear activeStep={this.state.curShow}>
           {cmpCids.map((label, index) => {
             const buttonProps = {};
@@ -219,7 +253,7 @@ export class ClusterCmpPlot extends React.Component {
         </Grid>
       </CardBody>
       <CardFooter chart>
-        <div className={this.props.classes.stats}>
+        <div className={classes.stats}>
           <ViewIcon/> For the selected cluster of the current cascade, shows the top similar clusters from the whole database. Plots are in eigen basis, eigen var hints at dimensionality.
         </div>
       </CardFooter>

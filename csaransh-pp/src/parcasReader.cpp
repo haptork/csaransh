@@ -19,7 +19,7 @@ std::string csaransh::removeComments(std::string s) {
   return s;
 }
 
-// modified with a[i] + b[i] as denom
+// extract information from input file
 std::pair<csaransh::Info, bool> csaransh::extractInfo(std::string fname) {
   std::ifstream infile(fname);
   csaransh::Info info;
@@ -63,6 +63,7 @@ std::pair<csaransh::Info, bool> csaransh::extractInfo(std::string fname) {
         } 
       }
     }
+    info.structure = "bcc"; // TODO: extend for fcc, detect it without assumption
     infile.close();
     if (count == 10) { // got all the info
       info.latticeConst = info.boxSize / info.ncell;
@@ -114,6 +115,7 @@ csaransh::readStatus csaransh::processParcasFile(std::string xyzfile, std::ofstr
   int nClusters = clusterIdMap.size();
   auto distances = csaransh::getDistanceDistribution(defects, info);
   auto angles = csaransh::getAngularDistribution(defects, info);
-  csaransh::printJson(outfile, tag, info, id, nDefects, nClusters, maxClusterSizeI, maxClusterSizeV,  inClusterFractionI, inClusterFractionV, defects, distances, angles, clusterIdMap, clusterFeats);
+  csaransh::printJson(outfile, tag, info, id, nDefects, nClusters, maxClusterSizeI, maxClusterSizeV, inClusterFractionI,
+                      inClusterFractionV, defects, distances, angles, clusterIdMap, clusterFeats);
   return readStatus::success;
 }

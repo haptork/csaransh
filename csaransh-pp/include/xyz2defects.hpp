@@ -13,6 +13,19 @@
 
 namespace csaransh {
 
+enum class frameStatus : bool {
+  prelude,
+  inFrame
+};
+
+enum class lineStatus : int {
+  garbage,
+  coords,
+  frameBorder
+};
+
+//std::pair<lineStatus, Coords> getCoordParcas(std::string& line);
+
 DefectVecT xyz2defects (const std::string &fname, const Info &info);
 
 }

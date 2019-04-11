@@ -59,7 +59,7 @@ export const toXyzArSplit = (data, onlySurviving = true) => {
     res[i] = [].concat(inter[i], vac[i]);
   }
   return [inter, vac, res];
-}
+};
 
 export const toXyzAr = (coords) => {
   let co = [[],[], []];
@@ -69,7 +69,7 @@ export const toXyzAr = (coords) => {
       co[2].push(c[2]);
   }
   return co;
-}
+};
 
 
 export const Logo = () =>
@@ -93,7 +93,7 @@ export const clusterCent = x => {
   }
   const res = (clustered * 100) / (single + clustered);
   return res.toFixed(2);
-}
+};
 /*
 export const clusterSizes = x => {
   var frequency = {};

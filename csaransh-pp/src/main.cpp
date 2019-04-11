@@ -14,21 +14,18 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   auto src = std::string{};
-  //const std::string path {"./public/js/cascades-data.js"};
-  const std::string path {"./cascades-data.json"};
-  std::ofstream outfile{path};
+  const std::string outpath {"./cascades-data.json"};
+  std::ofstream outfile{outpath};
   if (!outfile.is_open()) {
-    std::cerr << "The output path " + path + " is not accessible.\n";
+    std::cerr << "The output path " + outpath + " is not accessible.\n";
     return 1;
   }
   outfile << "{\"source\": \"" << src << "\", \"data\": [\n";
   std::cout << "Total files to process: " << (argc - 1) << '\n' << std::flush;
   auto success = 0;
-  //std::vector<std::unordered_map<int, csaransh::featT>> clusterFeats;
   for (int i = 1; i < argc; ++i) {
     std::cout << "\rCurrently processing file " << i << std::flush;
     csaransh::readStatus ret;
-    //std::unordered_map<int, csaransh::featT> clusterFeat;
     ret = csaransh::processParcasFile(argv[i], outfile, i);
     if (csaransh::readStatus::fail == ret) {
       std::cerr << "\nError in processing file " + std::string{argv[i]} + "\n";
@@ -36,7 +33,6 @@ int main(int argc, char* argv[]) {
       ++success;
       if (i != argc - 1) outfile << ",";
       outfile << "\n";
-      //clusterFeats.emplace_back(std::move(clusterFeat));
     }
   }
   outfile << "]}" << "\n";

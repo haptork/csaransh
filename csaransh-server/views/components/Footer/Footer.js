@@ -13,6 +13,23 @@ function Footer({ ...props }) {
     <footer className={classes.footer}>
       <div className={classes.container}>
         <div className={classes.left}>
+          <List className={classes.list}>
+            <ListItem className={classes.inlineBlock}>
+            <a href="stats.html" className={classes.a}>
+              CSaransh Statistics
+            </a>
+            </ListItem>
+            <ListItem className={classes.inlineBlock}>
+            <a href="https://github.com/haptork/csaransh" className={classes.a}>
+              Github Repository
+            </a>
+            </ListItem>
+            <ListItem className={classes.inlineBlock}>
+            <a href="https://arxiv.org/abs/1811.10923" className={classes.a}>
+              Defect Classification Description Paper
+            </a>
+            </ListItem>
+          </List>
        </div>
         <p className={classes.right}>
           <span>

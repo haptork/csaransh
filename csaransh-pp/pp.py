@@ -6,96 +6,9 @@ from sklearn.cluster import DBSCAN
 import math
 import sys
 
-# feature calc
-
-def dotv(a, b):
-    res = 0.0
-    for x, y in zip(a, b):
-        res += (x * y)
-    return res
-
-def calcDist(a, b):
-    dist = 0.0;
-    for x, y in zip(a, b):      
-        dist += ((x - y) ** 2);
-    return math.sqrt(dist);
-
-def crossPros(v1, v2):
-    prod = [0.0, 0.0, 0.0]
-    prod[0] = v1[1]*v2[2] - v1[2]*v2[1];
-    prod[1] = v1[2]*v2[0] - v1[0]*v2[2];
-    prod[2] = v1[0]*v2[1] - v1[1]*v2[0];
-    return prod
-
-def calcAngle(a, b, c):
-  v1 = [0.0, 0.0, 0.0]
-  v2 = [0.0, 0.0, 0.0]
-  pi = 3.141592653589793;
-  for i, x in enumerate(a):
-    v1[i] = b[i] - a[i]
-    v2[i] = c[i] - a[i]
-  res = dotv(v1, v2) / math.sqrt(dotv(v1, v1) * dotv(v2, v2))
-  if (res >= 1.0): res = 1.0 - 1e-6
-  elif (res <= -1.0): res = -1.0 + 1e-6
-  return math.acos(res) * 180.0 / pi
-
-def pairHists(v, v2, latConst):
-    maxDistAssumption = 200.0
-    distBinSize = 5.0
-    distBins = (int)((maxDistAssumption)/distBinSize)
-    adjacencyHistnn2 = [0] * 20
-    adjacencyHistnn4 = [0] * 40
-    distHist = [0.0] * distBins
-    total = 0.0
-    totalAdj = 0.0
-    nn = math.sqrt(3) * latConst / 2.0 + 1e-6
-    nn2 = latConst + 1e-6
-    nn4 = nn * 2
-    for i, x in enumerate(v):
-        #if v2[i] : continue
-        adjC = [0, 0]
-        for j, y in enumerate(v):
-            dist = calcDist(x, y)
-            if (dist < nn2): adjC[0] += 1
-            if (dist < nn4): adjC[1] += 1
-            if j > i:
-                bin = (int)(dist / distBinSize)
-                if bin >= len(distHist): bin = len(distHist) - 1
-                distHist[bin] += 1
-                total += 1
-        if (adjC[0] >= 20): adjC[0] = 19
-        if (adjC[1] >= 40): adjC[1] = 39
-        adjacencyHistnn2[adjC[0]] += 1
-        adjacencyHistnn4[adjC[1]] += 1
-        totalAdj += 1
-    #print total
-    if (total > 1e-6):
-        for i,x in enumerate(distHist): distHist[i] = round(x/total,2)
-    if (totalAdj > 1e-6):
-        for i,x in enumerate(adjacencyHistnn2): adjacencyHistnn2[i] = round(x/totalAdj,2)
-        for i,x in enumerate(adjacencyHistnn4): adjacencyHistnn4[i] = round(x/totalAdj,2)
-    angleBinSize = 5.0
-    maxAngle = 180.0
-    nAngleBins = (int)((maxAngle / angleBinSize))
-    angleHist = [0] * nAngleBins
-    total = 0.0
-    for i, x in enumerate(v):
-        #if v2[i] == 1: continue  # for int subcascades?
-        for j, y in enumerate(v):
-            curDist = calcDist(x, y)
-            if (i == j or  curDist > nn4 or curDist < 0.1): continue
-            for k, z in enumerate(v):
-                curDist = calcDist(v[i], v[k])
-                if (i == k or j == k or v2[j] != v2[k] or curDist > nn4 or curDist < 0.1): continue
-                bin = (int)(calcAngle(v[i], v[j], v[k]) / angleBinSize)
-                if bin >= len(angleHist): bin = len(angleHist) - 1
-                angleHist[bin] += 1
-                total += 1
-    if total > 1e-6: 
-        for i, it in enumerate(angleHist): angleHist[i] = round(it / total, 2)
-    #return {"dist":distHist, "angle":angleHist, "adjNn2":adjacencyHistnn2, "adjNn4": adjacencyHistnn4}
-    return {"dist":distHist, "angle":angleHist, "adjNn2":adjacencyHistnn2}
-
+import numba
+import umap
+import hdbscan
 
 def transformPoint(coords, point, thresh):
     all_coords  = np.asarray(coords)
@@ -159,21 +72,17 @@ def addEigenAndSubcascades(data):
         lenV = []
         totalV = 0
         for x in subsv:
-            fdata['clusters'][x] = subsv[x]
             lenV.append([len(subsv[x]), x])
             totalV += len(subsv[x])
         lenV.sort(reverse=True)
         lenI = []
         for x in subsi:
-            fdata['clusters'][x] = subsi[x]
             lenI.append([len(subsi[x]), x])
         lenI.sort(reverse=True)
         if (len(lenV) > 0):
             countOne = lenV[0][0]
             cutOff = 0.5;
         fdata['density_cluster_vac'] = [x[1] for i, x in enumerate(lenV) if (x[0] / (totalV/len(lenV)) > 0.55 and x[0] > 4) or (i < 2 and x[0] > 4)]
-        #fdata['density_cluster_vac'] = [x[1] for i, x in enumerate(lenV)]
-        #fdata['density_cluster_vac'] = [x[1] for i, x in enumerate(lenV) if (x[0] / (totalV/len(lenV)) > 0.5 and x[0] > 4) or (i < 2)]
         fdata['density_cluster_int'] = [x[1] for i, x in enumerate(lenI)]
         features = {}
         eigen_features = {}
@@ -182,21 +91,38 @@ def addEigenAndSubcascades(data):
             c = [fdata['coords'][y][:3] for y in fdata['clusters'][x]]
             ec, ev = findEigen(c);
             eigen_features[x] = {'coords': ec, 'var': ev}
-            if x in subsv or x in subsi:
-                b = [fdata['coords'][y][3] for y in fdata['clusters'][x]]
-                fdata['features'][x] = pairHists(c, b, fdata['latticeConst'])
-        #eigen_features[x] = {'eigen_var': ev}
-        #fdata['features'] = features
         fdata['eigen_features'] = eigen_features
 
-def chiSqr(a, b):
+@numba.njit()
+def chiSqr(x, y, startA, startB, endA, endB): # brat_curtis
+    numerator = 0.0
+    denominator = 0.0
+    for i, j in zip(range(startA, endA), range(startB, endB)):        
+        numerator += np.abs(x[i] - y[j])
+        denominator += np.abs(x[i] + y[j])
+
+    if denominator > 0.0:
+        return float(numerator) / denominator
+    else:
+        return 0.0
+
+@numba.njit()
+def quad(x, y):
+    l = x.shape[0]
+    a = chiSqr(x, y, 0, 0, 36, 36)
+    d = chiSqr(x, y, 36, 36, l, l)
+    preA = chiSqr(x, y, 0, 1, 35, 36)
+    postA = chiSqr(x, y, 1, 0, 36, 35)
+    preD = chiSqr(x, y, 36, 37, l - 1, l)
+    postD = chiSqr(x, y, 37, 36, l, l - 1)
+    return (0.5 * (preA + postA) + a + 0.9 * (0.1 * (preD + postD) + d)) / (2.0 + 1.2*0.9)
+
+def dist(a, b):
     res = 0.0
     for x, y in zip(a, b):
         if (abs(x) > 1e-6):
             res += ((x - y)**2 *1.0) / (1.0*x)
     return round(res, 2)
-
-dist = chiSqr
 
 def compareTwoClusters(a, b):
     res = {}
@@ -206,7 +132,7 @@ def compareTwoClusters(a, b):
         res[x] = dist(a[x], b[x])
         alla = alla + a[x]
         allb = allb + b[x]
-    res['all'] = chiSqr(alla, allb)
+    res['all'] = dist(alla, allb)
     return res
 
 def compareWithCluster(pivotI, pivotCid, pivot, data, size, dim):
@@ -255,6 +181,35 @@ def addClusterCmp(data):
           fdata['clust_cmp_size'][cid] = res_with_size   
           fdata['clust_cmp'][cid] = res
 
+def clusterClassData(data):
+    feat = []
+    tag = []
+    for i, x in enumerate(data):
+        for y in x['features']:
+            feat.append(x['features'][y]['angle'] + x['features'][y]['dist'])
+            tag.append((i, y))
+    return (feat, tag)
+
+def clusterClasses(data):
+    feat, tag = clusterClassData(data)
+    reduced_dim = umap.UMAP(n_components=12, n_neighbors=10, min_dist=0.15, metric=quad).fit_transform(feat).tolist()
+    show_dim = umap.UMAP(n_components=2, n_neighbors=10, min_dist=0.15, metric=quad).fit_transform(feat).tolist()
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=6)
+    cluster_labels = clusterer.fit_predict(reduced_dim)
+    class_points = {}
+    class_tags = {}
+    for i, label in enumerate(cluster_labels):
+        # if label == -1: continue
+        if not label in class_points: 
+            class_points[label] = [[],[],[]]
+            class_tags[label] = []
+        class_points[label][0].append(show_dim[i][0])
+        class_points[label][1].append(show_dim[i][1])
+        class_points[label][2].append(0)
+        #class_points[label][2].append(show_dim[i][2])
+        class_tags[label].append(tag[i])
+    return (class_points, class_tags)
+
 if __name__ == "__main__":
     fname = "cascades-data.json"
     out_fname = "cascades-data.js"
@@ -273,6 +228,14 @@ if __name__ == "__main__":
         f = open(out_fname, "w")
         f.write("var cascades = \n")
         json.dump(cascades, f)
+        f.write(";\nvar cluster_classes = \n")
+        res = ([], []) 
+        try:
+            res = clusterClasses(cascades['data'])
+        except:
+            print "error"
+            print sys.exc_info()[0]
+        json.dump({"show_point":res[0], "tags":res[1]}, f)
         f.close()
     except IOError:
       print "Could not open file " + fname

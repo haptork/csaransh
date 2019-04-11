@@ -13,6 +13,7 @@
 
 using Coords = csaransh::Coords;
 
+// dot product of two vectors
 double dotv(const Coords &a, const Coords &b) {
   auto res = 0.0;
   for (size_t i = 0; i < a.size(); ++i) {
@@ -21,6 +22,7 @@ double dotv(const Coords &a, const Coords &b) {
   return res;
 }
 
+// cross product of two vectors
 auto crossProd(const Coords &v1, const Coords& v2) {
   Coords prod;
   prod[0] = v1[1]*v2[2] - v1[2]*v2[1];
@@ -29,6 +31,7 @@ auto crossProd(const Coords &v1, const Coords& v2) {
   return prod;
 }
 
+// calculates angle between ba and ca
 auto calcAngle(Coords a, Coords b, Coords c) {
   Coords v1, v2;
   constexpr double pi = 3.141592653589793;
@@ -40,6 +43,7 @@ auto calcAngle(Coords a, Coords b, Coords c) {
   return std::acos(res) * 180.0 / pi;
 }
 
+// histograms for angles, distances and adjacency for cluster characterization
 csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v, const std::vector<bool> &v2, double latConst) {
   using std::array; using std::vector;
   constexpr auto maxDistAssumption = 1.0;  // 
@@ -51,25 +55,23 @@ csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v,
   double total = 0;
   double totalAdj = 0;
   auto nn = (std::sqrt(3) * latConst) / 2 + 1e-6;
-  auto nn2 = latConst + 1e-6;//std::sqrt(3) * info.latticeConst + 0.01;
+  auto nn2 = latConst + 1e-6;
   auto nn4 = nn * 2;
   for (size_t i = 0; i < v.size(); ++i) {
     //if (v2[i]) continue;
     std::vector<double> pairDists;
-    std::array<int, 2> adjacencyCounts{{0, 0}};
+    auto adjacencyCount = 0;
     for (size_t j = 0; j < v.size(); ++j) {
       //if (v2[j]) continue;
       auto dist = calcDist(v[i], v[j]);
-      if (dist < nn2) adjacencyCounts[0]++;
-      if (dist < nn4) adjacencyCounts[1]++;
+      if (dist < nn2) adjacencyCount++;
       if (j > i) {
         if (dist > nn4 * 2) continue; // ?
         pairDists.push_back(dist / latConst);
       }
     }
-    if (adjacencyCounts[0] >= 20) adjacencyCounts[0] = 19;
-    if (adjacencyCounts[1] >= 40) adjacencyCounts[1] = 39;
-    adjacencyHistnn2[adjacencyCounts[0]]++;
+    if (adjacencyCount >= 20) adjacencyCount = 19;
+    adjacencyHistnn2[adjacencyCount]++;
     totalAdj++;
     auto mx = std::max_element(begin(pairDists), end(pairDists));
     for (auto it : pairDists) {
@@ -83,6 +85,7 @@ csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v,
   if (totalAdj > 1e-6) {
     for (auto &it : adjacencyHistnn2) it /= totalAdj;
   }
+  // angles
   constexpr auto angleBinSize = 5.0;
   constexpr auto maxAngle = 180.0;
   constexpr auto nAngleBins = (size_t)(maxAngle / angleBinSize);
