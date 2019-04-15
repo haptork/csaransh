@@ -124,6 +124,35 @@ auto clean(std::vector<std::tuple<csaransh::Coords, csaransh::Coords, bool>> &in
   }
 }
 
+std::pair<csaransh::lineStatus, csaransh::Coords> getCoordLammps(std::string& line) {
+  csaransh::Coords c;
+  auto first = std::find_if(begin(line), end(line), [](int ch) {
+    return !std::isspace(ch);
+  });
+  if (first == std::end(line)) return std::make_pair(csaransh::lineStatus::garbage, c); // possibly blank line
+  auto second = std::find_if(first, end(line), [](int ch) {
+    return std::isspace(ch);
+  });
+  std::string word{first, second};
+  if (word == "ITEM:") {
+    return std::make_pair(csaransh::lineStatus::frameBorder, c);
+  }
+  for (int i = 0; i < 3; ++i) {
+    first = std::find_if(second, end(line), [](int ch) {
+      return !std::isspace(ch);
+    });
+    second = std::find_if(first, end(line), [](int ch) {
+      return std::isspace(ch);
+    });
+    if (first == second) {
+      return std::make_pair(csaransh::lineStatus::garbage, c); // some other info
+    }
+    c[i] = std::stod(std::string{first, second});
+  }
+  std::cout << c[0] << ", " << c[1] << ", " << c[2] << '\n';
+  return std::make_pair(csaransh::lineStatus::coords, c);
+}
+
 std::pair<csaransh::lineStatus, csaransh::Coords> getCoordParcas(std::string& line) {
   csaransh::Coords c;
   auto first = std::find_if(begin(line), end(line), [](int ch) {

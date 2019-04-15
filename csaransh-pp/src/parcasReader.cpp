@@ -18,9 +18,84 @@ std::string csaransh::removeComments(std::string s) {
   }), s.end());
   return s;
 }
+// extract information from input file
+std::pair<csaransh::Info, bool> csaransh::extractInfoLammps(std::string fname) {
+  std::ifstream infile(fname);
+  csaransh::Info info;
+  if (!infile.bad() && infile.is_open()) {
+    std::string line;
+    size_t count = 0;
+    std::array<bool, 3> xyzrec {{false, false, false}};
+    csaransh::Coords velocity;
+    while (std::getline(infile, line)) {
+      auto eq = std::find_if(begin(line), end(line), [](int ch) {
+        return ch == '=';
+      });
+      if (eq != std::end(line)) {
+        auto cmd = trim(std::string{std::begin(line), eq});
+        auto val = removeComments(trim(std::string{eq, std::end(line)}));
+        if (cmd == "substrate") {
+          info.substrate = removeComments(val);
+          count++;
+        } else if (cmd == "latticeConstant") {
+          info.latticeConst = std::stod(removeComments(val));
+          count++;
+        } else if (cmd == "ncell") {
+          info.ncell = std::stod(removeComments(val));
+          count++;
+        } else if (cmd == "recen") {
+          info.energy = (std::stod(removeComments(val))) / 1000.0;
+          count++;
+        } else if (cmd == "xrec") {
+          info.xrec = std::stod(removeComments(val));
+          xyzrec[0] = true;
+          count++;
+        } else if (cmd == "yrec") {
+          info.yrec = std::stod(removeComments(val));
+          xyzrec[1] = true;
+          count++;
+        } else if (cmd == "zrec") {
+          info.zrec = std::stod(removeComments(val));
+          xyzrec[2] = true;
+          count++;
+        } else if (cmd == "vx") {
+          velocity[0] = std::stod(removeComments(val));
+          count++;
+        } else if (cmd == "vy") {
+          velocity[1] = std::stod(removeComments(val));
+          count++;
+        } else if (cmd == "vz") {
+          velocity[2] = std::stod(removeComments(val));
+          count++;
+        } else if (cmd == "offset") {
+          info.origin = std::stod(removeComments(val));
+          count++;
+        } 
+      }
+    }
+    auto infoExpected = 8;
+    for (auto it : xyzrec) if (it) infoExpected++;
+    info.structure = "bcc"; // TODO: extend for fcc, detect it without assumption
+    infile.close();
+    if (count == infoExpected) { // got all the info
+      info.boxSize = info.latticeConst * info.ncell;
+      info.infile = fname;
+      info.rectheta = atan(velocity[1]/ velocity[0]);
+      info.recphi = atan(velocity[2]/velocity[0]);
+      if (!xyzrec[0]) info.xrec = info.boxSize / 2.0;
+      if (!xyzrec[1]) info.yrec = info.boxSize / 2.0;
+      if (!xyzrec[2]) info.zrec = info.boxSize / 2.0;
+      info.name = info.substrate + "_" + std::to_string((int)info.energy) + "_" + 
+                  std::to_string((int)info.rectheta) + "-" + std::to_string((int)info.recphi);
+      return std::make_pair(info, true);
+    }
+    return std::make_pair(info, false);
+  }
+  return std::make_pair(info, false);
+}
 
 // extract information from input file
-std::pair<csaransh::Info, bool> csaransh::extractInfo(std::string fname) {
+std::pair<csaransh::Info, bool> csaransh::extractInfoParcas(std::string fname) {
   std::ifstream infile(fname);
   csaransh::Info info;
   if (!infile.bad() && infile.is_open()) {
@@ -98,7 +173,7 @@ csaransh::readStatus csaransh::processParcasFile(std::string xyzfile, std::ofstr
   std::string infile, tag;
   std::tie(infile, tag) = getInfileFromXyzfile(xyzfile);
   csaransh::Info info; bool isInfo;
-  std::tie(info, isInfo) = extractInfo(infile);
+  std::tie(info, isInfo) = extractInfoParcas(infile);
   info.infile = tag;
   if (!isInfo) return readStatus::fail;
 //csaransh::xyz2defects(xyzfile, info)

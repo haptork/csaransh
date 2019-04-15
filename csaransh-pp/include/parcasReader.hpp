@@ -16,7 +16,9 @@ namespace csaransh {
 // trim a string from both ends
 std::string removeComments(std::string s);
 
-std::pair<csaransh::Info, bool> extractInfo(std::string fname);
+std::pair<csaransh::Info, bool> extractInfoParcas(std::string fname);
+
+std::pair<csaransh::Info, bool> extractInfoLammps(std::string fname);
 
 std::array<std::string, 2> separateDirAndFile(std::string path);
 
