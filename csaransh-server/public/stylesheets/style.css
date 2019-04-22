@@ -113,3 +113,7 @@ opacity:1.0;
 #splomCardBody {
   overflow-x: scroll;
 }
+
+#logoTitle {
+  color: rgb(95, 219, 99);
+}

@@ -15,11 +15,6 @@ function Footer({ ...props }) {
         <div className={classes.left}>
           <List className={classes.list}>
             <ListItem className={classes.inlineBlock}>
-            <a href="stats.html" className={classes.a}>
-              CSaransh Statistics
-            </a>
-            </ListItem>
-            <ListItem className={classes.inlineBlock}>
             <a href="https://github.com/haptork/csaransh" className={classes.a}>
               Github Repository
             </a>

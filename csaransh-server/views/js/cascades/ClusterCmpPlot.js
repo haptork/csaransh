@@ -176,7 +176,7 @@ export class ClusterCmpPlot extends React.Component {
     const mainVariance = getClusterVar(row, cid);
     return (
     <Card chart>
-      <CardHeader color="info">
+      <CardHeader color="primary">
       Cluster Comparison
       </CardHeader>
       <CardBody>

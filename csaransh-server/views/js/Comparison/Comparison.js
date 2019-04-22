@@ -121,7 +121,7 @@ export class DistAngleCmpItem extends React.Component {
           <GridItem xs={12} sm={6} md={7}>
        <CustomTabs
               title={"Distribution around PKA"}
-              headerColor="danger"
+              headerColor="info"
               tabs={[
                 {
                   tabName: "Angles",

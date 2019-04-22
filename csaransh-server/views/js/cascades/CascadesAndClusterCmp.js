@@ -44,7 +44,7 @@ class CascadeViews1 extends React.Component {
           <GridItem xs={12} sm={12} md={6}>
        <CustomTabs
               title={"3D"}
-              headerColor="primary"
+              headerColor="info"
               tabs={[
                 {
                   tabName: "Clusters",
@@ -112,7 +112,7 @@ class CascadeViews2 extends React.Component {
           <GridItem xs={12} sm={12} md={6}>
        <CustomTabs
               title={"2D Eigen Contours"}
-              headerColor="primary"
+              headerColor="info"
               tabs={[
                 {
                   tabName: "Vac",
