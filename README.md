@@ -4,7 +4,7 @@ Csaransh
 ## What is CSaransh?
 
 The sofware suite to post-process, explore and visualize Molecular Dynamics (MD) simulations of collision cascades.
-It is an elaborate software solution for studing MD results of radiation damage simulations, starting from identifying defects from xyz file to finding correlations, visualizing subcascades to pattern matching clusters and the list goes on. There are many novel methods. The algorithms employed are fast and there is a refreshing interactive webapp to explore the results. You can check the web page for the project and read the manual to go through the different sections of the analysis. The web page shows the results for the MD [database of IAEA Challenge on Materials for Fusion 2018](https://www-amdis.iaea.org/CDB/challenge/).
+It is an elaborate software solution for studing MD results of radiation damage simulations, starting from identifying defects from xyz file to finding correlations, visualizing subcascades to pattern matching clusters and the list goes on. There are many novel methods. The algorithms employed are fast and there is a refreshing interactive webapp to explore the results. You can check the web page for the project ([link](https://haptork.github.io/csaransh/)) and read the [manual](https://github.com/haptork/csaransh#getting-started) to go through the different sections of the analysis. The web page shows the results for the MD [database of IAEA Challenge on Materials for Fusion 2018](https://www-amdis.iaea.org/CDB/challenge/).
 
 For detailed discussion on new methods and results on classification of clusters please refer to this [paper](https://arxiv.org/abs/1811.10923).
 
@@ -218,10 +218,13 @@ We use [UMAP](https://umap-learn.readthedocs.io/en/latest/) and [t-SNE](https://
 
 ## Contributions
 
-Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. We see exploring parameters of subcascades such as their volume using convex hull etc. can be a good direction to extend. Adding more methods to pattern matching subcascades and cascades can be useful to break down the cascades and understand them better.
-The current direction for web interface is to improve the efficiency of the interface by splitting the single webpack js file into different bundles. 
+Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. We think exploring parameters of subcascades such as their volume using convex hull etc. can be a good direction to extend. Adding more methods to pattern match subcascades and cascades can be helpful in understand them better.
 
-We hope the current software can help explore many new ideas but we believe that it is just the beginning.
+The current direction for web interface is to add help to different sections, add more interactions to plots and improve the efficiency of the interface by splitting the single webpack js file into different bundles. 
+
+Check issues for more specific contributions.
+
+We hope the current software can help explore many new ideas. We believe that it is just the beginning.
 
 ## Citation
 
