@@ -14,8 +14,9 @@ import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
 import CustomTabs from "components/CustomTabs/CustomTabs.js";
-import Code from "@material-ui/icons/Code";
-import BugReport from "@material-ui/icons/BugReport";
+
+import AngleIcon from "@material-ui/icons/CallSplit";
+import DistIcon from "@material-ui/icons/LinearScale";
 
 export const groupBars = (data) => {
   let keys = [];
@@ -37,8 +38,8 @@ export const groupBars = (data) => {
     vals[2].values.push(x.max_cluster_size_V);
     vals[3].values.push(x.in_cluster_I);
     vals[4].values.push(x.in_cluster_V);
-    vals[5].values.push(x.density_cluster_vac.length); // s
-    vals[6].values.push(parseInt(x.density_cluster_vac.length <= 1 ? 0 : x.clusters[x.density_cluster_vac[1]].length * 100 / x.clusters[x.density_cluster_vac[0]].length));
+    vals[5].values.push(Object.keys(x.dclust_coords).length); // s
+    vals[6].values.push(parseInt(x.dclust_sec_impact));
     vals[7].values.push(x.eigen_var[0]);
     vals[8].values.push(x.eigen_var[1]);
     vals[9].values.push(x.eigen_var[0] + x.eigen_var[1]);
@@ -132,7 +133,7 @@ export class Statistics extends React.Component {
               tabs={[
                 {
                   tabName: "Angles",
-                  tabIcon: Code,
+                  tabIcon: AngleIcon,
                   tabContent: (
                 <DefectDistancePlot
                   data={statAngles}
@@ -151,7 +152,7 @@ export class Statistics extends React.Component {
                 },
                 {
                   tabName: "Distances",
-                  tabIcon: BugReport,
+                  tabIcon: DistIcon,
                   tabContent: (
                 <DefectDistancePlot
                   data={statDists}

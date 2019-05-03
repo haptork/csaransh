@@ -7,9 +7,9 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 // @material-ui/core
 import withStyles from "@material-ui/core/styles/withStyles";
 // @material-ui/icons
-import ContentCopy from "@material-ui/icons/ContentCopy";
-import BugReport from "@material-ui/icons/BugReport";
-import Code from "@material-ui/icons/Code";
+import ContentCopy from "@material-ui/icons/FileCopy";
+import InputIcon from "@material-ui/icons/Input";
+import OverviewIcon from "@material-ui/icons/Assignment";
 // core components
 //import CustomTabs from "components/CustomTabs/CustomTabs.js";
 import CustomTabs from "../Dashboard/FabCustomTabs.js";
@@ -46,8 +46,8 @@ class TableView extends React.Component {
       [classes.cardTitleRTL]: rtlActive
     });
     */
-   console.log(this.props.row.name);
-   console.log(this.props.lock);
+   //console.log(this.props.row.name);
+   //console.log(this.props.lock);
    return (
             <CustomTabs
               title={"Details - " + this.props.row.name}
@@ -57,14 +57,14 @@ class TableView extends React.Component {
               tabs={[
                 {
                   tabName: "Input",
-                  tabIcon: Code,
+                  tabIcon: InputIcon,
                   tabContent: (
                     <InputInfo row={this.props.row} />
                   )
                 },
                 {
                   tabName: "Overview",
-                  tabIcon: BugReport,
+                  tabIcon: OverviewIcon,
                   tabContent: (
                     <OutputInfo row={this.props.row} />
                   )

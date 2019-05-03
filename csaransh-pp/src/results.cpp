@@ -53,6 +53,12 @@ csaransh::ClusterSizeMapT csaransh::clusterSizes(const csaransh::DefectVecT& def
   return clusterSize;
 }
 
+csaransh::ClusterIVMapT csaransh::clusterIVType(const csaransh::ClusterIdMapT& a, csaransh::ClusterSizeMapT& b) {
+  csaransh::ClusterIVMapT res;
+  for (const auto &it : a) res[it.first] = b[it.first].surviving;
+  return res;
+}
+
 // ignore dumbbells or similar defects group from cluster list
 void csaransh::ignoreSmallClusters(csaransh::DefectVecT& defects, 
                           csaransh::ClusterSizeMapT& clusterSize,

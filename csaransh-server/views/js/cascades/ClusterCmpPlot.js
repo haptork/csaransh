@@ -1,21 +1,17 @@
 import React from 'react';
-//import Select from 'react-select';
 
 import Grid from "@material-ui/core/Grid";
 import GridItem from "components/Grid/GridItem.js";
 
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
-import CardIcon from "components/Card/CardIcon.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import { ScatterCmpPlot } from "../cascades/3d-plots.js";
 import ViewIcon from '@material-ui/icons/BubbleChart';
 
-import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import Select from '@material-ui/core/Select';
@@ -25,7 +21,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepButton from '@material-ui/core/StepButton';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
@@ -52,6 +47,16 @@ const getClusterVar = (row, cid) => {
   return "";
 };
 
+const getClusterTypeAndClass = (row, cid) => {
+  cid = "" + cid;
+  if (cid.length == 0) cid = getInitialSelection(row);
+  if (cid) {
+    return [(row.clusterSizes[cid] > 0) ? "majority interstitials" : "majority vacancies", 
+            (row.clusterClasses[cid] >= 0) ? "; class-" + row.clusterClasses[cid] : ""];
+  }
+  return [-1, -1];
+};
+
 export const getCids = (row) => {
   const cids = [];
   const c = Object.keys(row.features);
@@ -66,8 +71,8 @@ export const getCids = (row) => {
 export const getInitialSelection = (row) => {
   const cids = getCids(row);
   if (cids.length > 0) return cids[0].value;
-  else "";
-}
+  return "";
+};
 
 const getCmpCoord = (row, cid, data, mode, isSize, val) => {
   if (cid == '') return getClusterCoord(row, cid);
@@ -97,8 +102,11 @@ const getCmpCids = (row, cid, data, mode, isSize) => {
   }
   return scores.map(x => {
     const name = x[2] + '-' + data[x[1]].name;
+    const iorv = (data[x[1]].clusterSizes[x[2]] > 0) ? "; inter." : "; vac.";
+    const clabel = (data[x[1]].clusterClasses[x[2]] >= 0) ? ("; class-" + data[x[1]].clusterClasses[x[2]]) : ""; 
     const info = "diff: " + (x[0]).toFixed(2) + " eigen-var: " + 
-           data[x[1]].eigen_features[x[2]]["var"][0] + ", " + data[x[1]].eigen_features[x[2]]["var"][1];
+           data[x[1]].eigen_features[x[2]]["var"][0] + ", " + data[x[1]].eigen_features[x[2]]["var"][1] +
+           iorv + clabel;
     return {"name": name, "info": info};
   });
 };
@@ -128,7 +136,6 @@ export class ClusterCmpPlot extends React.Component {
     this.allModes = [{label:"Angles", value:"angle"}, 
                      {label:"Adjacency", value:"adjNn2"},
                      {label:"Distances", value:"dist"},
-                     {label:"umap", value:"umap"},
                      {label:"All", value:"all"}
                     ];
     const curMode = "angle";
@@ -174,6 +181,7 @@ export class ClusterCmpPlot extends React.Component {
     const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize);
     const cmpCoords = getCmpCoord(row, cid, data, this.state.curMode, this.state.isSize, this.state.curShow);
     const mainVariance = getClusterVar(row, cid);
+    const typeAndClass = getClusterTypeAndClass(row, cid);
     return (
     <Card chart>
       <CardHeader color="primary">
@@ -184,7 +192,7 @@ export class ClusterCmpPlot extends React.Component {
         <GridItem xs={12} sm={12} md={6}>
         <Paper>
         <Cluster2CmpPlot row={row} cid={cid}/>
-        <Typography  variant="caption" style={{textAlign:"center"}}>eigen dimensional var:{mainVariance}</Typography>
+        <Typography  variant="caption" style={{textAlign:"center"}}>eigen dim. var:{mainVariance}; {typeAndClass[0]}{typeAndClass[1]}</Typography>
         <Grid container justify="center">
         <GridItem xs={12} sm={12} md={12} >
         <FormGroup column>

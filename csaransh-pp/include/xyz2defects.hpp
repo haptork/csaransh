@@ -25,8 +25,8 @@ enum class lineStatus : int {
 };
 
 //std::pair<lineStatus, Coords> getCoordParcas(std::string& line);
-
 DefectVecT xyz2defects (const std::string &fname, const Info &info);
+DefectVecT displaced2defects(const std::string &fname, const Info &info);
 
 }
 

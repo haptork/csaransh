@@ -30,6 +30,8 @@ using ClusterSizeMapT = std::unordered_map<int, ClusterSizeT>;
 
 using ClusterIdMapT = std::unordered_map<int, std::vector<int>>;
 
+using ClusterIVMapT = std::unordered_map<int, int>;
+
 namespace DefectTWrap {
 static inline auto coords(const DefectT &_d) { return std::get<0>(_d); }
 static inline auto isInterstitial(const DefectT &_d) { return std::get<1>(_d); }
@@ -50,6 +52,8 @@ void ignoreSmallClusters(DefectVecT& defects, ClusterSizeMapT&,
                          int minSurvived, int minAll);
 
 ClusterIdMapT clusterMapping(const DefectVecT& defects);
+
+ClusterIVMapT clusterIVType(const ClusterIdMapT&, ClusterSizeMapT&);
 
 std::tuple<int, double, double> getNDefectsAndClusterFractions(const csaransh::DefectVecT& defects);
 

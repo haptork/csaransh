@@ -5,10 +5,10 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardIcon from "components/Card/CardIcon.js";
 // Icons
-import ViewIcon from '@material-ui/icons/BubbleChart';
-import WbIridescentIcon from "@material-ui/icons/WbIridescent";
-import Accessibility from "@material-ui/icons/Accessibility";
-import Store from "@material-ui/icons/Store";
+import ElemIcon from "@material-ui/icons/Grain";
+import EnergyIcon from "@material-ui/icons/FlashOn";
+import PlanarIcon from "@material-ui/icons/FilterBAndW";
+import ClassesIcon from '@material-ui/icons/Category';
 
 const Item = props => {
   const classes = props.classes;
@@ -42,7 +42,7 @@ export class OutlineCards extends React.Component {
   render () {
     const props = this.props;
     const colors = ["success", "warning", "primary", "info"];
-    const icons = [Store, WbIridescentIcon, Accessibility, ViewIcon];
+    const icons = [ElemIcon, EnergyIcon, PlanarIcon, ClassesIcon];
     const x = colors.map((c, i) => { return ( <Grid container className="content"> <Item color={colors[0]} icon={icons[0]} val={props.values[0]} classes={props.classes}/> </Grid>);});
     return (
       <Grid container className="content"> 

@@ -7,7 +7,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import { ScatterCmpPlot, ClassesPlot } from "./cascades/3d-plots.js";
-import ViewIcon from '@material-ui/icons/BubbleChart';
+import ClassesIcon from '@material-ui/icons/Category';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
@@ -21,15 +21,23 @@ const getData = (curMode) => {
 }
 
 const getName = (curMode, classIndex, index, data) => {
-  let row = data[getData(curMode).tags[classIndex][index][0]];
-  let cid = getData(curMode).tags[classIndex][index][1];
+  const d = getData(curMode);
+  if (!d.tags.hasOwnProperty(classIndex) || index >= d.tags[classIndex].length) {
+    return "";
+  }
+  let row = data[d.tags[classIndex][index][0]];
+  let cid = d.tags[classIndex][index][1];
   return row.name + "_" + cid + "_" + row.infile;
 };
 
 const getClusterCoords = (curMode, classIndex, index, data) => {
-  let row = data[getData(curMode).tags[classIndex][index][0]];
-  let cid = getData(curMode).tags[classIndex][index][1];
+  const d = getData(curMode);
   let c = [[],[],[]];
+  if (!d.tags.hasOwnProperty(classIndex) || index >= d.tags[classIndex].length) {
+    return c;  
+  }
+  let row = data[d.tags[classIndex][index][0]];
+  let cid = d.tags[classIndex][index][1];
   for (const x of row.eigen_features[cid].coords) {
     c[0].push(x[0]);
     c[1].push(x[1]);
@@ -125,7 +133,7 @@ export class ClusterClassesPlot extends React.Component {
       </CardBody>
       <CardFooter chart>
         <div className={this.props.classes.stats}>
-          <ViewIcon/> Shows cluster classification. Click on a point on left to view the cluster. <a href="https://arxiv.org/abs/1811.10923">_More Discussion_</a>
+          <ClassesIcon/> Shows cluster classification. Click on a point on left to view the cluster. <a href="https://arxiv.org/abs/1811.10923">_More Discussion_</a>
         </div>
       </CardFooter>
    </Card>

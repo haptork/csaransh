@@ -4,35 +4,10 @@ import * as THREE from "three";
 import reactCSS from "reactcss";
 import Palette from "../palette";
 import { ChromePicker } from "react-color";
-import Fullscreen from '@material-ui/icons/Fullscreen';
-import Camera from '@material-ui/icons/Camera';
 const invertcolor = require("invert-color");
 var OrbitControls = require("three-orbit-controls")(THREE);
 
-let rotateAr = function(ar, count) {
-  var len = ar.length >>> 0,
-    count = count >> 0;
-
-  ar.unshift(ar, ar.splice(ar, count % len, len));
-  return ar;
-};
-
 export function getCurrentCascade(loadedCascadesOrig, row) {
-  /*
-  var currIdx = undefined;
-  let loadedCascades = loadedCascadesOrig.slice();
-  for (var i = 0; i < loadedCascades.length; i++) {
-    if (loadedCascades[i].name === row.name) {
-      currIdx = i;
-      break;
-    }
-  }
-  if (currIdx !== undefined) {
-    rotateAr(loadedCascades, currIdx + 1 - loadedCascades.length);
-  } else {
-    loadedCascades.push(row);
-  }
-  */
   return [row];
 }
 
@@ -45,7 +20,6 @@ export function removeCurrentCascade(loadedCascades, row) {
     }
   }
   if (currIdx == undefined) {
-    // do nothing
   } else {
     loadedCascades.splice(currIdx, 1);
   }
@@ -267,8 +241,8 @@ export class CascadeVisualizer3D extends React.Component {
     if (frame !== undefined) {
       const boxsize = frame["boxsize"];
       this.wireframe.scale.set(boxsize, boxsize, boxsize);
-      const coords = frame["coords"];
       this.resetCameraOrientation();
+      const coords = frame["coords"];
       frame["ps"].forEach(ps => {
         this.scene.add(ps);
         ps.children.forEach(p => {
@@ -290,7 +264,7 @@ export class CascadeVisualizer3D extends React.Component {
           });
           geom.computeBoundingSphere();
           const r = geom.boundingSphere.radius;
-          this.activeCamera.position.z = 1.1 * r;
+          this.activeCamera.position.z = 1.3 * r;
           // this.activeCamera.lookAt(geom.boundingSphere.center);
         }
         const coords = frame["coords"];
@@ -301,16 +275,23 @@ export class CascadeVisualizer3D extends React.Component {
         });
         geom.computeBoundingSphere();
         const r = geom.boundingSphere.radius;
-        this.activeCamera.position.z = 1.1 * r;
+        this.activeCamera.position.z = 1.3 * r;
         // this.activeCamera.lookAt(geom.boundingSphere.center);
       }
     }
   }
 
   resetCameraOrientation() {
-    this.controls.target.set(0, 0, 0);
-    this.activeCamera.position.x = 0;
-    this.activeCamera.position.y = 0;
+    const frame = this.all_frames[this.last_frame_name];
+    const boxsize = frame["boxsize"];
+    let pos = [0.0, 0.0, 0.0];
+    if (frame["simulationCode"] != "parcas") {
+      pos = [boxsize / 2, boxsize / 2, boxsize / 2];
+    }
+    this.wireframe.position.set(pos[0], pos[1], pos[2]);
+    this.controls.target.set(pos[0], pos[1], pos[2]);
+    this.activeCamera.position.x = pos[0];
+    this.activeCamera.position.y = pos[1];
     this.setCameraZ();
   }
 
@@ -351,6 +332,7 @@ export class CascadeVisualizer3D extends React.Component {
           var coords = this_frame_data["coords"];
           var clusterIds = new Set();
           this.all_frames[this.last_frame_name]["coords"] = coords;
+          this.all_frames[this.last_frame_name]["simulationCode"] = this_frame_data["simulationCode"];
           var xrec = this_frame_data["xrec"];
           var yrec = this_frame_data["xrec"];
           var zrec = this_frame_data["xrec"];
@@ -359,24 +341,8 @@ export class CascadeVisualizer3D extends React.Component {
           var boxsize = this_frame_data["boxSize"];
           this.all_frames[this.last_frame_name]["boxsize"] = boxsize;
           var energy = this_frame_data["energy"];
-          var frequencyI = {};
-          var frequencyV = {};
-          coords.forEach(c => {
-            const cid = c[4];
-            if (!clusterIds.has(cid)) {
-              clusterIds.add(cid);
-              frequencyI[cid] = 0;
-              frequencyV[cid] = 0;
-            }
-
-            if (c[3] === 0 && c[5] === 1) {
-              // vacancy and not-anhilated
-              frequencyV[cid]++;
-            } else if (c[3] === 1 && c[5] === 1) {
-              // interstetial and not-anhilated
-              frequencyI[cid]++;
-            }
-           });
+          var frequency = this_frame_data["clusterSizes"];
+          var classes = this_frame_data["clusterClasses"];
           var clusterids = new Set();
           var points_dict = {};
           coords.forEach(c => {
@@ -413,22 +379,17 @@ export class CascadeVisualizer3D extends React.Component {
               color = "#ffffff";
             }
             var spriteMap = this.textures[iorv];
-            var matname = "Type:";
-            matname += "<br>cluster_id: " + cid;
-            if (iorv === 0 && anh === 1) {
-              matname +=
-                "<br>cluster_size: " +
-                frequencyV[cid] +
-                "<br> Is anhilated: no";
-            } else if (iorv === 1 && anh === 1) {
-              matname +=
-                "<br>cluster_size: " +
-                frequencyI[cid] +
-                "<br> Is anhilated: no";
-            } else {
-              matname +=
-                "<br>cluster_size: not applicable<br> Is anhilated: yes";
+            var matname = "";
+            if (cid != 0) {
+              if (classes.hasOwnProperty(cid)) matname += "click to view cluster comparison below<br>";
+              matname += "cluster-id: " + cid;
+              matname += "<br>cluster-size: " + Math.abs(frequency[cid]);
+              matname += "<br>cluster-type: ";
+              matname += (frequency[cid] < 0) ? "vacancy" : "interstitial";
+              if (classes.hasOwnProperty(cid) && classes[cid] >= 0) matname += "<br>cluster-class: " + classes[cid] + "<br/>";
             }
+            matname += "Is anhilated: ";
+            matname += (anh === 1) ? "no" : "yes";
             var opacity = anh === 0 ? this.anhilatedOpacityValue : 0.8;
 
             var material = new THREE.SpriteMaterial({
@@ -744,7 +705,6 @@ export class CascadeVisualizer3D extends React.Component {
             this.infoBox = infoBox;
           }}
         />
-
         <button className={`btn btn-sm btn-light`} onClick={this.goFull}>
          Fullscreen
         </button>

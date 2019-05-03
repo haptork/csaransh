@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -125,6 +124,7 @@ auto clean(std::vector<std::tuple<csaransh::Coords, csaransh::Coords, bool>> &in
 }
 
 std::pair<csaransh::lineStatus, csaransh::Coords> getCoordLammps(std::string& line) {
+  //std::cout << "reading lammps coords\n";
   csaransh::Coords c;
   auto first = std::find_if(begin(line), end(line), [](int ch) {
     return !std::isspace(ch);
@@ -137,7 +137,7 @@ std::pair<csaransh::lineStatus, csaransh::Coords> getCoordLammps(std::string& li
   if (word == "ITEM:") {
     return std::make_pair(csaransh::lineStatus::frameBorder, c);
   }
-  for (int i = 0; i < 3; ++i) {
+  for (auto i = 0; i < 3; ++i) {
     first = std::find_if(second, end(line), [](int ch) {
       return !std::isspace(ch);
     });
@@ -149,7 +149,7 @@ std::pair<csaransh::lineStatus, csaransh::Coords> getCoordLammps(std::string& li
     }
     c[i] = std::stod(std::string{first, second});
   }
-  std::cout << c[0] << ", " << c[1] << ", " << c[2] << '\n';
+  // std::cout << c[0] << ", " << c[1] << ", " << c[2] << '\n';
   return std::make_pair(csaransh::lineStatus::coords, c);
 }
 
@@ -196,7 +196,7 @@ std::vector<std::tuple<csaransh::Coords, double, csaransh::Coords>> getAtoms(con
   Coords c;
   csaransh::lineStatus ls;
   while (std::getline(infile, line)) {
-    std::tie(ls, c) = getCoordParcas(line);
+    std::tie(ls, c) = (info.simulationCode == csaransh::SimulationCode::parcas) ? getCoordParcas(line) : getCoordLammps(line);
     if (ls == csaransh::lineStatus::coords && fs == csaransh::frameStatus::inFrame) {
       atoms.emplace_back(obj(c));
     } else if (ls == csaransh::lineStatus::frameBorder) {
@@ -220,6 +220,15 @@ csaransh::DefectVecT csaransh::xyz2defects(const std::string &fname, const csara
   if (atoms.empty()) return defects;
   std::sort(begin(atoms), end(atoms));
   auto lastRow = get<0>(atoms[atoms.size() - 1]);
+  /*
+  for (auto it : atoms) {
+    std::cout << '\n' << get<0>(it)[0] << ", " << get<0>(it)[1] << ", " << get<0>(it)[2] << "\t|\t";
+    std::cout << get<2>(it)[0] << ", " << get<2>(it)[1] << ", " << get<2>(it)[2] << "\t|\t";
+    std::cout << get<1>(it);
+  }
+  std::cout << '\n' << get<2>(atoms[0])[0] << ", " << get<2>(atoms[0])[1] << ", " << get<2>(atoms[0])[2] << " :first row\n";
+  std::cout << '\n' << lstRow[0] << ", " << lstRow[1] << ", " << lstRow[2] << " :last row\n";
+  */
   NextExpected nextExpected;
   nextExpected.max(lastRow[0]);
   nextExpected.min(get<0>(atoms[0])[0]);
@@ -241,15 +250,21 @@ csaransh::DefectVecT csaransh::xyz2defects(const std::string &fname, const csara
     using vecB = std::vector<std::tuple<Coords, double, Coords>>;
     if (cmpApprox(ar, expected) == 0) { // atom sits at correct lattice site
       expected = nextExpected(expected);
+      //std::cout << expected[0] << ", " << expected[1] << ", " << expected[2] << '\n';
       pre = std::make_tuple(x, ar, c);
       isPre = true;
     } else if (cmpApprox(ar, expected) > 0) { // atom sits at lattice site more than currently expected
       vecB res;
       while (cmpApprox(ar, expected) > 0 && cmpApprox(expected, lastRow) < 0 && !nextExpected.allMax(expected)) {
+        // std::cout << "vacancy - ";
+        // std::cout << "expected: " << expected[0] << ", " << expected[1] << ", " << expected[2] << "\t|\t";
+        // std::cout << "row: " << ar[0] << ", " << ar[1] << ", " << ar[2] << "\n";
         vacancies.emplace_back(expected, true);
         expected = nextExpected(expected);
+        //std::cout << expected[0] << ", " << expected[1] << ", " << expected[2] << '\n';
       }
       expected = nextExpected(expected);
+      //std::cout << expected[0] << ", " << expected[1] << ", " << expected[2] << '\n';
     } else { // atom sits at the same lattice site again
       vecB res;
       if (isPre && std::get<1>(pre) == ar) {
@@ -257,8 +272,12 @@ csaransh::DefectVecT csaransh::xyz2defects(const std::string &fname, const csara
         interstitials.emplace_back(std::get<1>(pre), std::get<2>(pre), isPreReal);
         interstitials.emplace_back(ar, c, !isPreReal); // both interstitials for structures like dumbbells
         vacancies.emplace_back(ar, false);  // dummy vacancy added
+        //std::cout << "interstitial - ";
+        //std::cout << "row: " << ar[0] << ", " << ar[1] << ", " << ar[2] << "\n";
       } else {
         interstitials.emplace_back(ar, c, true);
+        //std::cout << "interstitial - ";
+        //std::cout << "row: " << ar[0] << ", " << ar[1] << ", " << ar[2] << "\n";
       }
       isPre = false;
     }
@@ -284,6 +303,126 @@ csaransh::DefectVecT csaransh::xyz2defects(const std::string &fname, const csara
       defects.emplace_back(std::move(get<1>(it)), true, count++, false);
     }
   }
+  return defects;
+}
+std::pair<csaransh::lineStatus, std::array<csaransh::Coords, 2>> getCoordDisplaced(std::string& line) {
+  //std::cout << "reading lammps coords\n";
+  std::array<csaransh::Coords, 2> c;
+  auto first = std::find_if(begin(line), end(line), [](int ch) {
+    return !std::isspace(ch);
+  });
+  if (first == std::end(line)) return std::make_pair(csaransh::lineStatus::garbage, c); // possibly blank line
+  auto second = std::find_if(first, end(line), [](int ch) {
+    return std::isspace(ch);
+  });
+  std::string word{first, second};
+  if (word == "ITEM:") {
+    return std::make_pair(csaransh::lineStatus::frameBorder, c);
+  }
+  for (auto i = 0; i < 3; ++i) {
+    first = std::find_if(second, end(line), [](int ch) {
+      return !std::isspace(ch);
+    });
+    second = std::find_if(first, end(line), [](int ch) {
+      return std::isspace(ch);
+    });
+    if (first == second) {
+      return std::make_pair(csaransh::lineStatus::garbage, c); // some other info
+    }
+    c[0][i] = std::stod(std::string{first, second});
+  }
+  for (auto i = 0; i < 3; ++i) {
+    first = std::find_if(second, end(line), [](int ch) {
+      return !std::isspace(ch);
+    });
+    second = std::find_if(first, end(line), [](int ch) {
+      return std::isspace(ch);
+    });
+    if (first == second) {
+      return std::make_pair(csaransh::lineStatus::garbage, c); // some other info
+    }
+    c[1][i] = std::stod(std::string{first, second});
+  }
+ 
+  // std::cout << c[0] << ", " << c[1] << ", " << c[2] << '\n';
+  return std::make_pair(csaransh::lineStatus::coords, c);
+}
+
+std::vector<std::array<csaransh::Coords, 2>> getDisplacedAtoms(const std::string &fname, const csaransh::Info &info) {
+  using std::string; using std::vector; using std::tuple; using std::get;
+  using csaransh::Coords;
+  vector<std::array<Coords, 2>> atoms;
+  std::ifstream infile{fname};
+  if (infile.bad() || !infile.is_open()) return atoms;
+  //const auto latConst = info.latticeConst;
+  std::string line;
+  // read file and apply object
+  csaransh::frameStatus fs = csaransh::frameStatus::prelude;
+  std::array<csaransh::Coords, 2> c;
+  csaransh::lineStatus ls;
+  while (std::getline(infile, line)) {
+    std::tie(ls, c) = getCoordDisplaced(line);
+    if (ls == csaransh::lineStatus::coords && fs == csaransh::frameStatus::inFrame) {
+      atoms.emplace_back(c);
+    } else if (ls == csaransh::lineStatus::frameBorder) {
+      fs = csaransh::frameStatus::inFrame;
+      if (fs != csaransh::frameStatus::prelude) {
+        atoms.clear();  // Ignoring the frame before this one
+      }
+    }
+  }
+  infile.close();
+  return atoms; 
+}
+
+auto cleanDisplaced(csaransh::DefectVecT &inter, csaransh::DefectVecT &vac, const csaransh::Info &info) {
+  using csaransh::DefectTWrap::isSurviving;
+  using csaransh::DefectTWrap::coords;
+  auto thresh = info.latticeConst;// * sqrt(3) / 2;
+  for (size_t i = 0; i < vac.size(); ++i) {
+    auto min = thresh + 1e-6;
+    size_t minj = 0;
+    for (size_t j = 0; j < inter.size(); ++j) {
+      if (!isSurviving(inter[j])) continue;
+      auto dist = csaransh::calcDist(coords(vac[i]), coords(inter[j]));
+      if (dist < min) {
+        min = dist;
+        minj = j;
+      }
+    }
+    if (min < thresh) {
+      isSurviving(vac[i], false);
+      isSurviving(inter[minj], false);
+    }
+  }
+}
+
+csaransh::DefectVecT csaransh::displaced2defects(const std::string &fname, const csaransh::Info &info) {
+  using std::vector; using std::tuple; using std::get; using csaransh::Coords;
+  csaransh::DefectVecT inter, vac, defects;
+  auto atoms = getDisplacedAtoms(fname, info);
+  auto vcr = 0.3 * info.latticeConst;
+  auto count = 0;
+  // recombining interstitials
+  for (auto it : atoms) {
+    auto flag = true;
+    for (auto jt : atoms) {
+      auto disp = calcDist(it[1], jt[0]);
+      if (disp < vcr) flag = false;
+    }
+    if (flag) inter.emplace_back(it[1], true, count++, true);
+  }
+  for (auto it : atoms) {
+    auto flag = true;
+    for (auto jt : atoms) {
+      auto disp = calcDist(it[0], jt[1]);
+      if (disp < vcr) flag = false;
+    }
+    if (flag) vac.emplace_back(it[0], false, count++, true);
+  }
+  cleanDisplaced(inter, vac, info);
+  defects = std::move(inter);
+  defects.insert(std::end(defects), std::begin(vac), std::end(vac));
   return defects;
 }
 

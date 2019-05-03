@@ -1,0 +1,9 @@
+LAMMPS-XYZ
+substrate = Fe
+latticeConstant = 2.85532
+ncell = 10
+recen = 1000
+vx = 1
+vy = 1
+vz = 1
+offset = 0.0

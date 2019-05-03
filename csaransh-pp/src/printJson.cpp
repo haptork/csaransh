@@ -15,6 +15,17 @@ void printClusterIds(const std::unordered_map<int, std::vector<int>> clusters, s
   }
 }
 
+void printClusterIVs(const std::unordered_map<int, int> clusters, std::ofstream& outfile) {
+  size_t i = 0;
+  for (const auto &it : clusters) {
+    outfile << '"' << it.first << "\":"; 
+    outfile << it.second;
+    if (i != clusters.size() - 1) outfile << ", ";
+    outfile << "\n";
+    ++i;
+  }
+}
+
 void printSingleFeat(const csaransh::featT &feats, std::ofstream &outfile) {
   outfile << "\"dist\": ";
   outfile << "[";
@@ -42,11 +53,17 @@ void printFeats(const std::unordered_map<int, csaransh::featT> &feats, std::ofst
   }
 }
 
+auto strSimulationCode(csaransh::SimulationCode code) {
+  return (code == csaransh::SimulationCode::parcas) ? "parcas" : 
+             ((code == csaransh::SimulationCode::lammps) ? "lammps-xyz" : "lammps-disp");
+}
+
 void csaransh::printJson(std::ofstream &outfile, const std::string &s, const csaransh::Info &i, int id, const int &nDefects, const int &nClusters, 
                const int &maxClusterSizeI, const int &maxClusterSizeV, const double &inClusterFractionI, 
                const double &inClusterFractionV, const csaransh::DefectVecT &defects, 
                const std::array<std::vector<double>, 2> &dists, const std::array<std::vector<double>, 2> &angles, 
-               const std::unordered_map<int, std::vector<int>> clusters, const std::unordered_map<int, csaransh::featT> &feats) {
+               const std::unordered_map<int, std::vector<int>> clusters,  const std::unordered_map<int, int> clustersIV, 
+               const std::unordered_map<int, csaransh::featT> &feats) {
   auto printDefects = [&outfile](const csaransh::DefectVecT &d) {
     size_t count = 0;
     for (const auto &x : d) {
@@ -61,6 +78,7 @@ void csaransh::printJson(std::ofstream &outfile, const std::string &s, const csa
             << "\"name\": \"" << i.name << "\",\n"
             << "\"id\": \"" << id << "\",\n"
             << "\"substrate\": \"" << i.substrate << "\",\n"
+            << "\"simulationCode\": \"" << strSimulationCode(i.simulationCode) << "\",\n"
             << "\"boxSize\":" << i.boxSize << ",\n"
             << "\"energy\":" << i.energy << ",\n"
             << "\"ncell\":" << i.ncell << ",\n"
@@ -85,6 +103,11 @@ void csaransh::printJson(std::ofstream &outfile, const std::string &s, const csa
   outfile << "\"clusters\": ";
   outfile << "{";
   printClusterIds(clusters, outfile);
+  outfile << "}";
+  outfile << ",\n";
+  outfile << "\"clusterSizes\": ";
+  outfile << "{";
+  printClusterIVs(clustersIV, outfile);
   outfile << "}";
   outfile << ",\n";
   outfile << "\"features\": ";

@@ -1,6 +1,12 @@
 import React from "react";
-import BugReport from "@material-ui/icons/BugReport";
-import Code from "@material-ui/icons/Code";
+
+import ClusterIcon from "@material-ui/icons/BubbleChart";
+import ScatterIcon from "@material-ui/icons/ScatterPlot";
+import MeshIcon from "@material-ui/icons/HdrStrong";
+
+import IntIcon from "@material-ui/icons/BugReportRounded";
+import VacIcon from "@material-ui/icons/CropFree";
+import AllIcon from "@material-ui/icons/CenterFocusStrong";
 // core components
 import Grid from "@material-ui/core/Grid";
 import GridItem from "components/Grid/GridItem.js";
@@ -48,7 +54,7 @@ class CascadeViews1 extends React.Component {
               tabs={[
                 {
                   tabName: "Clusters",
-                  tabIcon: Code,
+                  tabIcon: ClusterIcon,
                   tabContent: (
                   <CascadeVisualizer3D
                     data={[row]}
@@ -57,13 +63,13 @@ class CascadeViews1 extends React.Component {
                   ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Click on a cluster to find similar clusters in the section below
+                      <ClusterIcon/> Click on a cluster to find similar clusters in the section below
                     </div>
                   )
                 },
                 {
                   tabName: "Scatter",
-                  tabIcon: BugReport,
+                  tabIcon: ScatterIcon,
                   tabContent: (
                   <ScatterPlot
                     coords={curXyzCoords}
@@ -71,20 +77,20 @@ class CascadeViews1 extends React.Component {
                   ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Uses Eigen basis, Clustered vacs can give measure of subcascades,
+                      <ScatterIcon/> Uses Eigen basis, Clustered vacs can give measure of subcascades,
                        as given in the subcascade density.
                     </div>
                   )
                 },
                 {
                   tabName: "Mesh-Subcascades",
-                  tabIcon: ListIcon,
+                  tabIcon: MeshIcon,
                   tabContent: (
                  <ClusterPlot row={row}/>
                  ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Uses Eigen basis, Meshes of vacancies in different subcascades.
+                      <MeshIcon/> Uses Eigen basis, Meshes of vacancies in different subcascades.
                     </div>
                   )
                 }
@@ -94,7 +100,7 @@ class CascadeViews1 extends React.Component {
    );
   }
 }
- 
+
 class CascadeViews2 extends React.Component {
   constructor(props) {
     super(props);
@@ -116,37 +122,37 @@ class CascadeViews2 extends React.Component {
               tabs={[
                 {
                   tabName: "Vac",
-                  tabIcon: Code,
+                  tabIcon: VacIcon,
                   tabContent: (
                  <HeatMapC coords={curXyzCoords[1]}/>
                   ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Shows density variations, helpful in estimating major subcascades
+                      <VacIcon/> Shows density variations, helpful in estimating major subcascades
                     </div>
                   )
                 },
                 {
                   tabName: "Int",
-                  tabIcon: BugReport,
+                  tabIcon: IntIcon,
                   tabContent: (
                  <HeatMapC coords={curXyzCoords[0]}/>
                   ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Shows density variations, helpful in estimating major clusters of interstitials.
+                      <IntIcon/> Shows density variations, helpful in estimating major clusters of interstitials.
                     </div>
                   )
                 },
                 {
-                  tabName: "All",
-                  tabIcon: ListIcon,
+                  tabName: "Both",
+                  tabIcon: AllIcon,
                   tabContent: (
                  <HeatMapC coords={curXyzCoords[2]}/>
                  ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Shows density variations, helpful in estimating size along major principle axes.
+                      <AllIcon/> Shows density variations, helpful in estimating size along major principle axes.
                     </div>
                   )
                 }

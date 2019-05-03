@@ -136,10 +136,10 @@ const calcDefectSizeDistribution = (row) => {
     let curDef = curDe;
     const cookDataLabel = name => ["int | vac", name];
     if (curDef.labels.length === limitSize) {
-      console.log("removing");
+      //console.log("removing");
       curDef = removeDefectsSizeDistrib(curDe, {name:curDef.labels[0][1]});
     }
-    console.log(curDef.labels);
+    //console.log(curDef.labels);
     return {
       labels: [...curDef.labels, cookDataLabel(row.name)],
       datasets : addedDataSets(curDef, row)

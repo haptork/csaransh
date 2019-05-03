@@ -3,10 +3,7 @@ import ReactTable from "react-table";
 import InputRange from 'react-input-range';
 import Select from 'react-select';
 import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import AddButton from '@material-ui/icons/AddCircle';
-import MinusButton from '@material-ui/icons/RemoveCircle';
 import Visibility from '@material-ui/icons/Visibility';
 import HighlightOff from '@material-ui/icons/HighlightOff';
 
@@ -81,12 +78,12 @@ const defaultRangeFilterFn = (filter, row) => row[filter.id] >= filter.value.min
 const minMaxSubc = (ar) => {
   let min = 0, max = 0;
   if (ar.length > 0) {
-    const val = ar[0].density_cluster_vac.length;
+    const val = Object.keys(ar[0].dclust_coords).length;
     min = parseInt(val) == 0 ? 0 : parseInt(val) - 1;
     max = min;
   }
   for (const x of ar) {
-    const val = Math.max(0, parseInt(x.density_cluster_vac.length) - 1);
+    const val = Math.max(0, parseInt(Object.keys(x.dclust_coords).length) - 1);
     min = Math.min(min, val);
     max = Math.max(max, val);
   }
@@ -121,21 +118,6 @@ const minMaxTwod = (ar) => {
   return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
 };
 
-const minMaxProb = (ar) => {
-  let min = 0, max = 0;
-  if (ar.length > 0) {
-    const val = ar[0].density_cluster_vac.length <= 1 ? 0 : parseInt(ar[0].clusters[ar[0].density_cluster_vac[1]].length * 100 / ar[0].clusters[ar[0].density_cluster_vac[0]].length);
-    min = val;
-    max = min;
-  }
-  for (const x of ar) {
-    const val = x.density_cluster_vac.length <= 1 ? 0 : parseInt(x.clusters[x.density_cluster_vac[1]].length * 100 / x.clusters[x.density_cluster_vac[0]].length);
-    min = Math.min(min, val);
-    max = Math.max(max, val);
-  }
-  return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
-};
-
 const minMaxProps = (ar, name) => {
   if (name === "oned") {
     return minMaxOned(ar);
@@ -143,8 +125,6 @@ const minMaxProps = (ar, name) => {
     return minMaxTwod(ar);
   } else if (name === "subc") {
     return minMaxSubc(ar);
-  } else if (name === "prob") {
-    return minMaxProb(ar);
   }
   let min = 0, max = 0;
   if (ar.length > 0) {
@@ -159,7 +139,6 @@ const minMaxProps = (ar, name) => {
   }
   return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
 }; 
-
 
 const uniqueAr = (ar, key) => {
   let s = new Set();
@@ -196,12 +175,10 @@ export class MainTable extends React.Component {
       in_cluster : minMaxProps(this.props.data, "in_cluster"),//minMaxClusterCent(this.props.data),
       rectheta : minMaxProps(this.props.data, "rectheta"),
       recphi : minMaxProps(this.props.data, "recphi"),
-      /*
       oned : minMaxProps(this.props.data, "oned"),
       twod : minMaxProps(this.props.data, "twod"),
       subc : minMaxProps(this.props.data, "subc"),
-      prob : minMaxProps(this.props.data, "prob")
-      */
+      prob : minMaxProps(this.props.data, "dclust_sec_impact")
     };
   }
 
@@ -212,8 +189,12 @@ export class MainTable extends React.Component {
       in_cluster : false,
       rectheta : false,
       recphi : false,
+      oned : false,
+      twod : false,
       substrate : false,
       energy : false,
+      prob : false,
+      subc : false
     };
   }
 
@@ -391,7 +372,37 @@ export class MainTable extends React.Component {
                   Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.in_cluster} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.in_cluster} minMax={this.filters.in_cluster}/>,
                   filterAll: true,
                   filterMethod: this.defaultRangeFilterAllFn()
+                },
+                {
+                  Header: "1D-variance",
+                  id: "oned",
+                  accessor: d => Math.floor(d.eigen_var[0] * 100),
+                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.oned} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.oned} minMax={this.filters.oned}/>,
+                  filterAll: true,
+                  filterMethod: this.defaultRangeFilterAllFn()
+                }, {
+                  Header: "2D-variance",
+                  id: "twod",
+                  accessor: d => Math.floor((d.eigen_var[0] + d.eigen_var[1]) * 100)/* + d.eigen_var[1]*/,
+                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.twod} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.twod} minMax={this.filters.twod}/>,
+                  filterAll: true,
+                  filterMethod: this.defaultRangeFilterAllFn()
+                }, {
+                  Header: "Subcasde density regions",
+                  id: "subc",
+                  accessor: d => Object.keys(d.dclust_coords).length == 0 ? 0 : Object.keys(d.dclust_coords).length - 1,
+                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.subc} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.subc} minMax={this.filters.subc}/>,
+                  filterAll: true,
+                  filterMethod: this.defaultRangeFilterAllFn()
+                }, {
+                  Header: "Impact measure of second big subcascade",
+                  id: "prob",
+                  accessor: x =>  parseInt(x.dclust_sec_impact),
+                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.prob} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.prob} minMax={this.filters.prob}/>,
+                  filterAll: true,
+                  filterMethod: this.defaultRangeFilterAllFn()
                 }
+
              ]
             }
           ]}

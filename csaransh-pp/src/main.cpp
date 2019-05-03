@@ -6,7 +6,10 @@
 
 #include <cluster2features.hpp>
 #include <helper.hpp>
-#include <parcasReader.hpp>
+#include <reader.hpp>
+
+/*
+*/
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -26,7 +29,7 @@ int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     std::cout << "\rCurrently processing file " << i << std::flush;
     csaransh::readStatus ret;
-    ret = csaransh::processParcasFile(argv[i], outfile, i);
+    ret = csaransh::processFile(argv[i], outfile, i);
     if (csaransh::readStatus::fail == ret) {
       std::cerr << "\nError in processing file " + std::string{argv[i]} + "\n";
     } else {

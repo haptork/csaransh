@@ -75,9 +75,9 @@ export const ScatterCmpPlot = props => {
 const cookData = (row) => {
   let data = [];
   let i = 0;
-  for (const cid of row.density_cluster_vac) {
+  for (const [cid, cindexList] of Object.entries(row.dclust_coords)) {
     let c = [[],[],[]];
-    for (const cindex of row.clusters[cid]) {
+    for (const cindex of cindexList) {
         c[0].push(row.eigen_coords[cindex][0]);
         c[1].push(row.eigen_coords[cindex][1]);
         c[2].push(row.eigen_coords[cindex][2]);
@@ -230,7 +230,7 @@ const cookDataClasses = (c) => {
         mode: 'markers',
         type: 'scatter3d',
         marker: {
-          color: (cid == -1) ? 'rgb(10,10,10)' : getColor(i++),
+          color: (cid == "-1") ? 'rgb(220,220,220)' : getColor(i++),
           size: 2
         }
       }

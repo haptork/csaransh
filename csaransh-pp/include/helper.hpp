@@ -21,7 +21,9 @@ enum class readStatus : bool {
 };
 
 enum class SimulationCode : int {
-  parcas
+  parcas,
+  lammps,
+  lammpsDisplacedCompute
 };
 
 struct Info {

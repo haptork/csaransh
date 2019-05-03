@@ -3,6 +3,7 @@ import numpy as np
 np.set_printoptions(threshold=np.nan)
 from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN 
+from sklearn.manifold import TSNE
 import math
 import sys
 
@@ -82,8 +83,23 @@ def addEigenAndSubcascades(data):
         if (len(lenV) > 0):
             countOne = lenV[0][0]
             cutOff = 0.5;
-        fdata['density_cluster_vac'] = [x[1] for i, x in enumerate(lenV) if (x[0] / (totalV/len(lenV)) > 0.55 and x[0] > 4) or (i < 2 and x[0] > 4)]
-        fdata['density_cluster_int'] = [x[1] for i, x in enumerate(lenI)]
+        dclustNamesV = [x[1] for i, x in enumerate(lenV) if (x[0] / (totalV/len(lenV)) > 0.55 and x[0] > 4) or (i < 2 and x[0] > 4)]
+        fdata['dclust_coords'] = {}
+        #fdata['dclustV_sm_coords'] = {}
+        for x in subsv:
+            if x in dclustNamesV: 
+                fdata['dclust_coords'][x] = subsv[x]
+            else:
+                pass
+                # fdata['density_cluster_vac_sm'][x] = subsv[x]
+        # fdata['density_cluster_int'] = subsi
+        fdata['dclustI_count'] = len(subsi)
+        dclust_len = [0, 0]
+        if (len(lenV) > 0): dclust_len[0] = lenV[0][0]
+        if (len(lenV) > 1): dclust_len[1] = lenV[1][0]
+        fdata['dclust_sec_impact'] = 0
+        if (dclust_len[0] > 0): 
+            fdata['dclust_sec_impact'] = dclust_len[1] * 100 / dclust_len[0]
         features = {}
         eigen_features = {}
         for x in fdata['clusters']:
@@ -192,12 +208,14 @@ def clusterClassData(data):
 
 def clusterClasses(data):
     feat, tag = clusterClassData(data)
-    reduced_dim = umap.UMAP(n_components=12, n_neighbors=10, min_dist=0.15, metric=quad).fit_transform(feat).tolist()
-    show_dim = umap.UMAP(n_components=2, n_neighbors=10, min_dist=0.15, metric=quad).fit_transform(feat).tolist()
-    clusterer = hdbscan.HDBSCAN(min_cluster_size=6)
+    rndSeed = 19
+    reduced_dim = umap.UMAP(n_components=8, n_neighbors=8, min_dist=0.15, metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
+    show_dim = TSNE(n_components=2, metric = quad, random_state=rndSeed).fit_transform(feat).tolist()
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=8)
     cluster_labels = clusterer.fit_predict(reduced_dim)
     class_points = {}
     class_tags = {}
+    cid_classes = {}
     for i, label in enumerate(cluster_labels):
         # if label == -1: continue
         if not label in class_points: 
@@ -206,8 +224,8 @@ def clusterClasses(data):
         class_points[label][0].append(show_dim[i][0])
         class_points[label][1].append(show_dim[i][1])
         class_points[label][2].append(0)
-        #class_points[label][2].append(show_dim[i][2])
         class_tags[label].append(tag[i])
+    print len(class_tags)
     return (class_points, class_tags)
 
 if __name__ == "__main__":
@@ -225,17 +243,24 @@ if __name__ == "__main__":
         addClusterCmp(cascades['data'])
         print 'finished.'
         sys.stdout.flush()
-        f = open(out_fname, "w")
-        f.write("var cascades = \n")
-        json.dump(cascades, f)
-        f.write(";\nvar cluster_classes = \n")
+        print "Classification..."
         res = ([], []) 
         try:
             res = clusterClasses(cascades['data'])
         except:
             print "error"
             print sys.exc_info()[0]
-        json.dump({"show_point":res[0], "tags":res[1]}, f)
+        for label in res[1]:
+            for tag in res[1][label]:
+                if not 'clusterClasses' in cascades['data'][tag[0]]: cascades['data'][tag[0]]['clusterClasses'] = {}
+                cascades['data'][tag[0]]['clusterClasses'][tag[1]] = label
+        print "finished."
+        sys.stdout.flush()
+        f = open(out_fname, "w")
+        f.write("var cascades = \n")
+        json.dump(cascades, f)
+        f.write(";\nvar cluster_classes = \n")
+        json.dump({"UMAP+HDBSCAN(t-SNE_for_plot)": {"show_point":res[0], "tags":res[1]}}, f)
         f.close()
     except IOError:
       print "Could not open file " + fname

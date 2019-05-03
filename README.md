@@ -6,14 +6,13 @@ Csaransh
 The sofware suite to post-process, explore and visualize Molecular Dynamics (MD) simulations of collision cascades.
 It is an elaborate software solution for studing MD results of radiation damage simulations, starting from identifying defects from xyz file to finding correlations, visualizing subcascades to pattern matching clusters and the list goes on. There are many novel methods. The algorithms employed are fast and there is a refreshing interactive webapp to explore the results. You can check the web page for the project and read the manual to go through the different sections of the analysis. The web page shows the results for the MD [database of IAEA Challenge on Materials for Fusion 2018](https://www-amdis.iaea.org/CDB/challenge/).
 
-We are in the process of enriching the documentation and submitting a JOSS paper on implementation.
 For detailed discussion on new methods and results on classification of clusters please refer to this [paper](https://arxiv.org/abs/1811.10923).
 
 ## Affiliations and Acknowledgements
 
 The initial version was submitted to the
 [IAEA Challenge on Materials for Fusion 2018](https://challenge.iaea.org/challenges/2018-NA-Mat-Fusion) as an
-entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Manoj Warrier, Ashok Arya, Harsh Hemani, Nancy Semwal and Utkarsh Bhardwaj. Many thanks to the team, the challenge organizers and the judges for their encouraging words.
+entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utkarsh Bhardwaj, Ashok Arya, Harsh Hemani, Nancy Semwal and Manoj Warrier. Many thanks to the team, the challenge organizers and the judges for their encouraging words.
 
 ## Installation
 
@@ -21,22 +20,31 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Man
 
 - platform: Linux, Mac, Windows. 
   - tested on different Linux distros and MacOS.
-- gcc 5.3 or later or equivalent c++14 compiler for post-processor.
-- nodejs, npm / yarn for web-interface server.
-- Python 2.7, numpy, sklearn
-- Modern internet browser for web-interface client.
+
+For post-processing Molecular Dynamics simulation data:
+  - gcc 5.3 or later or equivalent c++14 compiler.
+  - Python 2.7
+
+For web-server:
+  - nodejs, npm / yarn for web-interface server.
+
+For web-app:
+- Modern internet browser.
 	- tested on safari and firefox61
+
 - Hardware: 
-	- CPU: comparable to i5 or better for smooth interface. 
+	- CPU: comparable to i5 or better for smooth web interactions. 
 	- Other than the desktops or laptops, the web interface can be used from tablets and mobiles as well.
 
-### Building C++ Post-processor.
+### Building Post-processor
 
 - Go to csaransh-pp directory.
 - Make a new directory `_build` or any other name. Go to this directory and run `cmake ..`.
 - If on Unix based systems like Linux / Mac run `make`. If using Visual Studio on Windows, load the project / solution.
 
 After building the application the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path.
+
+- run `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
 
 ### Installing Server.
 
@@ -48,24 +56,29 @@ After building the application the executable `csaransh_pp` can be found in the 
 
 ### Processing new data
 
-
 #### Post-processor:
 
 - You only need to run the post-processor once on the data-set.
-- Run command should look something like this: `%PATH%/csaransh_pp data/*/*xyz`.
-- The input file arguments are Parcas cascade xyz file(s). The .in file(input file for Parcas) must be there in the same directory where xyz files are.
+- Run command should look something like this: `%PATH%/csaransh_pp data/*/*xyz` (this works on the sample data given with the repository).
+- The command line arguments are cascade xyz file(s). The .in file must be there in the same directory as the corresponding xyz file and should have the same name. Please check `csaransh-pp/data/` directory for examples. Following MD simulation output formats are accepted:
+  + Parcas xyz with Parcas input file.
+  + LAMMPS xyz with input file written as shown in the examples in `csaransh_pp/data/lammps/` directory.
+  + Displacement xyz file with input file same as LAMMPS input file. The displacement xyz must have vacancy coordinates followed by interstitial coordinates in each line which could have been found by any method of choice. The example displaced files are given in `csaransh_pp/data/disp/` directory.
 - The output JSON file cascades-data.json is written in current directory.
 - From the directory where cascades-data.json is located run the script `pp.py` script given in csaransh-pp directory, `python %PATH%/pp.py`. If running from some other directory where cascades-data.json is not there, pass path to cascades-data.json as the first argument to the python script as `python %PATH%/bin/pp.py %PATH%/cascades-data.json`. This script might take a few minutes before it generates `cascades-data.js` output file. If any import errors appear, install the python package using `pip install` or `easy-install` or use anaconda for python. 
 
-
 #### Load new Processed data
 
-- To view the new processed data with ready to run HTML app copy the cascades-data.js to csaransh-app/CSaransh-files/ directory.
-- To view the new processed data with server app copy the cascades-data.js to csaransh-server/public/js/ directory. Or
-fork the project and replace the cascades-data.js in the gh-pages branch with the new data file.
+- To view the processed data in online app, fork the project and replace the cascades-data.js in the gh-pages branch with the new data file.
+- To view the new processed data on your system using HTML app(that can be downloaded from releases or by checking out into gh-pages branch after cloning or downloading the gh-pages branch), copy the cascades-data.js to csaransh-app/CSaransh-files/ directory.
+- To view the new processed data with server app, copy the cascades-data.js to csaransh-server/public/js/ directory. 
 
 ### Running the CSaransh interface
 
+#### Ready to run app:
+
+- Open the html file given in `csaransh-app` in any modern browser, preferably firefox.
+- The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine in app with server.
 
 #### Server:
 
@@ -73,13 +86,9 @@ fork the project and replace the cascades-data.js in the gh-pages branch with th
 - Run `npm start` or `nodejs ./bin/www` for older node versions to start the server in default 3000 port.
 - Now you can load the interface on any modern browser, type `localhost:3000` in the address bar.
 
-#### Ready to run app:
-
-- The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine in app with server.
-
 ## Getting Started
 
-When you open the app you see a clickable green header at the top, some summary information for the complete data and three panel headers that you can open by clicking.
+When you open the app you see a clickable green header at the top, some summary information for the complete data and four panel headers that you can open by clicking.
 
 ![drawing](docs/first.png)
 
@@ -162,6 +171,15 @@ Following are some of the statistics.
 ![drawing](docs/spread.png)
 *Shows the Distance distribution of interstitials and vacancies for Fe and W at two energies.*
 
+## Cluster Shapes Classification
+
+The scatter plot on the left pane plots each cluster in the database as a point. The clusters that have similar shapes are plotted close to each other than the clusters with dissimilar shapes. The different classes of cluster shapes are represented by different colors.
+
+![drawing](docs/classification.png)
+
+The plots can give insights about all the different shapes present and how they are distributed among different elements and energies.
+
+
 ## Algorithms Overview
 
 An overview of the important algorithms and novel approaches to radiation damage used in the software are briefly discussed below.
@@ -186,7 +204,7 @@ For each cluster we find histograms of the angles of each triplets in the cluste
 
 We found different histogram distances to be equally effective. We are using Chi-square distance.
 
-### Dimensionality Reduction
+### Dimensionality
 
 We are using principle component analysis with singular value decomposition, to find the Eigen like basis and idea of dimensionality for cascades, subcascades as well as clusters.
 
@@ -194,12 +212,17 @@ We are using principle component analysis with singular value decomposition, to 
 
 We are using DBSCAN algorithm for vacancies to find the vacancy density clusters. We find the impact of a subcascade as the number of vacancies in the cluster. We found the density based clustering with some obvious tweaking (ignoring very less impact subcascades) to be a good measure of subcascading and its impact measure.
 
+### Classification and Dimensionality Reduction
+
+We use [UMAP](https://umap-learn.readthedocs.io/en/latest/) and [t-SNE](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html) for dimensionality reduction on the cluster features found for pattern matching. We use these embeddings for plotting and to find the classification with [HDBSCAN](https://pypi.org/project/hdbscan/) algorithm.
 
 ## Contributions
 
-Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. The current direction is to improve the efficiency of the interface using React's DOM unmounting effectively and adding more methods to pattern matching and subcascading and finding out how they relate to number of defects, other cascades etc.
+Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. We see exploring parameters of subcascades such as their volume using convex hull etc. can be a good direction to extend. Adding more methods to pattern matching subcascades and cascades can be useful to break down the cascades and understand them better.
+The current direction for web interface is to improve the efficiency of the interface by splitting the single webpack js file into different bundles. 
+
 We hope the current software can help explore many new ideas but we believe that it is just the beginning.
 
 ## Citation
 
-You can use this [paper](https://arxiv.org/abs/1811.10923) for citation until we submit a JOSS paper on the implementation for the use of code, methods or results. Also, please consider to give the link to the github project page.
+You can use this [paper](https://arxiv.org/abs/1811.10923) for citation until we submit a JOSS paper on the implementation for the use of code, methods or results. Also, please consider to cite the link to this github project page.

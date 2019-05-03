@@ -39,15 +39,15 @@ const outputData1 = (row) => [
                     ["Number of defects", row.n_defects],
                     ["Max interestitial cluster size", row.max_cluster_size_I],
                     ["% interstitials in clusters", row.in_cluster_I],
-                    ["Extra Interstitial densities", Math.max(0, row.density_cluster_int.length - 1)],
+                    ["Extra Interstitial densities", row.dclustI_count],
                     ["Eigen Dimensions Variance", row.eigen_var[0] + ", " + row.eigen_var[1] + ", " + row.eigen_var[2]]
 ];
 const outputData2 = (row) => [
                     ["Number of cluster", row.n_clusters],
                     ["Max vacancy cluster size", row.max_cluster_size_V],
                     ["% vacancy in clusters", row.in_cluster_V],
-                    ["Extra Vac. densities (Subcascades)", Math.max(0, row.density_cluster_vac.length - 1)],
-                    ["Second Vac. density Impact", parseInt(row.density_cluster_vac.length <= 1 ? 0 : row.clusters[row.density_cluster_vac[1]].length * 100 / row.clusters[row.density_cluster_vac[0]].length)]
+                    ["Extra Vac. densities (Subcascades)", Math.max(0, Object.keys(row.dclust_coords).length - 1)],
+                    ["Second Vac. density Impact", row.dclust_sec_impact]
 ];
 
 const GetTable = props => {

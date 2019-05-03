@@ -11,8 +11,8 @@ import ViewIcon from '@material-ui/icons/BubbleChart';
 
 import CompareIcon from '@material-ui/icons/InsertChart';
 import CustomTabs from "components/CustomTabs/CustomTabs.js";
-import Code from "@material-ui/icons/Code";
-import BugReport from "@material-ui/icons/BugReport";
+import AngleIcon from "@material-ui/icons/CallSplit";
+import DistIcon from "@material-ui/icons/LinearScale";
 
 import TableView from "./TableView.js";
 
@@ -125,7 +125,7 @@ export class DistAngleCmpItem extends React.Component {
               tabs={[
                 {
                   tabName: "Angles",
-                  tabIcon: Code,
+                  tabIcon: AngleIcon,
                   tabContent: (
 
 <DefectDistancePlot
@@ -144,7 +144,7 @@ export class DistAngleCmpItem extends React.Component {
                 },
                 {
                   tabName: "Distances",
-                  tabIcon: BugReport,
+                  tabIcon: DistIcon,
                   tabContent: (
 
 <DefectDistancePlot
