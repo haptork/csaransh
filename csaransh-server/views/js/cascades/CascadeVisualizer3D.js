@@ -381,14 +381,18 @@ export class CascadeVisualizer3D extends React.Component {
             var spriteMap = this.textures[iorv];
             var matname = "";
             if (cid != 0) {
-              if (classes.hasOwnProperty(cid)) matname += "click to view cluster comparison below<br>";
+              if (classes.hasOwnProperty(cid)) matname += "click to view cluster comparison below<br/>";
               matname += "cluster-id: " + cid;
-              matname += "<br>cluster-size: " + Math.abs(frequency[cid]);
-              matname += "<br>cluster-type: ";
+              matname += "<br/>cluster-size: " + Math.abs(frequency[cid]);
+              matname += "<br/>cluster-type: ";
               matname += (frequency[cid] < 0) ? "vacancy" : "interstitial";
-              if (classes.hasOwnProperty(cid) && classes[cid] >= 0) matname += "<br>cluster-class: " + classes[cid] + "<br/>";
+              if (classes.hasOwnProperty(cid) && classes[cid] >= 0) matname += "<br/>cluster-class: " + classes[cid];
+            } else {
+              matname += "Single defect";
             }
-            matname += "Is anhilated: ";
+            matname += "<br/> defect-type: ";
+            matname += (iorv == 0) ? "vacancy" : "interstitial";
+            matname += "<br/>Is anhilated: ";
             matname += (anh === 1) ? "no" : "yes";
             var opacity = anh === 0 ? this.anhilatedOpacityValue : 0.8;
 
@@ -515,7 +519,7 @@ export class CascadeVisualizer3D extends React.Component {
           fg +
           ";'>" +
           name +
-          "<br>coords: " +
+          "<br/>coords: " +
           pos.x +
           ", " +
           pos.y +
