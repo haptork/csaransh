@@ -52,5 +52,22 @@
     "three-orbit-controls": "^82.1.0",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.1"
+  },
+  "keywords": [
+    "Collision Cascades",
+    "Radiation Damage",
+    "Molecular Dynamics",
+    "Machine Learning",
+    "Computational Physics",
+    "Scientific Plots",
+    "Visualizations"
+  ],
+  "author": "haptork",
+  "license": "GPL-3.0",
+  "bugs": "https://github.com/haptork/csaransh/issues",
+  "homepage": "https://haptork.github.io/csaransh/",
+  "repository": {
+  	"type": "git",
+  	"url": "https://github.com/haptork/csaransh.git"
   }
 }
