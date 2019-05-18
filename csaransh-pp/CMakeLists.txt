@@ -16,7 +16,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
   endif()
 endif()
 
-include_directories(include include/third_party)
+include_directories(include third_party)
 
 set(SOURCES src/AddOffset.cpp src/cluster2features.cpp src/printJson.cpp src/reader.cpp src/results.cpp src/xyz2defects.cpp)
 file(GLOB TESTS test/*.cpp)
