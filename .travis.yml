@@ -10,6 +10,7 @@ addons:
       - g++-5
 
 script:
+  - cd csaransh-pp
   - CXX=/usr/bin/g++-5 CC=/usr/bin/gcc-5 cmake -D ENABLE_COVERAGE:BOOL=TRUE . 
   - cmake --build . --
   - ctest
