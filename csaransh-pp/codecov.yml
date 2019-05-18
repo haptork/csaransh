@@ -1,5 +1,0 @@
-ignore:
-  - "third_party"  # ignore folders and all its contents
-  - "src/main.cpp"       # wildcards accepted
-  - "src/printJson.cpp"       # wildcards accepted
-  - "include/printJson.hpp"       # wildcards accepted

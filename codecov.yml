@@ -1,0 +1,5 @@
+ignore:
+  - "csaransh-pp/third_party/*"  # ignore folders and all its contents
+  - "csaransh-pp/src/main.cpp"       # wildcards accepted
+  - "csaransh-pp/src/printJson.cpp"       # wildcards accepted
+  - "csaransh-pp/include/printJson.hpp"       # wildcards accepted
