@@ -7,11 +7,11 @@
 #include <iostream>
 
 bool csaransh::AddOffset::_isUnitcell(double x, double y, double z, double l,
-                            std::array<double, 3> origin) {
+                                      std::array<double, 3> origin) {
   double pos[3] = {x, y, z};
   double epsilon = 1e-6;
   for (int i = 0; i < 3; i++) {
-    if (!(pos[i] >= (origin[i] * l - epsilon) && 
+    if (!(pos[i] >= (origin[i] * l - epsilon) &&
           pos[i] <= (origin[i] * l + l + epsilon)))
       return false;
   }
@@ -28,8 +28,8 @@ void csaransh::AddOffset::_bccUnitcell() {
   _sites.clear();
   _sites.emplace_back(std::array<long double, 3>{{0.0, 0.0, 0.0}});
   _sites.emplace_back(std::array<long double, 3>{{0.5, 0.5, 0.5}});
-  for(auto& it : _sites) {
-    for (auto& jt : it) {
+  for (auto &it : _sites) {
+    for (auto &jt : it) {
       jt *= _latConst;
     }
   }
@@ -48,8 +48,8 @@ void csaransh::AddOffset::_fccUnitcell() {
   _sites.emplace_back(std::array<long double, 3>{{0.5, 0.5, 0.0}});
   _sites.emplace_back(std::array<long double, 3>{{0.5, 0.0, 0.5}});
   _sites.emplace_back(std::array<long double, 3>{{0.0, 0.5, 0.5}});
-  for(auto& it : _sites) {
-    for (auto& jt : it) {
+  for (auto &it : _sites) {
+    for (auto &jt : it) {
       jt *= _latConst;
     }
   }
@@ -61,8 +61,10 @@ void csaransh::AddOffset::_fccUnitcell() {
  * and mirror / through periodic boundary) is considered and information about
  * this is stored in the output parameter mirror.
  **/
-double csaransh::AddOffset::_calcDistMirror(std::array<long double, 3> a, std::array<long double, 3> b,
-                                 long double size, std::array<int, 3> &mirror) {
+double csaransh::AddOffset::_calcDistMirror(std::array<long double, 3> a,
+                                            std::array<long double, 3> b,
+                                            long double size,
+                                            std::array<int, 3> &mirror) {
   long double res = 0;
   for (int i = 0; i < 3; i++) {
     long double dist = fabs(a[i] - b[i]);
@@ -78,8 +80,8 @@ double csaransh::AddOffset::_calcDistMirror(std::array<long double, 3> a, std::a
 }
 
 csaransh::AddOffset::AddOffset(double latConst, std::string lattice,
-                     std::array<double, 3> origin) {
-  _origin = std::array<long double, 3> {{origin[0], origin[1], origin[2]}};
+                               std::array<double, 3> origin) {
+  _origin = std::array<long double, 3>{{origin[0], origin[1], origin[2]}};
   _latConst = latConst;
   if (lattice[0] == 'b') {
     _bccUnitcell();
@@ -90,60 +92,37 @@ csaransh::AddOffset::AddOffset(double latConst, std::string lattice,
   }
 }
 
-template <class T>
-void print(std::array<T, 3> x) {
+template <class T> void print(std::array<T, 3> x) {
   for (auto jt : x) {
     std::cout << jt << ", ";
   }
   std::cout << '\n';
 }
 
-//constexpr bool debug = false;
-std::tuple<std::array<double,3>, double, std::array<double, 3>>
+// constexpr bool debug = false;
+std::tuple<std::array<double, 3>, double, std::array<double, 3>>
 csaransh::AddOffset::operator()(const std::array<double, 3> &c) {
-  std::array<long double, 3> coords {{c[0], c[1], c[2]}};
+  std::array<long double, 3> coords{{c[0], c[1], c[2]}};
   std::array<long double, 3> modCoords;
   std::array<long double, 3> divCoords;
   std::array<double, 3> cellPos;
   for (int i = 0; i < 3; i++) {
-    long double orig = coords[i] - (_origin[i]*_latConst);
+    long double orig = coords[i] - (_origin[i] * _latConst);
     modCoords[i] = std::fmod(orig, _latConst);
     divCoords[i] = int(orig / _latConst);
   }
-/*
-  if (debug) {
-    for (auto it : _sites) print(it);
-    std::cout << "modCoords: "; print(modCoords);
-    std::cout << "divCoords: "; print(divCoords);
-  }
-  */
   auto min = -1.;
-  //auto i = 0;
   std::array<int, 3> mirror;
   for (auto it : _sites) {
     auto temp = _calcDistMirror(it, modCoords, _latConst, mirror);
-    /*
-    if (debug) {
-      std::cout <<'\n';
-      print(it);
-      std::cout << "mirror: "; print(mirror);
-      std::cout << "temp: " << temp << ": ";
-      std::cout <<'\n';
-    }
-    */
     if (temp < min || min == -1) {
       min = temp;
       for (int i = 0; i < 3; i++) {
-        cellPos[i] = (divCoords[i] + mirror[i] + it[i] / _latConst) + _origin[i];
+        cellPos[i] =
+            (divCoords[i] + mirror[i] + it[i] / _latConst) + _origin[i];
         cellPos[i] = floorf(cellPos[i] * 100) / 100;
       }
     }
   }
-  /*
-  if (debug) {
-    std::cout << "nearest lattice site: "; 
-    print(asdf);
-  }
-  */
   return std::make_tuple(cellPos, min, c);
 }

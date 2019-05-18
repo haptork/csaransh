@@ -19,7 +19,8 @@ namespace csaransh {
 // coords, isInterstitial, ClusterId, isSurviving
 using DefectT = std::tuple<std::array<double, 3>, bool, int, bool>;
 
-using DefectVecT = std::vector<std::tuple<std::array<double, 3>, bool, int, bool>>;
+using DefectVecT =
+    std::vector<std::tuple<std::array<double, 3>, bool, int, bool>>;
 
 struct ClusterSizeT {
   int surviving;
@@ -37,39 +38,58 @@ static inline auto coords(const DefectT &_d) { return std::get<0>(_d); }
 static inline auto isInterstitial(const DefectT &_d) { return std::get<1>(_d); }
 static inline auto clusterId(const DefectT &_d) { return std::get<2>(_d); }
 static inline auto isSurviving(const DefectT &_d) { return std::get<3>(_d); }
-static inline void coords(DefectT &_d, std::array<double, 3> c) { std::get<0>(_d) = c; }
+static inline void coords(DefectT &_d, std::array<double, 3> c) {
+  std::get<0>(_d) = c;
+}
 static inline void isInterstitial(DefectT &_d, bool a) { std::get<1>(_d) = a; }
 static inline void clusterId(DefectT &_d, int id) { std::get<2>(_d) = id; }
 static inline void isSurviving(DefectT &_d, bool s) { std::get<3>(_d) = s; }
 static inline auto isVacancy(const DefectT &_d) { return !std::get<1>(_d); }
 }
 
+// group defects into clusters
 DefectVecT groupDefects(const DefectVecT &defects, const double &latticeConst);
 
-ClusterSizeMapT clusterSizes(const DefectVecT& defects);
+// surviving and all defects count for groups of all sizes, including single
+// defects that are currently given a clusterId of their own
+ClusterSizeMapT clusterSizes(const DefectVecT &defects);
 
-void ignoreSmallClusters(DefectVecT& defects, ClusterSizeMapT&,
+// change clusterId to zero for defects that belong to clusters having lesser
+// defects than the input given criterion
+void ignoreSmallClusters(DefectVecT &defects, ClusterSizeMapT &,
                          int minSurvived, int minAll);
 
-ClusterIdMapT clusterMapping(const DefectVecT& defects);
+// for each cluster a list of coord indices of defects that belong to it
+ClusterIdMapT clusterMapping(const DefectVecT &defects);
 
-ClusterIVMapT clusterIVType(const ClusterIdMapT&, ClusterSizeMapT&);
+// surviving defects count for clusters ignoring single defects labelled as 0
+// clusterId
+ClusterIVMapT clusterIVType(const ClusterIdMapT &, ClusterSizeMapT &);
 
-std::tuple<int, double, double> getNDefectsAndClusterFractions(const csaransh::DefectVecT& defects);
+// number of defects and fraction of interstitials and vacancies in cluster
+std::tuple<int, double, double>
+getNDefectsAndClusterFractions(const csaransh::DefectVecT &defects);
 
 using ClusterFeatMapT = std::unordered_map<int, featT>;
-ClusterFeatMapT clusterFeatures(const csaransh::DefectVecT& defects,
-                        const csaransh::ClusterIdMapT& clusters,
-                        csaransh::ClusterSizeMapT& clusterCounts,
-                        double latticeConst);
 
-std::tuple<int, int> getMaxClusterSizes(csaransh::ClusterSizeMapT& clusterCounts,
-                  const csaransh::ClusterIdMapT& clusters);
+// cluster features based on pair distances, triad angles and neighbourhood
+// count
+ClusterFeatMapT clusterFeatures(const csaransh::DefectVecT &defects,
+                                const csaransh::ClusterIdMapT &clusters,
+                                csaransh::ClusterSizeMapT &clusterCounts,
+                                double latticeConst, int leastClusterSize = 4);
 
-std::array<std::vector<double>, 2> getDistanceDistribution(const DefectVecT &defects,
-                                                const Info &info);
-std::array<std::vector<double>, 2> getAngularDistribution(const DefectVecT &defects,
-                                             const Info &info);
+// maximum of surviving defects among all of clusters
+// (interstitial and vacancy cluster separately)
+std::tuple<int, int>
+getMaxClusterSizes(csaransh::ClusterSizeMapT &clusterCounts,
+                   const csaransh::ClusterIdMapT &clusters);
 
+// distances of vacancies and interstitials separately measured from pka origin
+std::array<std::vector<double>, 2>
+getDistanceDistribution(const DefectVecT &defects, const Info &info);
+// angles of vacancies and interstitials separately measured from pka origin
+std::array<std::vector<double>, 2>
+getAngularDistribution(const DefectVecT &defects, const Info &info);
 }
-#endif //CSARANSH_RESULTS_HPP
+#endif // CSARANSH_RESULTS_HPP

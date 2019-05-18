@@ -11,13 +11,13 @@
 /*
 */
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   if (argc < 2) {
     std::cerr << "No input xyz file provided as cmd argument.\n";
     return 1;
   }
   auto src = std::string{};
-  const std::string outpath {"./cascades-data.json"};
+  const std::string outpath{"./cascades-data.json"};
   std::ofstream outfile{outpath};
   if (!outfile.is_open()) {
     std::cerr << "The output path " + outpath + " is not accessible.\n";
@@ -38,8 +38,10 @@ int main(int argc, char* argv[]) {
       outfile << "\n";
     }
   }
-  outfile << "]}" << "\n";
+  outfile << "]}"
+          << "\n";
   outfile.close();
-  std::cout << '\r' << success << " out of " << argc - 1 << " processed successfully.\n";
+  std::cout << '\r' << success << " out of " << argc - 1
+            << " processed successfully.\n";
   return 0;
 }

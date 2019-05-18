@@ -1,0 +1,62 @@
+
+Input file for PARCAS MD 
+
+
+NOTE: THIS RUN USED AN UGLY MOVING ATOM APPROXIMATION.
+
+	
+Free format input file - parameters can be in any order, and comments
+can be placed freely among them, as long as the parameters hold the
+9-characters + "="-sign format. Each number must also be followed
+by at least one space (not a tab !!).
+
+debug    = 0
+
+nsteps   = 9991000       Max number of time steps
+tmax     = 40000.0       Maximum time in fs 
+endtemp  = 0.0
+
+seed     = 3044893       Seed for random number generator
+
+Time step criteria and related parameters. Internal time unit
+is 10.1805*sqrt(mass) = 81.15 fs for Au.
+--------------------------------------------------------------
+
+delta    = 0.05          Max time step
+timeEt   = 300.0         MDRANGE 50 keV Ni->Ni indicates this is good enough
+mass(1)  = 55.84704        Atom mass in u (needed in time step calculation)
+name(1)  = Fe 
+substrate= Fe
+
+offset(1)= 0.25
+offset(2)= 0.25
+offset(3)= 0.25
+
+lx(1,1)  = 0.0  
+lx(1,2)  = 0.0  
+lx(1,3)  = 0.0  
+ltype(1) = 1
+
+lx(2,1)  = 0.5 
+lx(2,2)  = 0.5 
+lx(2,3)  = 0.5 
+ltype(2) = 1
+
+	    
+natoms   = 601526          Number of atoms in simulation
+box(1)   = 192.29           Box size in the X-dir (Angstroms)
+box(2)   = 192.29           Box size in the Y-dir (Angstroms)
+box(3)   = 192.29           Box size in the Z-dir (Angstroms)
+ncell(1) = 67
+ncell(2) = 67
+ncell(3) = 67
+	    
+xrec     = -42.98         Desired initial position
+yrec     = -55.01
+zrec     = 5.18
+	    
+recen    = 20000.0       Initial recoil energy in eV
+rectheta = 94.246        Initial recoil direction in degrees
+recphi   = 51.999          Initial recoil direction in degrees
+	    
+	    

@@ -13,20 +13,16 @@
 #include <helper.hpp>
 
 namespace csaransh {
-// trim a string from both ends
-std::string removeComments(std::string s);
+
+std::pair<std::string, std::string> getInfileFromXyzfile(std::string xyzfile);
+
+std::pair<csaransh::SimulationCode, bool> getSimulationCode(std::string fname);
 
 std::pair<csaransh::Info, bool> extractInfoParcas(std::string fname);
 
 std::pair<csaransh::Info, bool> extractInfoLammps(std::string fname);
 
-std::array<std::string, 2> separateDirAndFile(std::string path);
-
-std::array<std::string, 2> separateFileAndExt(std::string path);
-
-std::pair<std::string, std::string> getInfileFromXyzfile(std::string xyzfile);
-
-csaransh::readStatus processFile(std::string xyzfile, std::ofstream &outfile, int id);
-
+csaransh::readStatus processFile(std::string xyzfile, std::ofstream &outfile,
+                                 int id);
 }
 #endif

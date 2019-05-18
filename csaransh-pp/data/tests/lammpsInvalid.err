@@ -1,0 +1,9 @@
+LAMMPS-DISP
+substrate = Fe
+latticeConstant = 2.85
+ncell = 2his is invalid
+recen = 10000
+vx = 1
+vy = 1
+vz = 1
+offset = 0.0

@@ -23,7 +23,7 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utk
 
 For post-processing Molecular Dynamics simulation data:
   - gcc 5.3 or later or equivalent c++14 compiler.
-  - Python 2.7
+  - Python 3.x or Python 2.7 or above
 
 For web-server:
   - nodejs, npm / yarn for web-interface server.
@@ -42,9 +42,9 @@ For web-app:
 - Make a new directory `_build` or any other name. Go to this directory and run `cmake ..`.
 - If on Unix based systems like Linux / Mac run `make`. If using Visual Studio on Windows, load the project / solution.
 
-After building the application the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path.
+After building the application the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path. You can run the tests using `csaransh_pp_test` application in the `_build` directory.
 
-- run `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
+- run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
 
 ### Installing Server.
 
@@ -218,7 +218,7 @@ We use [UMAP](https://umap-learn.readthedocs.io/en/latest/) and [t-SNE](https://
 
 ## Contributions
 
-Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. We think exploring parameters of subcascades such as their volume using convex hull etc. can be a good direction to extend. Adding more methods to pattern match subcascades and cascades can be helpful in understand them better.
+Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. We think exploring parameters of subcascades such as their volume using convex hull etc. can be a good direction to extend. Adding more methods to pattern match subcascades and cascades can be helpful in understand them better. To begin understanding the implementation of algorithms in the post-processor, you can check tests written in the `csaransh-pp/test` directory.
 
 The current direction for web interface is to add help to different sections, add more interactions to plots and improve the efficiency of the interface by splitting the single webpack js file into different bundles. 
 
