@@ -1,11 +1,11 @@
-name: csaransh-try
+name: csaransh
 channels:
   - conda-forge
   - defaults
 dependencies:
-  - numpy=1.16.3=py37hacdab7b_0
-  - python=3.7.3=h359304d_0
-  - scikit-learn=0.20.3=py37h27c97d8_0
-  - scipy=1.2.1=py37h1410ff5_0
-  - hdbscan=0.8.22=py37h1e5eb4f_1
-  - umap-learn=0.3.8=py37_0
+  - numpy=1.16.3
+  - python=3.7.3
+  - scikit-learn=0.20.3
+  - scipy=1.2.1
+  - hdbscan=0.8.22
+  - umap-learn=0.3.8
