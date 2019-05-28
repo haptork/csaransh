@@ -18,49 +18,59 @@ import CustomTabs from "components/CustomTabs/CustomTabs.js";
 import AngleIcon from "@material-ui/icons/CallSplit";
 import DistIcon from "@material-ui/icons/LinearScale";
 
-export const groupBars = (data) => {
+const accessorDefault = name => x => x[name];
+const accessorOned = x => parseFloat(x["eigen_var"][0]);
+const accessorTwod = x => parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1]);
+const accessorSubc = x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length);
+
+const groupBars = (data, fields) => {
   let keys = [];
   let keys2 = [];
-  /* n_defects = []; max_sizeI = []; max_sizeV = []; in_clusterI = []; in_clusterV = [];  */
-  const names = ["defects count", "max int cluster", "max vac size", "int in cluster", "vac in cluster", "subcascades", "subcasd impact", "eigen dim1", "eigen dim2", "eigen dim1+2", "energy"];
-
-  let vals = [{label:names[0], values:[]}, {label:names[1], values:[]}, {label:names[2], values:[]},{label:names[3], values:[]},
-              {label:names[4], values:[]}, {label:names[5], values:[]}, {label:names[6], values:[]},{label:names[7], values:[]},
-              {label:names[8], values:[]}, {label:names[9], values:[]}, {label:names[10], values:[]}];
-
-  let mx = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-  let mn = [100000.0, 100000.0, 100000.0, 100000.0, 100000.0, 100000.0, 100000.0, 100000.0, 100000.0, 100000.0, 100000.0]; // valid assumption
+  const defaultType = "box";
+  let vals = [];
+  let mx = [];
+  let mn = [];
+  for (const key in fields) {
+    let field = fields[key];
+    if (!field.hasOwnProperty("type")) {
+      field.type = defaultType;
+    }
+    if (!field.hasOwnProperty("accessor")) {
+      field.accessor = accessorDefault(field.id);
+    }
+    vals.push({label:key, values:[]});
+    mx.push(0.0);
+    mn.push(0.0);
+  }
   for (const x of data) {
     keys.push(x.substrate + "_" + x.energy);
     keys2.push(x.name);
-    vals[0].values.push(x.n_defects);
-    vals[1].values.push(x.max_cluster_size_I);
-    vals[2].values.push(x.max_cluster_size_V);
-    vals[3].values.push(x.in_cluster_I);
-    vals[4].values.push(x.in_cluster_V);
-    vals[5].values.push(Object.keys(x.dclust_coords).length); // s
-    vals[6].values.push(parseInt(x.dclust_sec_impact));
-    vals[7].values.push(x.eigen_var[0]);
-    vals[8].values.push(x.eigen_var[1]);
-    vals[9].values.push(x.eigen_var[0] + x.eigen_var[1]);
-    vals[10].values.push(x.energy);
+    for (let val of vals) {
+      const key = val.label;
+      val.values.push(fields[key].accessor(x));
+    }
     const lastElem = vals[0].values.length - 1;
     for (let i = 0; i < mn.length; ++i) {
-      mn[i] = Math.min(mn[i], vals[i].values[lastElem]);
-      mx[i] = Math.max(mx[i], vals[i].values[lastElem]);
+      if (lastElem == 0) {
+        mn[i] = vals[i].values[lastElem];
+        mx[i] = mn[i];
+      } else {
+        mn[i] = Math.min(mn[i], vals[i].values[lastElem]);
+        mx[i] = Math.max(mx[i], vals[i].values[lastElem]);
+      }
     }
   }
   let d1 = [];
   let i = 0;
 
   for (let val of vals) {
-    if (i == 10) break;
+    if (fields[val.label].type != "box") continue;
     d1.push(
       {
         y: val.values.slice(),
         x: keys,
         visible: (i == 0),
-        name: names[i],
+        name: val.label,
         marker: {color: getColor(i)},
         type: 'box',
         meanline: {
@@ -86,6 +96,17 @@ export const groupBars = (data) => {
 export class Statistics extends React.Component {
   constructor(props) {
     super(props);
+    this.fields = {
+      "defects count":{"id":"n_defects"},
+      "max int size":{"id":"max_cluster_size_I"}, 
+      "max vac size":{"id":"max_cluster_size_V"}, 
+      "int in cluster":{"id":"in_cluster_I"}, 
+      "vac in cluster":{"id":"in_cluster_V"}, 
+      "planarity":{"id":"planarity", "accessor":accessorTwod }, 
+      "subcascades":{"id":"subc", "accessor":accessorSubc }, 
+      "subcascade impact":{"id":"dclust_sec_impact"},
+      "energy":{"id":"energy", "type":"no-box"}
+    };
   }
 
   shouldComponentUpdate(nextProps, nextState){
@@ -94,7 +115,7 @@ export class Statistics extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const [nDefects, splomKeys, splomVals] = groupBars(this.props.data); 
+    const [nDefects, splomKeys, splomVals] = groupBars(this.props.data, this.fields); 
     const [statDists, statAngles] = calcStatDistsAngles(this.props.data);
     return (
       <Grid container justify="center">
@@ -102,7 +123,7 @@ export class Statistics extends React.Component {
           <Card chart>
             <CardHeader color="info"> Statistics grouped by Elements and Energy </CardHeader>
             <CardBody>
-              <NDefectsPlot data= {nDefects} />
+              <NDefectsPlot data= {nDefects} fields = {this.fields}/>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>

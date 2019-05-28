@@ -75,65 +75,20 @@ const RangeFilter = props => {
 
 const defaultRangeFilterFn = (filter, row) => row[filter.id] >= filter.value.min && row[filter.id] < filter.value.max;
 
-const minMaxSubc = (ar) => {
-  let min = 0, max = 0;
-  if (ar.length > 0) {
-    const val = Object.keys(ar[0].dclust_coords).length;
-    min = parseInt(val) == 0 ? 0 : parseInt(val) - 1;
-    max = min;
-  }
-  for (const x of ar) {
-    const val = Math.max(0, parseInt(Object.keys(x.dclust_coords).length) - 1);
-    min = Math.min(min, val);
-    max = Math.max(max, val);
-  }
-  return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
-}; 
+const accessorDefault = name => x => x[name];
+const accessorOned = x => parseFloat(x["eigen_var"][0]) * 100;
+const accessorTwod = x => parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1]) * 100;
+const accessorSubc = x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length);
 
-const minMaxOned = (ar) => {
+const minMaxPropsMaker = fields => (ar, name) => {
   let min = 0, max = 0;
   if (ar.length > 0) {
-    min = parseFloat(ar[0]["eigen_var"][0]) * 100;
-    max = min;
-  }
-  for (const x of ar) {
-    const val = parseFloat(x["eigen_var"][0]) * 100;
-    min = Math.min(min, val);
-    max = Math.max(max, val);
-  }
-  return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
-}; 
-
-const minMaxTwod = (ar) => {
-  let min = 0, max = 0;
-  if (ar.length > 0) {
-    min = parseInt((parseFloat(ar[0]["eigen_var"][0]) + parseFloat(ar[0]["eigen_var"][1])) * 100);
-    max = min;
-  }
-  for (const x of ar) {
-    const val = parseInt((parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1])) * 100);
-    min = Math.min(min, val);
-    max = Math.max(max, val);
-  }
-  return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
-};
-
-const minMaxProps = (ar, name) => {
-  if (name === "oned") {
-    return minMaxOned(ar);
-  } else if (name === "twod") {
-    return minMaxTwod(ar);
-  } else if (name === "subc") {
-    return minMaxSubc(ar);
-  }
-  let min = 0, max = 0;
-  if (ar.length > 0) {
-    const val = parseFloat(ar[0][name]);
+    const val = fields[name].accessor(ar[0]);
     min = val;
     max = val;
   }
   for (const x of ar) {
-    const val = parseFloat(x[name]);
+    const val = fields[name].accessor(x);
     min = Math.min(min, val);
     max = Math.max(max, val);
   }
@@ -154,8 +109,38 @@ const uniqueAr = (ar, key) => {
 }
 
 export class MainTable extends React.Component {
-  constructor(props) {
+ constructor(props) {
     super(props);
+    const roundOff = x => +parseFloat(x).toFixed(2);
+    const defaultParse = parseInt;
+    const defaultType = "output";
+    const both = (f, g) => x => f(g(x));
+    this.fields = {
+      "n_defects":{"name":"Defects Count"},
+      "max_cluster_size":{"name":"Max cluster size"}, 
+      "in_cluster":{"name":"% defects in cluster"}, 
+      "rectheta":{ "type": "input", "parseFn": roundOff}, 
+      "recphi":{"type": "input",  "parseFn": roundOff}, 
+      "oned":{"name":"1st dim var", "accessor":accessorOned, "parseFn":parseInt}, 
+      "twod":{"name":"2nd dim var", "accessor":accessorTwod, "parseFn":parseInt}, 
+      "subc":{"name":"Subcascades", "accessor":accessorSubc, "parseFn":parseInt}, 
+      "dclust_sec_impact":{"name":"Impact of 2nd big subcascade"}
+    };
+    for (const key in this.fields) {
+      let x = this.fields[key];
+      if (!x.hasOwnProperty("type")) {
+        x.type = defaultType;
+      }
+      if (x.hasOwnProperty("accessor")) {
+        if (x.hasOwnProperty("parseFn")) {
+          x['accessor'] = both(x.parseFn, x['accessor']);
+        }
+        continue;
+      }
+      if (!x.hasOwnProperty("parseFn")) x['parseFn'] = defaultParse;
+      x['accessor'] = both(x.parseFn, accessorDefault(key));
+    }
+    this.minMaxProps = minMaxPropsMaker(this.fields);
     this.rows = this.props.data;
     this.filters = this.defaultFilterBounds();
     this.due = "";
@@ -169,39 +154,25 @@ export class MainTable extends React.Component {
   }
 
   defaultFilterBounds() {
-    return {
-      n_defects : minMaxProps(this.props.data, "n_defects"),
-      max_cluster_size :  minMaxProps(this.props.data, "max_cluster_size"),
-      in_cluster : minMaxProps(this.props.data, "in_cluster"),//minMaxClusterCent(this.props.data),
-      rectheta : minMaxProps(this.props.data, "rectheta"),
-      recphi : minMaxProps(this.props.data, "recphi"),
-      oned : minMaxProps(this.props.data, "oned"),
-      twod : minMaxProps(this.props.data, "twod"),
-      subc : minMaxProps(this.props.data, "subc"),
-      prob : minMaxProps(this.props.data, "dclust_sec_impact")
-    };
+    let res = {};
+    for (let x in this.fields) {
+      res[x] = this.minMaxProps(this.props.data, x);
+    }
+    return res;
   }
 
   defaultIsFilter() {
-    return {
-      n_defects : false,
-      max_cluster_size : false,
-      in_cluster : false,
-      rectheta : false,
-      recphi : false,
-      oned : false,
-      twod : false,
-      substrate : false,
-      energy : false,
-      prob : false,
-      subc : false
-    };
+    let res = {};
+    for (let x in this.fields) {
+      res[x] = false;
+    }
+    return res;
   }
 
   finalFilters() {
    let vfilters = JSON.parse(JSON.stringify(this.state.vfilters));
     for (const key in vfilters) {
-      vfilters[key] = minMaxProps(this.rows, key);
+      vfilters[key] = this.minMaxProps(this.rows, key);
     }
     this.setState({ vfilters });
   }
@@ -235,7 +206,7 @@ export class MainTable extends React.Component {
         if (x.id === curFilter) {
           if (isFilter[x.id]) vfilters[x.id] = x.value;
           else {
-            vfilters[x.id] = minMaxProps(this.rows, x.id);
+            vfilters[x.id] = this.minMaxProps(this.rows, x.id);
           }
         }
       }
@@ -245,7 +216,7 @@ export class MainTable extends React.Component {
     for (const key in isFilter) {
       if (key === "substrate" || key === "energy") continue;
       if (key !== curFilter) {
-        vfilters[key] = minMaxProps(this.rows, key);
+        vfilters[key] = this.minMaxProps(this.rows, key);
       }
     }
     //this.setState({vfilters, filtered, isFilter, substrate, energy}, () => this.props.setRows(this.rows));
@@ -261,7 +232,7 @@ export class MainTable extends React.Component {
     })
   }
 
-  filterMethosSelect() {
+  filterMethodSelect() {
     return ((filter, rows) => {
       if (filter.value.length === 0) {
         //this.rows = rows;
@@ -295,6 +266,21 @@ export class MainTable extends React.Component {
   }
 
   render() {
+    let resultCols = [];
+    for (const key in this.fields) {
+      if (this.fields[key].type != "output") continue;
+      const field = this.fields[key];
+      resultCols.push(
+        {
+          Header: field.name,
+          id: key,
+          accessor: field.accessor,
+          Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters[key]} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter[key]} minMax={this.filters[key]}/>,
+          filterAll: true,
+          filterMethod: this.defaultRangeFilterAllFn()
+        }
+      )
+    }
     return (
       <div style={{width:"100%"}}>
         <ReactTable
@@ -319,7 +305,7 @@ export class MainTable extends React.Component {
                   accessor: "substrate",
                   id: "substrate",
                   filterAll: true,
-                  filterMethod: this.filterMethosSelect(),
+                  filterMethod: this.filterMethodSelect(),
                   Filter: this.filterSelect("substrate")
                 },
                 {
@@ -327,19 +313,21 @@ export class MainTable extends React.Component {
                   accessor: "energy",
                   id: "energy",
                   filterAll: true,
-                  filterMethod: this.filterMethosSelect(),
+                  filterMethod: this.filterMethodSelect(),
                   Filter: this.filterSelect("energy")
                 },
                 {
                   Header: "PKA (θ)",
-                  accessor: "rectheta",
+                  id: "rectheta",
+                  accessor: this.fields['rectheta'].accessor,
                   Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.rectheta} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter.rectheta} minMax={this.filters.rectheta}/>,
                   filterAll: true,
                   filterMethod: this.defaultRangeFilterAllFn()
                 },
                 {
                   Header: "PKA (φ)",
-                  accessor: "recphi",
+                  id: "recphi",
+                  accessor: this.fields['recphi'].accessor,
                   Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.recphi} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter.recphi} minMax={this.filters.recphi}/>,
                   filterAll: true,
                   filterMethod: this.defaultRangeFilterAllFn()
@@ -348,62 +336,7 @@ export class MainTable extends React.Component {
             },
             {
               Header: "Output Defects Information",
-              columns: [
-                {
-                  Header: "Defects Count",
-                  id: "n_defects",
-                  accessor: d => d.n_defects,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.n_defects} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter.n_defects} minMax={this.filters.n_defects}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                },
-                {
-                  Header: "Max cluster size",
-                  id: "max_cluster_size",
-                  accessor: d => d.max_cluster_size,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.max_cluster_size} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter.max_cluster_size} minMax={this.filters.max_cluster_size}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                },
-                {
-                  Header: "% Defects in Cluster",
-                  id: "in_cluster",
-                  accessor: d => d.in_cluster,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.in_cluster} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.in_cluster} minMax={this.filters.in_cluster}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                },
-                {
-                  Header: "1D-variance",
-                  id: "oned",
-                  accessor: d => Math.floor(d.eigen_var[0] * 100),
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.oned} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.oned} minMax={this.filters.oned}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                }, {
-                  Header: "2D-variance",
-                  id: "twod",
-                  accessor: d => Math.floor((d.eigen_var[0] + d.eigen_var[1]) * 100)/* + d.eigen_var[1]*/,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.twod} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.twod} minMax={this.filters.twod}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                }, {
-                  Header: "Subcasde density regions",
-                  id: "subc",
-                  accessor: d => Object.keys(d.dclust_coords).length == 0 ? 0 : Object.keys(d.dclust_coords).length - 1,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.subc} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.subc} minMax={this.filters.subc}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                }, {
-                  Header: "Impact measure of second big subcascade",
-                  id: "prob",
-                  accessor: x =>  parseInt(x.dclust_sec_impact),
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.prob} onChangeComplete={() => this.finalFilters()} onChange={onChange} isFilter={this.state.isFilter.prob} minMax={this.filters.prob}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                }
-
-             ]
+              columns: resultCols
             }
           ]}
           defaultPageSize={5}
@@ -422,8 +355,6 @@ export class MainTable extends React.Component {
           }}
           filtered={this.state.filtered}
           onFilteredChange={(filtered, column) => {
-            //console.log("onFilterChange");
-            //console.log(filtered);
             return this.updateFilters(filtered, column.id);
             //return this.setState({energies: [50,100,70], filtered});
           }}

@@ -1,7 +1,5 @@
 import React from 'react';
-import { getColor } from "../utils";
 import Plot from 'react-plotly.js';
-
 
     const pl_colorscale=[
                [0.0, '#19d3f3'],
