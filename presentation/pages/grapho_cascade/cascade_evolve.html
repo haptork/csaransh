@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+    <script src="reactgrapho.js"></script>
+    <script src="cascades_evolve.js"></script>
+      <style>
+      #frame {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 0;
+      }
+      </style>
+  </head>
+  <body>
+    <div>
+    <div id="frame"></div>
+    </div>
+  </body>
+  <script>
+
+  var x = new rg({
+    maxBox:100.0, 
+    minBox:50.0, 
+    coords: cascades_evolve, 
+    bgColor:"#fff", 
+    element:"frame", 
+    everyStepWaitInterval: cascades_evolve.length - 1,
+    everyStepWaitTime:85,
+    play: true
+  });
+  </script>
+</html>

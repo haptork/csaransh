@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Classification of Clusters</title>
+
+	<meta name="description"
+		content="Slideshow explaining methods for classification of clusters in Molecular Dynamics simulations of collision cascades">
+	<meta name="author" content="Utkarsh Bhardwaj">
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+	<link rel="stylesheet" href="lib/reveal.js/css/reveal.css">
+	<link rel="stylesheet" href="lib/reveal.js/css/theme/black.css" id="theme">
+
+	<!-- Code syntax highlighting -->
+	<link rel="stylesheet" href="lib/reveal.js/lib/css/zenburn.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'lib/reveal.js/css/print/pdf.css' : 'lib/reveal.js/css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+
+	<!--[if lt IE 9]>
+		<script src="lib/reveal.js/lib/js/html5shiv.js"></script>
+		<![endif]-->
+
+	<style>
+		.reveal .slide-number {
+			font-size: 0.35em;
+			position: fixed;
+			left: 45%;
+			width: 10%;
+			text-align: center;
+		}
+
+		.fork-reveal {
+			display: none;
+		}
+
+		.reveal .superscript {
+			top: -0.5em;
+			position: relative;
+			font-style: italic;
+		}
+
+		.reveal .footer {
+			position: fixed;
+			bottom: 2.0em;
+			font-size: 60%;
+			left: 0.0px;
+			text-align: center;
+			width: 100%;
+			pointer-events: all;
+		}
+		.reveal .dark_box {
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0, 0.5), 0 5px 25px rgba(0, 0, 0, 0.2);
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			padding: 7px;
+			pointer-events: none;
+		}
+
+		.dark_box_text {
+			color: #fff !important;
+		}
+
+		.reveal .collision_cascade1 {
+			position: absolute;
+			width: 40%;
+			right: 0;
+			top: -200px;
+			text-align: right;
+		}
+
+		.reveal .clusters_in_cascade {
+			position: absolute;
+			width: 30%;
+			right: 19%;
+			text-align: center;
+		}
+
+		.reveal .clustersiv {
+			position: absolute;
+			top: 300px;
+			left: 0.0px;
+			width: 100%;
+		}
+
+		.reveal .flowimgs {
+			border: 0;
+			background: 0;
+			box-shadow: none;
+			align-self: center;
+			position: relative;
+		}
+
+		.reveal .flowdivs {
+			position: absolute;
+		}
+
+		.reveal .imgnoborder {
+			border: 0;
+			background: 0;
+			box-shadow: none;
+			align-self: center;
+			margin: 0px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="reveal">
+
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section id="home">
+				<h2>Classification of Clusters</h2>
+				<h4>in MD simulations of</h4>
+				<h3>Collision Cascades</h3>
+				<p>
+					<small><a href="https://github.com/haptork">
+							Utkarsh Bhardwaj</a><sup class=superscript>a</sup>, <a
+							href="mailto:andrea.sand@helsinki.fi">Andrea E. Sand</a><sup class=superscript>b</sup> and <a
+							href="mailto:manojwar@barc.gov.in">Manoj Warrier</a><sup class=superscript>a</sup>
+						<p>
+							<small>
+								<sup class=superscript>| a</sup> Bhabha Atomic Research Centre, Vizag, India;
+								<sup class=superscript>| b</sup> University of Helsinki, Finland
+							</small>
+						</p>
+						<div class=footer>
+							<div>
+								-- Presenting at
+								<a href="http://dpc.nifs.ac.jp/dkato/MoD-PMI2019/"> MoD-PMI 2019 -- </a>
+							</div>
+							<div>
+								Find the project on github
+								<a href="https://github.com/haptork/csaransh"> @Csaransh </a>
+							</div>
+						</div>
+					</small>
+				</p>
+				<aside class="notes">
+					<p>
+					  Hello, Good Evening, everyone.
+					  I'm going to talk about classification of clusters in Collision Cascades.
+                      We have applied interesting algorithms from unsupervised
+                      machine learning on the new geometrical and topological
+                      feature vectors that we define for clusters. 
+                      
+                      A bit of my background, about me:
+                      I'm a researcher at Bhabha. I've Masters in Computer
+                      Science and Engg. with specialisation in Nuclear Engg.
+                      I work with Manoj Warrier who guides my computational
+                      ideas to apply on computational physics problems which I find
+                      quite intriguing. He probably knows lot more physics than me.
+                      Prior to BARC, I've worked with a research team lead by
+                      Varun who has M.S. in Machine Learning from MIT. There I worked
+                      to evaluate programming codes using machine learning.
+
+                      We got interested in this problem when the IAEA
+                      Materials for fusion 2018 competition was announced with a
+                      database of 76 Fe and W cascades at PKA energies ranging
+                      from 10keV to 200keV. Although
+                      we could not finish the whole problem in given
+                      time constraint but after the competition was over we
+                      continued working on it and here I'm quite excited to
+                      share our results on the same database that has over
+                      a thousand clusters.
+
+                      So, Let's go through some basic background quickly...
+					</p>
+				</aside>
+			</section>
+
+			<section id="About Me">
+				<!--<section data-markdown> <textarea data-template> ## shades of cascades </textarea> </section>-->
+                <h4> Who am I? </h4>
+                <small>
+                <p>
+                I am a researcher at the Bhabha Atomic Research Centre, Vizag, India
+                </p>
+                <p>
+                My masters was in Computer Science and Engg. with specialisation in Nuclear Engg.
+                </p>
+                <p>
+                Earlier, I've worked as research engg. in Aspiring Minds in a team lead by Varun Aggarwal (MIT grad. in ML).
+                I worked on research and development of a software to evaluate programming codes using ML which has served thousands of end-users.
+                </p>
+                <p>
+                I currently work on applying computational and ML techniques to computational physics problems
+                under the guidance of Manoj Warrier (Ph.D. University of Greifswald, Germany).
+                </p>
+                </small>
+            </section>
+					
+
+			<section id="introduction">
+				<!--<section data-markdown> <textarea data-template> ## shades of cascades </textarea> </section>-->
+				<section data-background-iframe="pages/grapho_cascade/cascade_evolve.html" data-background-interactive>
+					<div class="collision_cascade1 dark_box">
+						<h2 class="dark_box_text">A Collision Cascade</h2>
+				    </div>
+					<aside class="notes" data-markdown>
+						<textarea data-template>
+                        - Here is the evolution of a collision cascade, reds with
+                        flat crossed glyphs are vacancies, green with metal
+                        glyphs are interstitials.
+                        - The cascade is shown to reach the peak state. After the peak most of the
+                        displaced atoms recombine and we see the relatively stable primary
+                        damage state. 
+                        - At this point we have not only single
+                        defects but clusters of interstitials and
+                        vacancies of many sizes and shapes.
+					</textarea>
+					</aside>
+                    <!--
+						- Peak state (1-3ps)
+						- Relaxed state
+						- Primary damage and clusters
+
+						A collision cascade is created when an energetic particle interacts
+						with an atom in a lattice and starts a billiard ball like collisions. As we can see, initially a lot of atoms are displaced out of
+						their lattice positions and then they recombine athermally resulting in the final primary
+						damage state saturating at lesser number of defects than at the peak. The primary damage at the end has single defects as well as defects clusters
+						of various shapes and sizes.
+
+                        (The MD simulations
+						are carried out on a lattice of a few hundred angstoms for a few tens of pico seconds. The
+						peak is reached at around 1-3ps followed by recombination for a few tens of pico seconds.)
+
+                    -->
+				</section>
+				<section data-background-iframe="pages/grapho_cascade/clusters_in_cascades.html"
+					data-background-interactive>
+					<div class="clusters_in_cascade dark_box">
+						<h3 class="dark_box_text">Clusters </h3>
+						<p class="dark_box_text">IN CASCADES</p>
+						<small>
+					</small>
+					</div>
+					<aside class="notes" data-markdown>
+						<textarea data-template>
+                        Here we have the primary damage from four cascades at different energies in Fe and W.
+                        - Dumbbells as one interstitial and three defects at the same time.
+						- Myriad of shapes and sizes that play significant role in the micro-structural evolution.
+                        - It is very natural to get curious about all these shapes and try to derive insight about
+                        them from a big database of clusters.
+				</textarea>
+					</aside>
+				</section>
+				<section>
+					<h4>Cluster Shapes Matter</h4>
+					<small>
+					<ul>
+                      <li> Decide diffusion (sessile / glissile)
+					</li>
+					<li> Capture and Recombination properties</li>
+					<li> Thermal stability</li>
+					</ul>
+					<p style="text-align:left">
+					The higher scale models can use the distribution of different cluster classes along with their properties as inputs.
+                    </p>
+				    </small>
+                    <blockquote style="width:100%; text-align:justify">
+                      <small>
+                       In terms of the development of models to describe the evolution of radiation
+                       damage and its role in irradiation-induced changes in material properties,
+                       the important parameters are not only the total number of Frenkel defects
+                       per cascade but also the distribution of their population in clusters and
+                       the form and mobility of these clusters. 
+                      <p style="display:flex; flex-direction: row-reverse; margin:0px;">
+                      <a href=" https://doi.org/10.1016/S0022-3115(99)00165-8">D.J. Bacon, F. Gao, Y.N. Osetsky, J. Nucl. Mater., 276 (1–3) (2000), pp. 1-12</a> --- 
+                      </p>
+                      </small>
+                    </blockquote>
+                    <aside class="notes">
+                        Apart from the interest to know more about these shapes, there are practical reasons to carry out a systematic study
+                        of cluster shapes that begins with classification.
+						- Define diffusion profile, wheather a cluster will move, glissile or will not move, sessile. And if it will move, will it be
+                        1-D movement or 3D random walk. These affect how a cluster will interact with other defects and graid boundaries.
+                        thermal stability, capture and recombination properties, dislocation properties.
+						- higher scal models
+						- The glissile clusters can move and interact with other defects and grain boundaries whereas the sessile clusters can be nucleation centers for defect-growth.
+                    </aside>
+				</section>
+	
+				<section>
+					<h4>Motivation</h4>
+					<small>
+                       Now that we can have big databases of collision cascades can we use
+                       the data itself to systematically find different classes of
+                       clusters and get insights into each of the morphologies. Can we do the following:
+			     	</small>
+					<ul>
+						<li> If we look at an interesting cluster in a cascade, can we ask which other cascades have
+						similar clusters and how do they look.</li>
+						<li> and can this query be fast for a big database of collision cascades & clusters.</li>
+						<li> Can we derive from data what all shapes are possible for different elements and energies</li>
+						<li> and how the different classes of morphologies relate to each other.</li>
+					</ul>
+				</section>
+			</section>
+
+			<section data-background="#fff">
+				<h2 style="color:slategray;">Methods Overview</h2>
+				<div style="display:flex; flex-direction: column-reverse">
+					<img class="fragment fade-up flowimgs" style="width:55%; bottom:532px; left:-4%;"
+						src="images/flow1.png" />
+					<img class="fragment fade-up flowimgs" style="width:50%; bottom:392px; left:-27%;"
+						src="images/flow2.png" />
+					<img class="fragment fade-up flowimgs" style="width:75%; bottom:242px; left:-6%;"
+						src="images/flow3.png" />
+					<img class="fragment fade-up flowimgs" style="width:100%; left:15%;" src="images/flow4.png" />
+				</div>
+				<aside class="notes" data-markdown>
+				    <textarea data-template>
+
+                      We start with finding features along with extra defects that define the shape, what we mean is
+                      we want to identify a dumbbell not just as a single atom but as two interstitials and one vacancy
+                      that make it look like a dumbbell.
+
+A cluster is characterized by the normalized histogram of angles between the
+neighbouring defect triads and pair-wise distances. We use this histogram as a
+feature vector for the cluster. To find the similarity between two clusters it
+is sufficient to find the distance between the two feature vectors that
+represent them. The feature designed is simple, noise and deformation
+invariant, computationally efficient but power- ful way to characterize a
+shape.  
+
+We further use topological network graph based dimensionality reduction
+techniques on the feature vectors. The network graph based dimensionality
+reduction techniques are well established ways to find a representation in the
+reduced dimensional space such that the distance between the distinct points is
+maximized [19, 20] and similar points are represented closely. 
+
+We then use an unsupervised clustering algorithm to classify the clusters
+without any inputs and assumptions made. With the help of classification we
+explore the dimen- sionality, sizes and distribution of cluster shapes among
+elements and energy ranges.
+
+                        - Since, we don't apriori know alot about the kind of
+                        classification we want, we would go with an exploratory
+                        data analysis approach and get the information out of
+                        the data without labels and other assumptions and
+                        inputs about the data.
+                        - We will keep our focus more on discussing the latter two steps.
+                    </textarea>
+				</aside>
+			</section>
+			<section>
+				<section>
+					<h2> Defect Identification</h2>
+				</section>
+				<section>
+					<h2> Motivation / Goals </h2>
+					<small>
+					<ol>
+						<li class="">Find and mark psuedo defects</li>
+						<li class="">Only final coordinates as inputs: no assumptions or ambiguous inputs</li>
+						<li class="">Space efficient: Does not need to have whole initial lattice in the memory</li>
+						<li class="">Fast: Can be implemented as O(N), N being number of atoms</li>
+						<li class="">Simple implementation: no specialized datastructures like kd-trees used</li>
+					</ol>
+                    <p>
+                    http://arxiv.org/abs/1811.10923
+                    </p>
+					<small class="">
+						Related alogrithms: Sphere threshold based methods and Wigner-Seitz.
+					</small>
+			     	</small>
+					<img src="./images/wrwo.png" />
+                    <aside class="notes">
+                      We find the extra psuedo defects that provide structure information.
+                    </aside>
+                </section>
+				<section>
+					<h2>Algorithm</h2>
+					<small>
+					<ol>
+						<li class="fragment">Calculation of closest lattice site
+							<small>
+							<ul>
+								<li>Find Modulus of coordinates by lattice constant to find closest lattice site in the first unit cell.</li>
+								<li>Find cell in which an atom is present by finding ceiling of quotient when coordinates are divided by lattice constant.</li>
+								<li>Assign a number to each atom based on the ordering of lattice sites.</li>
+							</ul>
+                            </small>
+						</li>
+						<li class="fragment">Enumeration
+						    <small>
+							<ul>
+								<li>
+									If an atom is associated with a lattice site that is already marked by another atom, label all the
+									associated atoms as interstitials and lattice site as vacancy. Also, label the vacancy and closest
+									interstitial to it among all associated ones as pseudo.
+								</li>
+								<li>
+									Label the lattice sites not associated with any atom as vacancy.
+								</li>
+							</ul>
+							</small>
+						</li>
+					</ol>
+                    </small>
+					<img src="./images/defects_algo.png" />
+				</section>
+	
+			</section>
+		</section>
+			<section data-menu-title="Grouping into Clusters">
+				<h4> Grouping defects into Clusters</h4>
+			</section>
+			<section id="features">
+				<section data-menu-title="Feature Vector">
+					<h2>Feature Vector to Characterize Cluster Shapes</h2>
+				</section>
+				<section>
+					<h2> Motivation </h2>
+					<ol>
+						<li>Characterize cluster shapes in some qualitative sense</li>
+						<li>Local saliency but should include some sense of global shape</li>
+						<li>Gloss over small details, strong robustness to noise</li>
+						<li>Invariant to transformations (rotations, translations, scaling etc.)</li>
+						<li>Fast similarity search in a large database</li>
+					</ol>
+					<aside class="notes">
+                        Characterize clusters in some qualitative sense. The features should
+                        retain the arrangement of local neighbourhood of a point defect that makes
+                        its shape unique while glossing over the thermal noises, extra defects appearing
+                        here and there, transformations. And these noises are inherent to our data.
+                        We are going to get clusters in rotated, translated, possibly scaled to different levels.
+                        There are going to be extra defects attached to a peculier structure like say a ring with
+                        a tail of a few extra defects, or an incomplete ring but we want the feature vector to show
+                        that there is some similarity between all these structures. We want these local salient
+                        characteristics to be represented but we want that overall global shape should also matter to
+                        some extent. We want the feature vector that we can use to pattern match to closest structures.
+                        Let us now see how we can achieve all these great things.
+
+						<p>What to gloss over and what not to?</p>
+					</aside>
+				</section>
+				<section>
+					<h2> Motivation - Angles </h2>
+					<img src="./images/features_angles.png" />
+                    <aside class="notes">
+                      We only take triads with vacancy as pivot and other two being either both vacancies or both interstitials in the neigh,
+                      This is equivalent to taking distribution of interstitials and vacancies around fixed vacancy sites. Adding more angles adds
+                      no extra information. Thus we get the local picture.
+                    </aside>
+				</section>
+				<section>
+					<h2> Motivation - Distances </h2>
+					<img src="./images/features_dists.png" />
+                    <aside class="notes">
+                      We normalize the distances between max and min. This we do not only for neighbour but for all defects. Gives us global picture.
+                    </aside>
+				</section>
+				<section>
+					<h2> Distance Measures </h2>
+                    <ul>
+                      <li> Euclidean </li>
+                      <li> KL Divergence </li>
+                      <li> Cosine </li>
+                      <li> Quadratic Form Distance Functions </li>
+                    </ul>
+                    <aside class="notes">
+To find the similarity between two clusters it
+is sufficient to find the distance between the two feature vectors that
+represent them. 
+                    </aside>
+				</section>
+				<section data-menu-title="Example Features">
+					<h2> Some Typical Feature Vectors </h2>
+					<div>
+						<div style="position: absolute">
+							<img src="./images/linear.png" />
+						</div>
+						<div class="fragment fade-in-then-out" style="position: absolute">
+							<img src="./images/ring.png" />
+						</div>
+						<div class="fragment fade-in-then-out" style="position: absolute">
+							<img src="./images/t.png" />
+						</div>
+						<div class="fragment fade-in-then-out" style="position: absolute">
+							<img src="./images/stacked-crowdion.png" />
+						</div>
+					</div>
+				</section>
+				<section>
+					<h2>Other Features</h2>
+					<ul>
+						<li> Shape distance measures
+							<small>sensitive to noise, examples include Hausdorff distance, closest points search etc.</small>
+						</li>
+						<li> Shape Context method
+							<small>global feature, comparison of complete shapes, sensitive to noise inherent in our data</small>
+						</li>
+						<li> Saliency features from point-cloud applications
+							<small>targetted for large number of points specially surface points</small>
+						</li>
+						<li> Graph CNN, deep learning methods
+							<small>require labelling, less points per cluster and less data can affect accuracy</small>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<section data-menu-title="Dimensionality Reduction">
+					<h4>Visualizing Similarities Between All The Clusters At Once</h4>
+					<small> Using neighbour graph dimensionality reduction techniques like t-SNE and UMAP</small>
+				</section>
+				<section data-menu-title="I/V TSNE" data-background-iframe="pages/clustersiv.html" data-background-interactive>
+					<div class="clustersiv dark_box">
+						<h4 class="dark_box_text">Similarity based dimensionality reduction - TSNE</h4>
+					</div>
+					<aside class="notes" data-markdown>
+						<textarea data-template>
+Each point on the left hand side represent a cluster feature vector. The graph based dimensionality reduction techniques like t-SNE (t-Distributed Stochastic Neighbor Embedding) here or UMAP (Uniform Manifold Approximation and Projection) are well established techniques for qualitative analysis of relationships between the data points (here clusters). Every point in left was actually more than 50 dimentional point. By transforming the basis vectors such that the probability of similar points to appear together increases, t-SNE here helps visualizing and exploring classification and correlation of cluster shapes.
+
+A rather interesting way to think of t-SNE dimensionality reduction is as a n-body problem. Where we place all the points in 2D. Each point experiences some force from
+all others, repulsive and attractive, based on the similarity in higher, actual, basis. The points are moved slowly according to these forces. The other way which is
+most common way to look at these problems is finding a probability distribution in higher dimensional space such that close points get sampled closely and vise-verse,
+and find a probability distribution in the lower dimensional space that can mimic it.
+
+We have used vacancy and interstitial cluster labels to colour the points. Green are intersittils and red are vacancies. We see that the dimensionality reduction does
+differentiate well between these two classes. Now let's look a little bit closer. The local relationship is well maintained for the crowdion class. So now that we
+see them differently can we just find all the possible different classes.
+					</textarea>
+					</aside>
+				</section>
+			</section>
+			<section>
+				<section>
+					<h2>Classification</h2>
+					<ul>
+						<li> UMAP for dimensionality reduction </p>
+						<li> HDBSCAN for clustering </p>
+					</ul>
+                    <aside class="notes">
+To get an idea about the different shapes of defect clusters present in the database and arrange them into classes we use unsupervised clustering. Unsupervised clustering can be used to group together similar data points without any need of already labelled training data. We use density based clustering algorithms, that group together the points (here, cluster embeddings) that are densely packed together and ignore the noise. HDBSCAN (Hierarchical Density-based Spatial Clustering of Applications with Noise).
+
+                   </aside>
+				</section>
+				<section data-menu-title="Classes HDBSCAN" data-background-iframe="pages/clusterclasses.html" data-background-interactive>
+					<div class="footer">
+						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
+					</div>
+                    <aside class="notes">
+                      Different classes have been coloured with different colors. The image below schematically shows how the dimensionality reduction above has 
+                      placed different classes of shapes based on their similarity. 
+                      We name the classes such that the related ones are in the same family represented by the initial numeric.
+                    </aside>
+				</section>
+			</section>
+			<section>
+				<section>
+					<h4>Properties of Classes</h4>
+				</section>
+				<section>
+					<h4> Sizes </h4>
+					<div>
+						<img style="height:240px;" class="imgnoborder" src="images/sz.svg" />
+						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
+					</div>
+                    <aside class="notes">
+                      We see that the initial small classes have very little variation in their sizes. Although, later we see classes
+                      that have variation in shapes but as we saw they are qualitatively same. We see in vacancy cluster classes that
+                      the last one has rather big clusters, while other three are comparable.
+                    </aside>
+				</section>
+				<section>
+					<h4> Dimensionality </h4>
+					<div>
+						<img style="height:240px;" class="imgnoborder" src="images/vr.svg" />
+						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
+					</div>
+                    <aside class="notes">
+                      On the left hand side we have variance on the first principle axis. A high value here implies
+                      linearity. On the right hand side we have variance on the first two principle axes. A high value
+                      here implies planarity. These are determined using Principle Component analysis applied on each
+                      cluster.
+                      On one hand, we have a crowdion class which is linear, on the other hand we have rings, 3D arrangements
+                      of parallel crowdions and random crowdions.
+                    </aside>
+	
+				</section>
+				<section data-menu-title="Distribution">
+					<h4>Distribution Across Elements & Energies</h4>
+					<div>
+						<img style="height:240px;" class="imgnoborder" src="images/elemNrg.svg" />
+						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
+					</div>
+                    <aside class="notes">
+                      On x-axis we have class labels and on y-axis we have elements-energy pair.
+                      We see that the classes with parallel orientations are dominant in W while with random orientations are more prevalent in Fe but to some extent
+                      in W too.
+                      Not just that even the small sized family 2 of classes that has classes with pair of dumbbells show different preferences. 
+                      Agrees with the prior literature and adds to it.
+                    </aside>
+				</section>
+				<section data-menu-title="More Properties">
+					<h4> More Properties To Look At</h4>
+					<ul>
+						<li>Distribution across different angles of PKA launch</li>
+						<li>Dislocation loops, diffusion properties, stability etc.</li>
+						<li>Distribution across cascades with and without subcascades</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<h3>Concluding Remarks</h3>
+				<ul>
+				  <li>The classification gives a way to systematically study the zoo of defect clusters formed in primary
+				  	damage due to irradiation.</li>
+				  <li>Since the classification is all automated, it can be applied to large databases of simulations of new
+				  	materials</li>
+				  <li>The same approach, with possibly different feature vector, can be 
+                    extended to find structures and classes in subcascades and cascades themselves.
+                  </li>
+                </ul>
+			</section>
+			<section style="text-align: left;">
+				<h2>THE END</h2>
+				<p>
+                <small>
+                <a href="https://github.com/haptork/csaransh/archive/master.zip">Download Csaransh</a> and give
+					it a try on your data (https://github.com/haptork/csaransh/)
+				<p>Discuss the results, get back with suggestions, feedback and code at <a
+						href="https://github.com/haptork/csaransh/"> github repository.</a>
+                We are open for collaboration.
+                </p>
+				<p>Have a look at the <a href="http://arxiv.org/abs/1811.10923"> paper describing each step in
+						more details and to find references to related topics discussed.</a> (http://arxiv.org/abs/1811.10923)</p>
+				<p>
+				You can check the links to some cool ML algorithms the project uses:
+                <ul>
+					<li><a href="http://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">t-SNE</a> </li>
+					<li><a href="https://github.com/lmcinnes/umap/">UMAP</a> </li>
+					<li><a href="http://hdbscan.readthedocs.io/">HDBSCAN</a> </li>
+				</ul>
+			    </small>	
+				</p>
+			</section>
+		</div>
+	</div>
+
+	<script src="lib/reveal.js/lib/js/head.min.js"></script>
+	<script src="lib/reveal.js/js/reveal.js"></script>
+
+	<script>
+
+		// Full list of configuration options available at:
+		// https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			history: true,
+			center: true,
+			slideNumber: true,
+
+			transition: 'convex', // none/fade/slide/convex/concave/zoom
+
+			menu: {
+				numbers: true,
+				openSlideNumber: true,
+				themes: true,
+				themesPath: 'lib/reveal.js/css/theme/',
+				transitions: true,
+				custom: [
+					{ title: 'Custom', icon: '<i class="fa fa-bookmark">', src: 'links.html' },
+				]
+			},
+
+			// Optional reveal.js plugins
+			dependencies: [
+				{ src: 'lib/js/classList.js', condition: function () { return !document.body.classList; } },
+				{ src: 'lib/reveal.js/plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+				{ src: 'lib/reveal.js/plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+				{ src: 'lib/reveal.js/plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } },
+				{ src: 'lib/reveal.js/plugin/search/search.js', async: true },
+				{ src: 'lib/reveal.js/plugin/zoom-js/zoom.js', async: true },
+
+				{ src: 'lib/reveal.js/plugin/notes/notes.js', async: true },
+				{ src: 'plugin/reveal.js-menu/menu.js', async: true }
+			]
+		});
+
+		/*
+			  Reveal.addEventListener( 'somestate', function() {
+				// TODO: Sprinkle magic
+			  }, false );
+			  Reveal.addEventListener( 'slidechanged', function( event ) {
+				  if(event.indexh == 1 && event.indexv == 0) {
+
+		.reveal .clustersiv {
+			position: fixed;
+			bottom: 3.0em;
+			left: 0.0px;
+			align-self: center;
+			width: 100%;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0, 0.5), 0 5px 25px rgba(0, 0, 0, 0.2);
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			padding: 10px;
+			text-align: center;
+		}
+		
+
+				  }
+				// event.previousSlide, event.currentSlide, event.indexh, event.indexv
+			  });
+			  */
+
+	</script>
+
+	<a class="fork-reveal" href="https://github.com/haptork/csaransh"><img
+			style="position: absolute; top: 0; right: 0; border: 0;" src="" alt="Fork Csaransh on GitHub"></a>
+</body>
+
+</html>
