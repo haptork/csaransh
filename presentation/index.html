@@ -7,7 +7,7 @@
 	<title>Classification of Clusters</title>
 
 	<meta name="description"
-		content="Slideshow explaining methods for classification of clusters in Molecular Dynamics simulations of collision cascades">
+		content="Presentation on methods and results of classification of clusters in Molecular Dynamics Simulations of collision cascades">
 	<meta name="author" content="Utkarsh Bhardwaj">
 
 	<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -61,7 +61,6 @@
 			left: 0.0px;
 			text-align: center;
 			width: 100%;
-			pointer-events: all;
 		}
 		.reveal .dark_box {
 			box-shadow: 0 1px 4px rgba(0, 0, 0, 0, 0.5), 0 5px 25px rgba(0, 0, 0, 0.2);
@@ -73,6 +72,7 @@
 
 		.dark_box_text {
 			color: #fff !important;
+			pointer-events: none;
 		}
 
 		.reveal .collision_cascade1 {
@@ -125,7 +125,7 @@
 
 		<!-- Any section element inside of this container is displayed as a slide -->
 		<div class="slides">
-			<section id="home">
+			<section id="home" data-audio-src="audio/Paravada.m4a"  >
 				<h2>Classification of Clusters</h2>
 				<h4>in MD simulations of</h4>
 				<h3>Collision Cascades</h3>
@@ -155,20 +155,9 @@
 				<aside class="notes">
 					<p>
 					  Hello, Good Evening, everyone.
-					  I'm going to talk about classification of clusters in Collision Cascades.
-                      We have applied interesting algorithms from unsupervised
-                      machine learning on the new geometrical and topological
-                      feature vectors that we define for clusters. 
-                      
-                      A bit of my background, about me:
-                      I'm a researcher at Bhabha. I've Masters in Computer
-                      Science and Engg. with specialisation in Nuclear Engg.
-                      I work with Manoj Warrier who guides my computational
-                      ideas to apply on computational physics problems which I find
-                      quite intriguing. He probably knows lot more physics than me.
-                      Prior to BARC, I've worked with a research team lead by
-                      Varun who has M.S. in Machine Learning from MIT. There I worked
-                      to evaluate programming codes using machine learning.
+					  I'm going to talk about classification of clusters in Collision Cascades using application of unsupervised machine learning on the new feature
+                      descriptors developed specifically to characterize the 
+                      cluster morphologies.
 
                       We got interested in this problem when the IAEA
                       Materials for fusion 2018 competition was announced with a
@@ -196,14 +185,32 @@
                 My masters was in Computer Science and Engg. with specialisation in Nuclear Engg.
                 </p>
                 <p>
-                Earlier, I've worked as research engg. in Aspiring Minds in a team lead by Varun Aggarwal (MIT grad. in ML).
-                I worked on research and development of a software to evaluate programming codes using ML which has served thousands of end-users.
+                I currently work on applying computational and ML techniques to computational physics problems
                 </p>
                 <p>
-                I currently work on applying computational and ML techniques to computational physics problems
-                under the guidance of Manoj Warrier (Ph.D. University of Greifswald, Germany).
+                You can check my other github repositories to know more about my work which ranges from
+                distributed computing to computer science educational tools:
+                <ul>
+                  <li><a href="https://github.com/haptork/easyLambda">EasyLambda</a>: Distributed data processing with functional list operations & MPI</li>
+                  <li><a href="https://github.com/haptork/eka">Eka</a>: A new old take on learning and teaching programming</li>
+                  <li><a href="https://github.com/haptork/pawn">Pawn</a>: Command line scripting for distributed data processing</li>
+                </ul>
                 </p>
                 </small>
+                <aside class="notes">
+                      But first, a bit of my background, about me: I'm a
+                      researcher at Bhabha Atomic Research Centre. I've Masters
+                      in Computer Science and Engg. with specialisation in
+                      Nuclear Engg.  I work with Manoj Warrier who guides my
+                      computational ideas to apply on computational physics
+                      problems which I find quite intriguing. He probably knows
+                      lot more physics than me.  Other than computational
+                      physics, some of my other projects range from distributed
+                      computing to computer vision, graphics and interfaces to
+                      using machine learning to stylistically grade computer
+                      codes. You can check my github repositories to find some
+                      of these.
+                </aside>
             </section>
 					
 
@@ -215,7 +222,8 @@
 				    </div>
 					<aside class="notes" data-markdown>
 						<textarea data-template>
-                        - Here is the evolution of a collision cascade, reds with
+                          Let's quickly go through the basic background of the problem:
+                        - Here is an animation of the evolution of a collision cascade that you can interact with to get a closer view. Reds with
                         flat crossed glyphs are vacancies, green with metal
                         glyphs are interstitials.
                         - The cascade is shown to reach the peak state. After the peak most of the
@@ -226,22 +234,6 @@
                         vacancies of many sizes and shapes.
 					</textarea>
 					</aside>
-                    <!--
-						- Peak state (1-3ps)
-						- Relaxed state
-						- Primary damage and clusters
-
-						A collision cascade is created when an energetic particle interacts
-						with an atom in a lattice and starts a billiard ball like collisions. As we can see, initially a lot of atoms are displaced out of
-						their lattice positions and then they recombine athermally resulting in the final primary
-						damage state saturating at lesser number of defects than at the peak. The primary damage at the end has single defects as well as defects clusters
-						of various shapes and sizes.
-
-                        (The MD simulations
-						are carried out on a lattice of a few hundred angstoms for a few tens of pico seconds. The
-						peak is reached at around 1-3ps followed by recombination for a few tens of pico seconds.)
-
-                    -->
 				</section>
 				<section data-background-iframe="pages/grapho_cascade/clusters_in_cascades.html"
 					data-background-interactive>
@@ -253,11 +245,9 @@
 					</div>
 					<aside class="notes" data-markdown>
 						<textarea data-template>
-                        Here we have the primary damage from four cascades at different energies in Fe and W.
-                        - Dumbbells as one interstitial and three defects at the same time.
-						- Myriad of shapes and sizes that play significant role in the micro-structural evolution.
-                        - It is very natural to get curious about all these shapes and try to derive insight about
-                        them from a big database of clusters.
+            Here we have the primary damage from four cascades at different energies in Fe and W. You can interact with each one to get a closer view at the myriad of
+            shapes and sizes present. The first at the top left is Iron cascade at
+            100keV, it is a big cascade with many interesting morphologies there are ring sort of shapes, multiple dumbbells arranged in many fashion and single dumbbells.  Dumbbells although are counted as one interstitial but when we consider the shape the other interstitial-vacancy pair needs to be accounted for. It is same with many other shapes. Next, we have Iron cascades at relatively lower energies 10keV and 5keV.Still we see some very peculier shapes. Tungsten at 50keV also shows some distinct clusters with many big crowdion like chains oriented in parallel fashion. Feel free to explore the interactive plots and get curious about different possibilities of morphologies, their properties and relationships, do certain shapes appear more in certain energies or elements, how many kind of shapes can be there and many more questions that we might have answers for by the end of the presentation or atleast an approach to explore the answers.
 				</textarea>
 					</aside>
 				</section>
@@ -265,8 +255,7 @@
 					<h4>Cluster Shapes Matter</h4>
 					<small>
 					<ul>
-                      <li> Decide diffusion (sessile / glissile)
-					</li>
+          <li> Decide diffusion (sessile / glissile) </li>
 					<li> Capture and Recombination properties</li>
 					<li> Thermal stability</li>
 					</ul>
@@ -302,14 +291,14 @@
 					<small>
                        Now that we can have big databases of collision cascades can we use
                        the data itself to systematically find different classes of
-                       clusters and get insights into each of the morphologies. Can we do the following:
+                       cluster defects and get insights into each of the classes. Can we do the following:
 			     	</small>
 					<ul>
 						<li> If we look at an interesting cluster in a cascade, can we ask which other cascades have
 						similar clusters and how do they look.</li>
 						<li> and can this query be fast for a big database of collision cascades & clusters.</li>
 						<li> Can we derive from data what all shapes are possible for different elements and energies</li>
-						<li> and how the different classes of morphologies relate to each other.</li>
+						<li> and how the different classes of shapes relate to each other.</li>
 					</ul>
 				</section>
 			</section>
@@ -327,29 +316,33 @@
 				</div>
 				<aside class="notes" data-markdown>
 				    <textarea data-template>
+                      We will quickly go through the ideas behind the methods used
+                      at different steps before discussing the results. Here is the overview of different steps.
+                      We start by identifying defects given xyz coordinates of all the atoms from MD simulations and nothing else. Unlike sphere based methods our algorithm requires no ambiguous threshold. We not only find defects that count but also defects that form the shape of a cluster and inherently mark them as extra defects which would be missing in a classical Wigner-Sietz approach. By extra defects we mean the extra interstitial-vacancy pairs required to define the shape such as one pair in a dumbbell shape is needed in addition to the one interstitial that we count to define the dumbbell shape. The algorithm is fast with O(n) time complexity without using any complicated data structure like kd-tree etc.
 
-                      We start with finding features along with extra defects that define the shape, what we mean is
-                      we want to identify a dumbbell not just as a single atom but as two interstitials and one vacancy
-                      that make it look like a dumbbell.
+Next, we group the defects into clusters and then find the feature descriptors to
+characterize their shape.
 
 A cluster is characterized by the normalized histogram of angles between the
-neighbouring defect triads and pair-wise distances. We use this histogram as a
-feature vector for the cluster. To find the similarity between two clusters it
-is sufficient to find the distance between the two feature vectors that
-represent them. The feature designed is simple, noise and deformation
-invariant, computationally efficient but power- ful way to characterize a
-shape.  
+neighbouring defect triads and pair-wise distances. To find the similarity
+between two clusters it is sufficient to find the distance between the two
+feature vectors that represent them. The feature designed is simple, noise and
+deformation invariant, computationally efficient but power- ful way to
+characterize a shape.  
 
 We further use topological network graph based dimensionality reduction
 techniques on the feature vectors. The network graph based dimensionality
 reduction techniques are well established ways to find a representation in the
 reduced dimensional space such that the distance between the distinct points is
-maximized [19, 20] and similar points are represented closely. 
+maximized [19, 20] and similar points are represented closely. Now, we can
+lay all the clusters on a 2D plane capturing the relationships amongst various
+sort of morphologies.
 
 We then use an unsupervised clustering algorithm to classify the clusters
-without any inputs and assumptions made. With the help of classification we
-explore the dimen- sionality, sizes and distribution of cluster shapes among
-elements and energy ranges.
+without any inputs and assumptions made. We find nine families of around 25
+classes. We next 
+explore the properties of these classes such as dimen- sionality, sizes and distribution of cluster shapes among elements and energy ranges. However, once we have this
+classification we can systematically talk about the primary damage and possibly use it in higher scale models in future. It seems it is just the beginning.
 
                         - Since, we don't apriori know alot about the kind of
                         classification we want, we would go with an exploratory
@@ -437,25 +430,32 @@ elements and energy ranges.
 						<li>Fast similarity search in a large database</li>
 					</ol>
 					<aside class="notes">
-                        Characterize clusters in some qualitative sense. The features should
+                      The motivation for our feature descriptor is such that it should characterize shape in some qualitative sense. The feature descritor should
                         retain the arrangement of local neighbourhood of a point defect that makes
-                        its shape unique while glossing over the thermal noises, extra defects appearing
-                        here and there, transformations. And these noises are inherent to our data.
+                        the shape of the cluster it is present in unique while glossing over the thermal noises, various transformation and extra defects appearing
+                        here and there. And these noises are inherent to our data.
                         We are going to get clusters in rotated, translated, possibly scaled to different levels.
                         There are going to be extra defects attached to a peculier structure like say a ring with
                         a tail of a few extra defects, or an incomplete ring but we want the feature vector to show
-                        that there is some similarity between all these structures. We want these local salient
+                        that there is some similarity between all these very similar clusters. We want these local salient
                         characteristics to be represented but we want that overall global shape should also matter to
-                        some extent. We want the feature vector that we can use to pattern match to closest structures.
-                        Let us now see how we can achieve all these great things.
-
-						<p>What to gloss over and what not to?</p>
+                        some extent. We want the feature vector that we can use to pattern match to closest structures in a big database efficiently.
+                        Let us now see how we can achieve all these goals.
 					</aside>
 				</section>
 				<section>
 					<h2> Motivation - Angles </h2>
 					<img src="./images/features_angles.png" />
                     <aside class="notes">
+                      Here, we see two typical structures with the angles between
+                      the neighbouring triads. In the ring shape most of the angles
+                      would be 120 or 60 degree while in crowdion these would be
+                      0 or 180 degree. If we create a histogram of all the
+                      neighbouring triad angles, we would have very different
+                      distribution. This more or less forms the first part of
+                      our feature descriptor, however there are a few more details
+                      to it that you can read about or check in the open source code, but the idea is just this.
+
                       We only take triads with vacancy as pivot and other two being either both vacancies or both interstitials in the neigh,
                       This is equivalent to taking distribution of interstitials and vacancies around fixed vacancy sites. Adding more angles adds
                       no extra information. Thus we get the local picture.
@@ -479,8 +479,11 @@ elements and energy ranges.
                     <aside class="notes">
 To find the similarity between two clusters it
 is sufficient to find the distance between the two feature vectors that
-represent them. 
-                    </aside>
+represent them. All of the distance measures give more or less similar results.
+However, the QFDF minimizes the sensitivity to binning sizes of histograms in
+feauture vectors, by sort of also considering the distancing after shifting one
+of the histograms.
+</aside>
 				</section>
 				<section data-menu-title="Example Features">
 					<h2> Some Typical Feature Vectors </h2>
@@ -498,6 +501,21 @@ represent them.
 							<img src="./images/stacked-crowdion.png" />
 						</div>
 					</div>
+          <aside class="notes">
+            Let's look at some of the typical cluster morphologies and their angular feature vector. The
+            first cluster shape is picked by us and the next two are found by searching through the database
+            for the closest matching clusters using the distances between the feature descriptors. The first
+            shape we look at is a crowdion. We can see that the feature vectors
+            as expected are showing peaks at zero degrees and 180 degrees or
+            adjacent bins. Next, we have the ring shapes. As you can see the shapes although qualitatively
+            similar, are not exactly same. However, their feature vectors are characteristic. The algorithm
+            successfully finds the top two closest matching clusters having rings inspite of differences in
+            the details. Here we have two dumbbells arranged in sort of perpendicular sloping fashion. The
+            feature vectors are quite different from others. Next, we have a bunch of crowdions and dumbbells
+            arranged in parallel orientation. Even, though the plots are done on the principle axes found using
+            the PCA, the shapes still have differences in details. The features again are quite distinguished
+            and the algorithm successfully finds the similar structures.
+          </aside>
 				</section>
 				<section>
 					<h2>Other Features</h2>
@@ -515,12 +533,22 @@ represent them.
 							<small>require labelling, less points per cluster and less data can affect accuracy</small>
 						</li>
 					</ul>
+          <aside class="notes">
+            There are some more feature descriptors that we looked at. However, some of them are more exact and sensitive
+            to the noise that is inherent in our data such as finding distances such as Hausdorff distance or shape context features
+            that use angles and distances from centroid etc. while some required more data or data labels.
+          </aside>
 				</section>
 			</section>
 			<section>
 				<section data-menu-title="Dimensionality Reduction">
 					<h4>Visualizing Similarities Between All The Clusters At Once</h4>
 					<small> Using neighbour graph dimensionality reduction techniques like t-SNE and UMAP</small>
+                    <aside class="notes">
+                      Now we know that with those features we have decent characterization of cluster morphologies. Apparently, we
+                      can use the same features along with neighbour graph dimensionality reduction to plot all the clusters 
+                      in one 2D plot and capture the complete scene of similarities and relationships between them.
+                    </aside>
 				</section>
 				<section data-menu-title="I/V TSNE" data-background-iframe="pages/clustersiv.html" data-background-interactive>
 					<div class="clustersiv dark_box">
@@ -528,16 +556,21 @@ represent them.
 					</div>
 					<aside class="notes" data-markdown>
 						<textarea data-template>
-Each point on the left hand side represent a cluster feature vector. The graph based dimensionality reduction techniques like t-SNE (t-Distributed Stochastic Neighbor Embedding) here or UMAP (Uniform Manifold Approximation and Projection) are well established techniques for qualitative analysis of relationships between the data points (here clusters). Every point in left was actually more than 50 dimentional point. By transforming the basis vectors such that the probability of similar points to appear together increases, t-SNE here helps visualizing and exploring classification and correlation of cluster shapes.
+Each point on the left hand side represents a cluster feature vector. The graph based dimensionality reduction techniques like t-SNE (t-Distributed Stochastic Neighbor Embedding) here or UMAP (Uniform Manifold Approximation and Projection) are well established techniques for analysis of relationships between the data points (here clusters). Every point in left was actually more than 50 dimentional feature descriptor that we saw. 
 
 A rather interesting way to think of t-SNE dimensionality reduction is as a n-body problem. Where we place all the points in 2D. Each point experiences some force from
 all others, repulsive and attractive, based on the similarity in higher, actual, basis. The points are moved slowly according to these forces. The other way which is
 most common way to look at these problems is finding a probability distribution in higher dimensional space such that close points get sampled closely and vise-verse,
 and find a probability distribution in the lower dimensional space that can mimic it.
 
-We have used vacancy and interstitial cluster labels to colour the points. Green are intersittils and red are vacancies. We see that the dimensionality reduction does
-differentiate well between these two classes. Now let's look a little bit closer. The local relationship is well maintained for the crowdion class. So now that we
-see them differently can we just find all the possible different classes.
+The plot is interactive, you can click on any point on the left to see the
+cluster itrepresents. We have used vacancy and interstitial cluster labels to
+colour the points. Green are intersittils and red are vacancies. We see that
+the dimensionality reduction does differentiate well between these two classes.
+Now let's look a little bit closer. The island formed of many points at the top, if we click on points there, we would know that all of them are crowdions. However, in the same island of points on the left we have crowdions that are a bit distorted while
+on right are the perfect collinear ones. The local relationship is well maintained
+within the crowdion class. The dimensionality reduction on the feature descriptors
+does seem promising. You can check some more points by interacting with the plot.
 					</textarea>
 					</aside>
 				</section>
@@ -555,14 +588,45 @@ To get an idea about the different shapes of defect clusters present in the data
                    </aside>
 				</section>
 				<section data-menu-title="Classes HDBSCAN" data-background-iframe="pages/clusterclasses.html" data-background-interactive>
-					<div class="footer">
-						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
-					</div>
                     <aside class="notes">
-                      Different classes have been coloured with different colors. The image below schematically shows how the dimensionality reduction above has 
-                      placed different classes of shapes based on their similarity. 
-                      We name the classes such that the related ones are in the same family represented by the initial numeric.
-                    </aside>
+Here is an interactive plot, where you can click on a point on left to see the
+cluster it represents.  Different colours represent different classes. The
+image below schematically shows how the dimensionality reduction above has
+placed different classes of shapes based on their similarity.  We name the
+classes such that the related ones are in the same family represented by the
+initial numeric. On the lower left corner there is 1a class having all the
+crowdions. The second family has three classes all having a pair of parallel
+dumbbells, although arranged differently, In 2a both the dumbbells are
+perfectly aligned, in 2b those get slightly shifted and in 2c even more. As we
+go to different classes of 4th and 5th family, the number of dumbbells or
+crowdions increase and the sizes of the crowdion chains also increase, but they
+all remain parallely oriented. Just besides the classes that
+have parallel orientations appear the similar sized classes with random
+orientations.  In this way the dimensionality reduction is retaining the global
+relationhip among the different classes.  Let's look at the classes with
+parallel orientation first. We have 4a which has one dumbbell and one crowdion,
+then 4b which has two dumbbells and one crowdion, 4c has dumbell triplet
+arranged in slightly non-planar shifted fashion, 5a has three crowdions and
+dumbbells in highly non-planar fashion, 5b has four, 5c are medium sized around
+five to tens, 5d even more, culminating in 5f with hundreds of big crowdion
+chains.  Now, let's look at the classes with random orientations of dumbbells
+and crowdions. The third family with classes 3a and 3b, appearing close to
+second family are dumbbells arranged in sort of slightly non-planar sloping T
+like shape and 7 like shape respectively. The classes of sixth family appear
+next to fourth and fifth with similar sizes. The class 6a has mostly triplets
+or a couple more dumbbells, 6b has a peculier tripod like arrangement with
+sometimes one leg shorter than others, 6c has 6+-2 randomly oriented dumbbells
+and sometimes a few crowdions arranged in almost planar fashion. 7a has many
+such randomly oriented dumbbells and a few crowdions totally non-planar while
+7b has many longer crowdions sometimes having semi-formed ring like structures
+on one end. The number of defects in 7a are comparable to that of 5c while 7b
+is close to 5d. A little bit down to these classes appears the eighth class
+with clusters having 3D ring like shapes something similar is sometimes
+referred to as C15 in literature. There are vacancy clusters in ninth family,
+whose size grows from 9a to 9d. Although it is difficult to talk qualitatively
+about the shapes of these vacancy classes but we can see the differences in
+their properties as we explore next.  
+</aside>
 				</section>
 			</section>
 			<section>
@@ -576,9 +640,18 @@ To get an idea about the different shapes of defect clusters present in the data
 						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
 					</div>
                     <aside class="notes">
-                      We see that the initial small classes have very little variation in their sizes. Although, later we see classes
-                      that have variation in shapes but as we saw they are qualitatively same. We see in vacancy cluster classes that
-                      the last one has rather big clusters, while other three are comparable.
+                      X-axis has different cluster labels and the y-axis represents number of point defects. The values are the
+                      point estimates. We see that the initial small classes have very little variation in their sizes. The classes
+                      keep growing in size from first family to fifth, these classes have parallel orientations of dumbbells and crowdions except
+                      the third family with randomly oriented dumbbells. The interstitial cluster classes with randomly orientations don't go
+                      as big as the parallel oriented ones go. The biggest one among these, 7b, has parallel oriented crowdions with some semi-formed
+                      ring sort of random orientations on the ends, or set of parallel oriented crowdion chains which are not parallel to each other.
+                      The perfect random oriented classes like eighth or 7a are
+                      quite less in size. From this, we can conclude that
+                      parallel orientations can grow way more bigger than the
+                      defects with random orientations.  We see in vacancy
+                      cluster classes, the ninth family, the last one has
+                      rather big clusters, while other three are comparable.
                     </aside>
 				</section>
 				<section>
@@ -591,11 +664,17 @@ To get an idea about the different shapes of defect clusters present in the data
                       On the left hand side we have variance on the first principle axis. A high value here implies
                       linearity. On the right hand side we have variance on the first two principle axes. A high value
                       here implies planarity. These are determined using Principle Component analysis applied on each
-                      cluster.
-                      On one hand, we have a crowdion class which is linear, on the other hand we have rings, 3D arrangements
-                      of parallel crowdions and random crowdions.
+                      cluster. On x-axes are class labels.
+                      On one hand, we have a crowdion class which is linear, another one that comes close is 2c which 
+                      has two dumbbells that are shifted alot making the spread on first principle axes way more than
+                      in other two axes. Looking at planarity, small classes like 2a, 2c, 4a, 4b are perfectly planar
+                      while 2b, 3a and 4c too are close to planar. The most non-planar small sized class is 3b, the
+                      7 shaped arrangement of two dumbbells. For its size 5a as well is quite a 3D arrangment of parallel
+                      triplet. The parallel orientation classes as they grow from medium sized 5c to big 5f, they gradually
+                      increase in the planarity. The eighth class with rings is 3D as expected. The 6a is a 3d structure 
+                      while 6b and 6c can easily qualify as almost planar. In vacancy classes 9a can be said as almost planar,
+                      while 9d is quite 3d.  
                     </aside>
-	
 				</section>
 				<section data-menu-title="Distribution">
 					<h4>Distribution Across Elements & Energies</h4>
@@ -604,11 +683,30 @@ To get an idea about the different shapes of defect clusters present in the data
 						<img style="height:320px" class="imgnoborder" src="images/drawing.svg" />
 					</div>
                     <aside class="notes">
-                      On x-axis we have class labels and on y-axis we have elements-energy pair.
-                      We see that the classes with parallel orientations are dominant in W while with random orientations are more prevalent in Fe but to some extent
-                      in W too.
-                      Not just that even the small sized family 2 of classes that has classes with pair of dumbbells show different preferences. 
-                      Agrees with the prior literature and adds to it.
+                      On x-axis we have class labels and on y-axis we have elements-energy pair. On left hand side is
+                      the box plot representation. The heat map on right hand side can be refferred for exact values.
+
+                      We see that the classes with parallel orientations are
+                      dominant in W such as 4th and 5th family while with
+                      random orientations are more prevalent in Fe than in W,
+                      that include 3rd and 8th family. The crowdions are
+                      predominantly present in W.  This can be attributed to
+                      difference in stable ground configurations of Fe and W
+                      which are 110 dumbbell and 111 crowdion, respectively. We
+                      can say that in Fe dumbbells and crowdions prefer to
+                      arrange in random orientations and in W it is the
+                      opposite. In addition to this generalization, there are
+                      few more interesting things to notice here. The classes
+                      of pair of dumbbells in 2nd family prefer different
+                      elements. In Fe, the pair of dumbbells arrange in
+                      perfectly aligned manner represented by 2a class, while
+                      in W they prefer shifted arrangements represented by 2b
+                      and 2c. While 6a, 6b and 7a that represent small to
+                      medium sized random orientations preferably occur in Fe
+                      cascades, the 6b class with a tripod like shape appears
+                      mostly in W. We can certainly attribute these preferences
+                      to differences in stable ground configurations but still
+                      I find these very interesting to look at.
                     </aside>
 				</section>
 				<section data-menu-title="More Properties">
@@ -683,20 +781,53 @@ To get an idea about the different shapes of defect clusters present in the data
 					{ title: 'Custom', icon: '<i class="fa fa-bookmark">', src: 'links.html' },
 				]
 			},
+keyboard: { 
+		82: function() { Recorder.toggleRecording(); },	// press 'r' to start/stop recording
+		90: function() { Recorder.downloadZip(); }, 	// press 'z' to download zip containing audio files
+		84: function() { Recorder.fetchTTS(); } 	// press 't' to fetch TTS audio files
+	},
 
 			// Optional reveal.js plugins
 			dependencies: [
-				{ src: 'lib/js/classList.js', condition: function () { return !document.body.classList; } },
-				{ src: 'lib/reveal.js/plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
-				{ src: 'lib/reveal.js/plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
-				{ src: 'lib/reveal.js/plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } },
+				{ src: 'lib/js/classList.js', condition: function () { return !document.body.classList;
+                                                                }
+                                                                }
+                                                                , {
+                                                                  src :
+                                                                      'lib/reveal.js/plugin/markdown/marked.js',
+                                                                  condition : function(){
+                                                                      return !!document.querySelector(
+                                                                          '[data-markdown]');
+                                                                }
+                                                                }
+                                                                , {
+                                                                  src :
+                                                                      'lib/reveal.js/plugin/markdown/markdown.js',
+                                                                  condition : function(){
+                                                                      return !!document.querySelector(
+                                                                          '[data-markdown]');
+                                                                }
+                                                                }
+                                                                , {
+                                                                  src :
+                                                                      'lib/reveal.js/plugin/highlight/highlight.js',
+                                                                  async : true,
+                                                                  callback :
+                                                                      function(){
+                                                                          hljs.initHighlightingOnLoad();
+                                                                }
+                                                                },
 				{ src: 'lib/reveal.js/plugin/search/search.js', async: true },
 				{ src: 'lib/reveal.js/plugin/zoom-js/zoom.js', async: true },
 
 				{ src: 'lib/reveal.js/plugin/notes/notes.js', async: true },
-				{ src: 'plugin/reveal.js-menu/menu.js', async: true }
+				{ src: 'plugin/reveal.js-menu/menu.js', async: true },
+                { src: 'lib/reveal.js/plugin/audio-slideshow/RecordRTC.js', condition: function( ) { return !!document.body.classList; } },				
+		        { src: 'lib/reveal.js/plugin/audio-slideshow/slideshow-recorder.js', condition: function( ) { return !!document.body.classList; } },				
+		        { src: 'lib/reveal.js/plugin/audio-slideshow/audio-slideshow.js', condition: function( ) { return !!document.body.classList; } }
+		         
 			]
-		});
+                });
 
 		/*
 			  Reveal.addEventListener( 'somestate', function() {
