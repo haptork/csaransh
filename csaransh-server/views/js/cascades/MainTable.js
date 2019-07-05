@@ -77,7 +77,7 @@ const defaultRangeFilterFn = (filter, row) => row[filter.id] >= filter.value.min
 
 const accessorDefault = name => x => x[name];
 const accessorOned = x => parseFloat(x["eigen_var"][0]) * 100;
-const accessorTwod = x => parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1]) * 100;
+const accessorTwod = x => (parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1])) * 100;
 const accessorSubc = x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length);
 
 const minMaxPropsMaker = fields => (ar, name) => {
@@ -121,10 +121,15 @@ export class MainTable extends React.Component {
       "in_cluster":{"name":"% defects in cluster"}, 
       "rectheta":{ "type": "input", "parseFn": roundOff}, 
       "recphi":{"type": "input",  "parseFn": roundOff}, 
-      "oned":{"name":"1st dim var", "accessor":accessorOned, "parseFn":parseInt}, 
-      "twod":{"name":"2nd dim var", "accessor":accessorTwod, "parseFn":parseInt}, 
+      //"oned":{"name":"1st dim var", "accessor":accessorOned, "parseFn":parseInt}, 
+      "twod":{"name":"Planarity", "accessor":accessorTwod, "parseFn":parseInt}, 
       "subc":{"name":"Subcascades", "accessor":accessorSubc, "parseFn":parseInt}, 
-      "dclust_sec_impact":{"name":"Impact of 2nd big subcascade"}
+      "dclust_sec_impact":{"name":"Impact of 2nd big subcascade"},
+      "hull_vol":{"name":"hVol"}, 
+      //"hull_area":{"name":"hArea"}, 
+      //"hull_nvertices":{"name":"hNVertex"}, 
+      "hull_nsimplices":{"name":"hNSimplix"}
+      //"hull_density":{"name":"hDensity"}
     };
     for (const key in this.fields) {
       let x = this.fields[key];

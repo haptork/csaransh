@@ -2,6 +2,7 @@ import React from 'react';
 import { getColor } from "../utils";
 import { NDefectsPlot } from  "./nDefectsPlot";
 import { SplomPlot } from "./SplomPlot";
+import { CorrelationPlot } from "./correlationPlot";
 import { DefectDistancePlot, calcStatDistsAngles } from "../cascades/DefectDistancePlot";
 import StatsIcon from '@material-ui/icons/MultilineChart';
 
@@ -87,7 +88,11 @@ const groupBars = (data, fields) => {
   // normalization
   for (let i = 0; i < vals.length; ++i) {
     for (let j in vals[i].values) {
-      vals[i].values[j] = (vals[i].values[j] - mn[i]) / (mx[i] - mn[i]);
+      if (mx[i] - mn[i] == 0.0) {
+        vals[i].values[j] = 0.0;
+      } else {
+        vals[i].values[j] = (vals[i].values[j] - mn[i]) / (mx[i] - mn[i]);
+      }
     }
   }
   return [d1, keys2, vals];
@@ -102,6 +107,11 @@ export class Statistics extends React.Component {
       "max vac size":{"id":"max_cluster_size_V"}, 
       "int in cluster":{"id":"in_cluster_I"}, 
       "vac in cluster":{"id":"in_cluster_V"}, 
+      "hull vol":{"id":"hull_vol"}, 
+      //"hull area":{"id":"hull_area"}, 
+      //"hull nvert":{"id":"hull_nvertices"}, 
+      "hull nsimpl":{"id":"hull_nsimplices"}, 
+      "hull density":{"id":"hull_density"}, 
       "planarity":{"id":"planarity", "accessor":accessorTwod }, 
       "subcascades":{"id":"subc", "accessor":accessorSubc }, 
       "subcascade impact":{"id":"dclust_sec_impact"},
@@ -119,7 +129,7 @@ export class Statistics extends React.Component {
     const [statDists, statAngles] = calcStatDistsAngles(this.props.data);
     return (
       <Grid container justify="center">
-        <GridItem xs={12} sm={12} md={12}>
+       <GridItem xs={12} sm={12} md={12}>
           <Card chart>
             <CardHeader color="info"> Statistics grouped by Elements and Energy </CardHeader>
             <CardBody>
@@ -127,7 +137,7 @@ export class Statistics extends React.Component {
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <StatsIcon /> Statistical Plot - Correlations, colors represent number of defects, filter data and remove outliers from table action buttons for better idea on correlations.
+                <StatsIcon /> Statistical Plot - Correlations, colors represent number of defects; filter data and remove outliers from table action buttons for better idea on correlations.
               </div>
             </CardFooter>
           </Card>
@@ -135,19 +145,35 @@ export class Statistics extends React.Component {
         <GridItem xs={12} sm={12} md={12}>
           <Card>
             <CardHeader color="primary">
-              <h4 className={classes.cardTitleWhite}>Splom Plots - Correlations</h4>
+              <h4 className={classes.cardTitleWhite}>Correlations</h4>
+            </CardHeader>
+            <CardBody id="splomCardBody">
+              <CorrelationPlot data={splomVals}/>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <StatsIcon /> Statistical Plot - Correlations, filter data and remove outliers from table action buttons for better idea on correlations.
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+ 
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary">
+              <h4 className={classes.cardTitleWhite}>Splom Plots - Grouping and Correlations</h4>
             </CardHeader>
             <CardBody id="splomCardBody">
               <SplomPlot keys={splomKeys} vals={splomVals}/>
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <StatsIcon /> Statistical Plot - Correlations, colors represent number of defects, filter data and remove outliers from table action buttons for better idea on correlations.
+                <StatsIcon /> Statistical Plot - colors represent number of defects, filter data and remove outliers from table action buttons for better idea on correlations.
               </div>
             </CardFooter>
           </Card>
         </GridItem>
-       <GridItem xs={12} sm={12} md={12}>
+      <GridItem xs={12} sm={12} md={12}>
        <CustomTabs
               title={"Distribution from PKA"}
               headerColor="warning"

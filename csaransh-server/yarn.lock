@@ -4056,6 +4056,11 @@ isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
 
+isnumeric@^0.3.1:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/isnumeric/-/isnumeric-0.3.3.tgz#74c6cc0a80219a7a65f0f7b3d1ba4d395497354d"
+  integrity sha512-GTxMCA0SsHdQWdsb6CDavRbeq4mQ2pryJUqwpcRHfKNnvdnNnI+3zT8K2zR/o9zZxTM6HKW7GRRetObb8E7p9Q==
+
 isobject@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-2.1.0.tgz#f065561096a3f1da2ef46272f815c840d87e0c89"
@@ -4795,6 +4800,13 @@ nextafter@^1.0.0:
 nice-try@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.4.tgz#d93962f6c52f2c1558c0fbda6d512819f1efe1c4"
+
+node-correlation@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/node-correlation/-/node-correlation-1.0.2.tgz#d0085b810990c3d373de6e503341f53f3ad7f399"
+  integrity sha1-0AhbgQmQw9Nz3m5QM0H1PzrX85k=
+  dependencies:
+    isnumeric "^0.3.1"
 
 node-fetch@^1.0.1:
   version "1.7.3"

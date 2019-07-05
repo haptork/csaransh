@@ -26,8 +26,6 @@ export class NDefectsPlot extends React.Component {
             label: key
         });
     }
-    console.log("buttons: ");
-    console.log(buttons);
     return (
       <Plot
         data= {this.props.data}

@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN 
 from sklearn.manifold import TSNE
+from scipy.spatial import ConvexHull
 import math
 import sys
 
@@ -226,8 +227,9 @@ def clusterClassData(data):
 
 def clusterClasses(data):
     feat, tag = clusterClassData(data)
-    rndSeed = 19
-    reduced_dim = umap.UMAP(n_components=8, n_neighbors=8, min_dist=0.15, metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
+    rndSeed = 42
+    #reduced_dim = umap.UMAP(n_components=8, n_neighbors=8, min_dist=0.15, metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
+    reduced_dim = umap.UMAP(n_components=20, n_neighbors=30, min_dist=0.0, metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
     show_dim = TSNE(n_components=2, metric = quad, random_state=rndSeed).fit_transform(feat).tolist()
     clusterer = hdbscan.HDBSCAN(min_cluster_size=8)
     cluster_labels = clusterer.fit_predict(reduced_dim)
@@ -246,6 +248,30 @@ def clusterClasses(data):
     # print len(class_tags)
     return (class_points, class_tags)
 
+def addHull(data):
+  for i,cascade in enumerate(data):
+      li = [x for x in cascade['coords'] if x[3] == 0 and x[5] == 1]
+      li = [x[0:3] for x in li]
+      if (len(li) < 4):
+          cascade['hull_vol'] = 0.0
+          cascade['hull_area'] = 0.0
+          cascade['hull_density'] = 0.0
+          cascade['hull_vertices'] = []
+          cascade['hull_simplices'] = []
+          cascade['hull_nvertices'] = 0
+          cascade['hull_nsimplices'] = 0
+          #cascade['hull_neigh'] = []
+      else:
+          hull = ConvexHull(li)
+          cascade['hull_vol'] = round(hull.volume, 2)
+          cascade['hull_area'] = round(hull.area, 2)
+          cascade['hull_density'] = (cascade['n_defects'] / hull.volume)
+          cascade['hull_vertices'] = hull.vertices.tolist()
+          cascade['hull_simplices'] = hull.simplices.tolist()
+          cascade['hull_nvertices'] = len(hull.vertices)
+          cascade['hull_nsimplices'] = hull.nsimplex
+          #cascade['hull_neigh'] = hull.neighbors.tolist()
+
 if __name__ == "__main__":
     fname = "cascades-data.json"
     out_fname = "cascades-data.js"
@@ -255,7 +281,8 @@ if __name__ == "__main__":
         cascades = json.load(f)
         f.close()
         print("Adding basis vectors and features...")
-        addEigenAndSubcascades(cascades['data'])	
+        addEigenAndSubcascades(cascades['data'])        
+        addHull(cascades['data'])
         print('finished.')
         print("Adding cluster comparison...")
         addClusterCmp(cascades['data'])
@@ -266,7 +293,7 @@ if __name__ == "__main__":
         try:
             res = clusterClasses(cascades['data'])
         except:
-            print("Error during classification")
+            print("Error / Warning during classification")
             print(sys.exc_info()[0])
         for label in res[1]:
             for tag in res[1][label]:
