@@ -46,7 +46,7 @@ For web-app:
 - Make a new directory `_build` or any other name. Go to this directory and run `cmake ..`.
 - If on Unix based systems like Linux / Mac run `make`. If using Visual Studio on Windows, load the project / solution.
 
-After building the application the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path. You can run the tests using `csaransh_pp_test` application in the `_build` directory.
+After building the application the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path. You can run the tests from the *csaransh_pp* directory by running the `csaransh_pp_test` application that gets built in the `_build` directory, the command would look like `./_build/csaransh_pp_test`.
 
 - run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
 
@@ -81,8 +81,8 @@ After building the application the executable `csaransh_pp` can be found in the 
 
 #### Ready to run app:
 
-- Open the html file given in `csaransh-app` in any modern browser, preferably firefox.
-- The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine in app with server.
+- Open the `index.html` file that can be found in the `csaransh-app` that you got by downloading or checking out into gh-pages branch. You can open it in any modern browser, preferably firefox.
+- The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine in app with server. One way is to start a simple local server using something like `python3 -m http.server 8000 --bind 127.0.0.1` from the directory that has index.html and then going to address localhost:8000 from the web browser.
 
 #### Server:
 
