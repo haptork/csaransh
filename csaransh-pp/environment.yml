@@ -9,3 +9,4 @@ dependencies:
   - scipy=1.2.1
   - hdbscan=0.8.22
   - umap-learn=0.3.8
+  - numba=0.43.1
