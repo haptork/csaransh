@@ -73,16 +73,27 @@ After building the application the executable `csaransh_pp` can be found in the 
 
 #### Load new Processed data
 
-- To view the processed data in online app, fork the project and replace the cascades-data.js in the gh-pages branch with the new data file.
-- To view the new processed data on your system using HTML app(that can be downloaded from releases or by checking out into gh-pages branch after cloning or downloading the gh-pages branch), copy the cascades-data.js to csaransh-app/CSaransh-files/ directory.
+###### Online in github
+- To view the processed data in online app, fork the project.
+- Go to the forked repository and replace the cascades-data.js in the gh-pages branch with the new data file.
+  - To do this, using github. Go to the forked repo; from home page change from master branch to gh-pages branch; go to CSaransh-files dir. and delete the cascades-data.js file; select upload files and upload your cascades-data.js file.
+  - Alternatively, if you know git commands, clone the forked repo, checkout to gh-pages branch, replace the cascades-data.js file with your data file, commit the change and push changes to the main branch.
+
+###### On your system in gh-pages branch:
+- To view the new processed data on your system using HTML app(that can be downloaded from releases or by checking out into gh-pages branch after cloning or downloading the gh-pages branch), copy the cascades-data.js to CSaransh-files directory.
 - To view the new processed data with server app, copy the cascades-data.js to csaransh-server/public/js/ directory. 
 
 ### Running the CSaransh interface
 
 #### Ready to run app:
 
-- Open the `index.html` file that can be found in the `csaransh-app` that you got by downloading or checking out into gh-pages branch. You can open it in any modern browser, preferably firefox.
-- The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine in app with server. One way is to start a simple local server using something like `python3 -m http.server 8000 --bind 127.0.0.1` from the directory that has index.html and then going to address localhost:8000 from the web browser.
+###### Online in github
+
+In your forked repository, go to the gh-pages link which would be something like: https://{yourusername}.github.io/csaransh/
+
+###### On your system in gh-pages branch:
+- Open the `index.html` file that can be found in the gh-pages branch that you got by downloading or checking out into gh-pages branch. You can open it in any modern browser, preferably firefox.
+- The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine on github forked repository. One way to solve this is to start a simple local server using something like `python3 -m http.server 3000 --bind 127.0.0.1` from the directory that has index.html and then going to address localhost:3000 from the web browser.
 
 #### Server:
 
