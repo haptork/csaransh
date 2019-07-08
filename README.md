@@ -20,6 +20,12 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utk
 
 ## Installation
 
+The software has two parts. 1) the post-processor which takes MD simulation data as input and finds defects, sub-cascades, clusters and their properties etc. and writes it in a JSON format. 2) The visualizer is a web based application to visualize and analyse the results.
+
+The post-processor is written in C++ and python. The faster C++ post-processor works on MD simulations to generate defects, clusters and their properties while python post-processor adds ML results like PCA, sub-cascades, classification etc. You will need both the post-processors. The results written in JSON format can be read by any application, the best way is to use the web application that comes with csaransh.
+
+The web application can be either run as a server or just by opening html file in a web-browser. You need to install nodejs etc. only if you want to run it as a server which is useful if you are going to make some changes to UI.
+
 ### Dependencies and Requirements
 
 - platform: Linux, Mac, Windows. 
@@ -29,12 +35,12 @@ For post-processing Molecular Dynamics simulation data:
   - gcc 5.3 or later or equivalent c++14 compiler.
   - Python 3.x or Python 2.7 or above
 
-For web-server:
-  - nodejs, npm / yarn for web-interface server.
-
-For web-app:
+For html only web-app:
 - Modern internet browser.
 	- tested on safari and firefox61
+
+For web-server:
+  - nodejs, npm / yarn for web-interface server.
 
 - Hardware: 
 	- CPU: comparable to i5 or better for smooth web interactions. 
@@ -50,13 +56,13 @@ After building the application the executable `csaransh_pp` can be found in the 
 
 - run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
 
-### Installing Server.
-
-- Go the the csaransh-sever directory and run `npm install --only=production` or `yarn --prod`.
-
 ### Client App
 
 - Nothing required here.
+
+### Installing Server.
+
+- Go the the csaransh-sever directory and run `npm install --only=production` or `yarn --prod`.
 
 ### Processing new data
 
@@ -81,6 +87,8 @@ After building the application the executable `csaransh_pp` can be found in the 
 
 ###### On your system in gh-pages branch:
 - To view the new processed data on your system using HTML app(that can be downloaded from releases or by checking out into gh-pages branch after cloning or downloading the gh-pages branch), copy the cascades-data.js to CSaransh-files directory.
+
+###### On web application with node server:
 - To view the new processed data with server app, copy the cascades-data.js to csaransh-server/public/js/ directory. 
 
 ### Running the CSaransh interface
