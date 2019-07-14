@@ -13,7 +13,11 @@ if(CMAKE_COMPILER_IS_GNUCC)
 
   if(ENABLE_COVERAGE)
     add_compile_options(--coverage -O0)
+  else()
+    add_compile_options(-O3)
   endif()
+else()
+  add_compile_options(-O3)
 endif()
 
 include_directories(include third_party)
