@@ -106,7 +106,7 @@ In your forked repository, go to the gh-pages link which would be something like
 #### Server:
 
 - Go to csaransh-server directory.
-- Run `npm start` or `nodejs ./bin/www` for older node versions to start the server in default 3000 port.
+- Run `npm start` or `nodejs ./bin/www` for older node versions to start the server in default 3000 port. Remember to run `npm install csaransh-server` prior to npm start to install the required npm modules.
 - Now you can load the interface on any modern browser, type `localhost:3000` in the address bar.
 
 ## Getting Started
