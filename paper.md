@@ -69,7 +69,6 @@ The ``CSaransh`` application was an entry in the IAEA challenge on materials for
 *Number of defects over different energies in Fe, On mouse-over the boxes show mean, median, max etc. Box plot for different properties can be plotted using the drop down menu. The statistics are aggregated for the rows filtered from the main table.*
 
 ![drawing](docs/splom.png)
-
 *The scatter plot of each parameter against every other is plotted that helps in checking correlations and trends between the parameters such as number of defects, number of sub-cascades, in cascade clustering fraction etc. The color coding is for number of defects, which helps to see if a pair of parameters correlate to the number of defects.*
 
 ![drawing](docs/spread.png)
