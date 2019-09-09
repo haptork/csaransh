@@ -72,7 +72,7 @@ The ``CSaransh`` application was an entry in the IAEA challenge on materials for
 *The scatter plot of each parameter against every other is plotted that helps in checking correlations and trends between the parameters such as number of defects, number of sub-cascades, in cascade clustering fraction etc. The color coding is for number of defects, which helps to see if a pair of parameters correlate to the number of defects.*
 
 ![drawing](docs/spread.png)
-*Shows the Distance distribution of interstitials and vacancies from the PKA (primary knock-on atom) origin for Fe at different energies.*
+*Shows the Distance distribution of interstitials and vacancies from the PKA (primary knock-on atom) origin for Fe and W at two different energies.*
 
 ![drawing](docs/classification.png)
 *The interactive plot shows the classification of cluster shapes on the left, each class having its own color. Each point represents a defect cluster. The 2-dimensional plot is generated using the dimensionality reduction algorithms UMAP[@UMAP] and t-SNE[@TSNE] which place similar defect clusters nearby. The clusters are classified using HDBSCAN[@HDBSCAN] unsupervised algorithm. Any cluster shape can be viewed on the right by clicking on a point on the left.*
