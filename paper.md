@@ -30,7 +30,7 @@ bibliography: paper.bib
 
 # Summary
 
-The micro-structural properties of the materials change due to irradiation. The defects formed during the displacement cascades caused by irradiation are primary source of radiation damage [@Stoller; @BjorkasKai]. The number of primary defects produced, defect cluster size distribution and defect cluster structures after a collision cascade can be studied using Molecular Dynamics simulations. These results determine the long term evolution of the micro-structural changes in the material [@Stoller; @GOLUBOV; @SINGH; @OSETSKY; @BECQUART]. The properties studied using Molecular Dynamics (MD) simulations can be used in higher scale radiation damage models like Monte Carlo methods and rate theories etc. [@OSETSKY; @BECQUART].
+The micro-structural properties of materials change due to irradiation. The defects formed during the displacement cascades caused by irradiation are primary source of radiation damage [@Stoller; @BjorkasKai]. The number of primary defects produced, defect cluster size distribution and defect cluster structures after a collision cascade can be studied using Molecular Dynamics simulations. These results determine the long term evolution of the micro-structural changes in the material [@Stoller; @GOLUBOV; @SINGH; @OSETSKY; @BECQUART]. The properties studied using Molecular Dynamics (MD) simulations can be used in higher scale radiation damage models like Monte Carlo methods and rate theories etc. [@OSETSKY; @BECQUART].
 
 ``CSaransh`` is a software suite to explore the Molecular Dynamics simulations of collision cascades. It includes post-processors to identify defects, characterize and classify cluster-structures, find number of sub-cascades etc. and a single page web-application (SPA) as GUI that provides interactive visualizations and charts such as:
 
@@ -40,13 +40,13 @@ The micro-structural properties of the materials change due to irradiation. The 
 - Statistical analysis over elements and energies and correlations for all the cascades for the properties like number of defects, dimensionality of cascades, number of sub-cascades etc.
 - Interactive tool for exploring the classes identified for the clusters found.
 
-With the combination of efficient algorithms, unsupervised machine learning and modern interactive GUI with 3D visualizations the application helps in exploring different aspects of collision cascades qualitatively as well as quantitatively. The study can reveal many interesting correlations and patterns specific to different materials, energy ranges etc. We use efficient algorithm to identify defects from big MD simulation files. We use statistics and various unsupervised machine learning algorithms like HDBSCAN [@HDBSCAN], UMAP [@UMAP], PCA etc. to find various features such as identification of sub-cascades, characterization and classification of cluster structures, identifying dimensionality of cascades and clusters.
+With the combination of efficient algorithms, unsupervised machine learning and modern interactive GUI with 3D visualizations the application helps in exploring different aspects of collision cascades qualitatively as well as quantitatively. The study can reveal many interesting correlations and patterns specific to different materials, energy ranges etc. We developed an efficient algorithm to identify defects from big MD simulation files. We use statistics and various unsupervised machine learning algorithms like HDBSCAN [@HDBSCAN], UMAP [@UMAP], PCA etc. to find various features such as identification of sub-cascades, characterization and classification of cluster structures based on features we have developed, identifying dimensionality of cascades and clusters.
 
 The suite uses different tools for various tasks according to suitability. C++14 is used to efficiently post-process big simulation outputs. Python is used to add properties found using machine learning algorithms. Html with React-js[@reactjs] is used to develop the single page application. The charting libraries like chart-js [@chartjs] and plotly.js [@plotlyjs] are used for the different charts. JSON is used as the common data format between post-processors and GUI.
 
 The application shows results on data from IAEA challenge as the default view, however any simulations data can be then loaded to study and explore. The application is planned to be included for the exploration of CascadesDB database[@CascadesDB].
 
-The ``CSaransh`` application was an entry in the IAEA challenge on materials for fusion, 2018 [@IAEA-challenge] and received critical acclaim from the judges of the contest. The description of the new algorithms for identification of defects and classification of clusters can be found in arxiv preprint paper [@ubclasses]. A talk in MoD-PMI 2019 workshop [@modpmi] is scheduled on the same topic.
+The ``CSaransh`` application was an entry in the IAEA challenge on materials for fusion, 2018 [@IAEA-challenge] and received critical acclaim from the judges of the contest. The description of the new algorithms for identification of defects and classification of clusters can be found in arXiv preprint paper [@ubclasses]. A talk in MoD-PMI 2019 workshop [@modpmi] is scheduled on the same topic.
 
 # Screenshots
 
@@ -60,7 +60,7 @@ The ``CSaransh`` application was an entry in the IAEA challenge on materials for
 
 ![Cluster size distribution of the cascades selected from the main table.](docs/clusterSize.png)
 
-![Number of defects over different energies in Fe, On mouse-over the boxes show mean, median, max etc. Box plot for different properties can be plotted using the drop down menu. The statistics are aggregated for the rows filtered from the main table.](docs/ndefects.png)
+![Number of defects over different energies in Fe. On mouse-over the boxes show mean, median, max etc. Box plot for different properties can be plotted using the drop down menu. The statistics are aggregated for the rows filtered from the main table.](docs/ndefects.png)
 
 ![The scatter plot of each parameter against every other is plotted that helps in checking correlations and trends between the parameters such as number of defects, number of sub-cascades, in cascade clustering fraction etc. The color coding is for number of defects, which helps to see if a pair of parameters correlate to the number of defects.](docs/splom.png)
 
