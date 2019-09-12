@@ -1,0 +1,41 @@
+{
+    "description": "post-processors to identify defects, characterize and classify cluster-structures, find number of sub-cascades, 3D interactive visualizations to explore properties and statistics all presented in one single page application.", 
+    "license": "GPL-3.0", 
+    "title": "CSaransh: Software Suite to Study Molecular Dynamics Simulations of Collision Cascades", 
+    "version": "v0.3.2", 
+    "upload_type": "software", 
+    "publication_date": "2019-09-13", 
+    "creators": [
+        {
+            "name": "Utkarsh Bhardwaj"
+        },
+        {
+            "name": "Harsh Hemani"
+        },
+        {
+            "name": "Manoj Warrier"
+        },
+        {
+            "name": "Nancy Semwal"
+        },
+        {
+            "name": "Kawsar Ali"
+        },
+        {
+            "name": "Ashok Arya"
+        }
+   ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/haptork/csaransh/tree/v0.3.2", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.2395901", 
+            "relation": "isVersionOf"
+        }
+    ]
+}
