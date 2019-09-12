@@ -1,28 +1,35 @@
 {
-    "description": "post-processors to identify defects, characterize and classify cluster-structures, find number of sub-cascades, 3D interactive visualizations to explore properties and statistics all presented in one single page application.", 
+    "description": "<ul><li>post-processors to identify defects, characterize and classify cluster-structures, find number of sub-cascades etc.</li> <li>A modern single page application with 3D interactive visualizations to explore properties, compare cascades and their aggregate statistics, explore patterns and insights found using machine learning algorithms.</li></ul>",
     "license": "GPL-3.0", 
     "title": "CSaransh: Software Suite to Study Molecular Dynamics Simulations of Collision Cascades", 
-    "version": "v0.3.2", 
+    "version": "v0.3.4", 
     "upload_type": "software", 
     "publication_date": "2019-09-13", 
     "creators": [
         {
-            "name": "Utkarsh Bhardwaj"
+            "name": "Utkarsh Bhardwaj",
+            "affiliation": "Bhabha Atomic Research Centre, India",
+            "orcid": "0000-0003-0872-7098"
         },
         {
-            "name": "Harsh Hemani"
+            "name": "Harsh Hemani",
+            "affiliation": "Bhabha Atomic Research Centre, India"
         },
         {
-            "name": "Manoj Warrier"
+            "name": "Manoj Warrier",
+            "affiliation": "Bhabha Atomic Research Centre, India"
         },
         {
-            "name": "Nancy Semwal"
+            "name": "Nancy Semwal",
+            "affiliation": "Bhabha Atomic Research Centre, India"
         },
         {
-            "name": "Kawsar Ali"
+            "name": "Kawsar Ali",
+            "affiliation": "Bhabha Atomic Research Centre, India"
         },
         {
-            "name": "Ashok Arya"
+            "name": "Ashok Arya",
+            "affiliation": "Bhabha Atomic Research Centre, India"
         }
    ], 
     "access_right": "open", 
