@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/haptork/csaransh.svg?branch=master)](https://travis-ci.org/haptork/csaransh)
 [![codecov](https://codecov.io/gh/haptork/csaransh/branch/master/graph/badge.svg)](https://codecov.io/gh/haptork/csaransh)
+[![DOI](https://zenodo.org/badge/159120701.svg)](https://zenodo.org/badge/latestdoi/159120701)
 
 Csaransh
 ==================================
