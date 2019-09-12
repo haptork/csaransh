@@ -52,9 +52,9 @@ The application shows results on data from the IAEA challenge as the default vie
 
 ![Main table with reactive filters, sorting, selection etc. The cascades of interest can be chosen here using the first (view) action button placed in first column of each row. Filters and sorting can be applied using the sliders for energy, directions, defects count, etc. The statistics are shown for only the filtered rows. To exclude a single row from the statistics, the second action button for that row can be toggled.](docs/table.png)
 
-![Section to chose and compare similar clusters. The cluster of interest can be chosen from the cascade view or the list on the left. The right side shows top five clusters from the complete database of cascades that match the shape of the cluster on the left. There are different matching criteria to choose from. Each of the matches can be separately viewed by clicking on the choices displayed on the bottom of the right section along with the (dis-)similarity metric from the cluster on left and dimensionality.](docs/clusterCmp.png)
+![Section to choose and compare similar clusters. The cluster of interest can be chosen from the cascade view or the list on the left. The right side shows top five clusters from the complete database of cascades that match the shape of the cluster on the left. There are different matching criteria to choose from. Each of the matches can be separately viewed by clicking on the choices displayed on the bottom of the right section along with the (dis-)similarity metric from the cluster on left and dimensionality.](docs/clusterCmp.png)
 
-![A high energy cascade can be composed of different sub-cascades or frangments. The sub-cascades are found using the DBSCAN algorithm on the vacancies created in the cascade.](docs/subcascade1.png)
+![A high energy cascade can be composed of different sub-cascades or fragments. The sub-cascades are found using the DBSCAN algorithm on the vacancies created in the cascade.](docs/subcascade1.png)
 
 ![Scatter view and heat-map view for the same cascade. Heat map can be viewed for the vacancies, interstitials and both. It represents the density of defects. The scatter view and specifically heat map for vacancies can give a qualitative idea of the sub-cascading and range of the cascade.](docs/subcascade2.png)
 
@@ -64,8 +64,8 @@ The application shows results on data from the IAEA challenge as the default vie
 
 ![The scatter plot of each parameter against every other is plotted that helps in checking correlations and trends between the parameters such as number of defects, number of sub-cascades, in cascade clustering fraction etc. The color coding is for number of defects, which helps to see if a pair of parameters correlate to the number of defects.](docs/splom.png)
 
-![Shows the Distance distribution of interstitials and vacancies from the PKA (primary knock-on atom) origin for Fe and W at two different energies.](docs/spread.png)
+![Shows the distance distribution of interstitials and vacancies from the PKA (primary knock-on atom) origin for Fe and W at two different energies.](docs/spread.png)
 
-![The interactive plot shows the classification of cluster shapes on the left, each class having its own color. Each point represents a defect cluster. The 2-dimensional plot is generated using the dimensionality reduction algorithms UMAP [@UMAP] or t-SNE [@TSNE] which place similar defect clusters nearby. The clusters are classified using HDBSCAN [@HDBSCAN] unsupervised algorithm. Any cluster shape can be viewed on the right panel by clicking on a point on the left.](docs/classification.png)
+![The interactive plot shows the classification of cluster shapes on the left, each class having its own color. Each point represents a defect cluster. The two dimensional plot is generated using the dimensionality reduction algorithms UMAP [@UMAP] or t-SNE [@TSNE] which place similar defect clusters nearby. The clusters are classified using HDBSCAN [@HDBSCAN] unsupervised algorithm. Any cluster shape can be viewed on the right panel by clicking on a point on the left.](docs/classification.png)
 
 # References
