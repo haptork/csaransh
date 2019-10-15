@@ -27,7 +27,7 @@ const getName = (curMode, classIndex, index, data) => {
   }
   let row = data[d.tags[classIndex][index][0]];
   let cid = d.tags[classIndex][index][1];
-  return row.name + "_" + cid + "_" + row.infile;
+  return row.substrate + " @ " + row.energy + "keV; cluster-id: " + cid + "; file: " +  row.infile;
 };
 
 const getClusterCoords = (curMode, classIndex, index, data) => {
@@ -83,8 +83,7 @@ export class ClusterClassesPlot extends React.Component {
   }
 
   onPointClick(data) {
-    // console.log(data);
-    this.handleShow(data.points[0].curveNumber, data.points[0].pointNumber);
+    this.handleShow(data.points[0].fullData.name, data.points[0].pointNumber);
   }
 
   shouldComponentUpdate(nextProps, nextState){

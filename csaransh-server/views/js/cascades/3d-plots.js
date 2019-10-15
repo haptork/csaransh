@@ -218,19 +218,23 @@ export const ScatterPlot = props =>
 
 // ===============
 
-const cookDataClasses = (c) => {
+const cookDataClasses = (classData) => {
   var traces = [];
   let i = 0;
-  for (const cid in c) {
+  let labelsOrdered = Object.keys(classData);
+  labelsOrdered.sort();
+  console.log(labelsOrdered);
+  for (const classLabel of labelsOrdered) {
     traces.push(
       {
-        x: c[cid][0],
-        y: c[cid][1],
-        z: c[cid][2],
+        x: classData[classLabel][0],
+        y: classData[classLabel][1],
+        z: classData[classLabel][2],
         mode: 'markers',
         type: 'scatter3d',
+        name: classLabel,
         marker: {
-          color: (cid == "-1") ? 'rgb(220,220,220)' : getColor(i++),
+          color: (classLabel == "noise") ? 'rgb(220,220,220)' : getColor(i++),
           size: 2
         }
       }
