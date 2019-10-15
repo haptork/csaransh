@@ -334,8 +334,8 @@ export class CascadeVisualizer3D extends React.Component {
           this.all_frames[this.last_frame_name]["coords"] = coords;
           this.all_frames[this.last_frame_name]["simulationCode"] = this_frame_data["simulationCode"];
           var xrec = this_frame_data["xrec"];
-          var yrec = this_frame_data["xrec"];
-          var zrec = this_frame_data["xrec"];
+          var yrec = this_frame_data["yrec"];
+          var zrec = this_frame_data["zrec"];
           var recphi = this_frame_data["recphi"];
           var rectheta = this_frame_data["rectheta"];
           var boxsize = this_frame_data["boxSize"];
