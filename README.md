@@ -24,7 +24,7 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utk
 
 The software has two parts. 1) the post-processor which takes MD simulation data as input and finds defects, sub-cascades, clusters and their properties etc. and writes it in a JSON format. 2) The visualizer is a web based application to visualize and analyse the results.
 
-The post-processor is written in C++ and python. The faster C++ post-processor works on MD simulations to generate defects, clusters and their properties while python post-processor adds ML results like PCA, sub-cascades, classification etc. You will need both the post-processors. The results written in JSON format can be read by any application, the best way is to use the web application that comes with csaransh.
+The post-processor is written in C++ and python. The faster C++ post-processor works on MD simulations to generate defects, clusters and their properties while python post-processor adds ML results like PCA transformed coordinates, sub-cascades, classification etc. You will need both the post-processors. The results written in JSON format can be read by any application, the best way to explore the results is to use the web application that comes with csaransh.
 
 The web application can be either run as a server or just by opening html file in a web-browser. You need to install nodejs etc. only if you want to run it as a server which is useful if you are going to make some changes to UI.
 
@@ -41,14 +41,14 @@ For html only web-app:
 - Modern internet browser.
 	- tested on safari and firefox61
 
-For web-server:
+For web-server (only if you wish to change visualization):
   - nodejs, npm / yarn for web-interface server.
 
 - Hardware: 
 	- CPU: comparable to i5 or better for smooth web interactions. 
 	- Other than the desktops or laptops, the web interface can be used from tablets and mobiles as well.
 
-### Building Post-processor
+### Building Post-processor (For processing your own MD results)
 
 - Go to csaransh-pp directory.
 - Make a new directory `_build` or any other name. Go to this directory and run `cmake ..`.
@@ -57,14 +57,6 @@ For web-server:
 After building the application the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path. You can run the tests from the *csaransh_pp* directory by running the `csaransh_pp_test` application that gets built in the `_build` directory, the command would look like `./_build/csaransh_pp_test`.
 
 - run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
-
-### Client App
-
-- Nothing required here.
-
-### Installing Server.
-
-- Go the the csaransh-sever directory and run `npm install --only=production` or `yarn --prod`.
 
 ### Processing new data
 
@@ -79,39 +71,30 @@ After building the application the executable `csaransh_pp` can be found in the 
 - The output JSON file cascades-data.json is written in current directory.
 - From the directory where cascades-data.json is located run the script `pp.py` script given in csaransh-pp directory, `python %PATH%/pp.py`. If running from some other directory where cascades-data.json is not there, pass path to cascades-data.json as the first argument to the python script as `python %PATH%/bin/pp.py %PATH%/cascades-data.json`. This script might take a few minutes before it generates `cascades-data.js` output file. If any import errors appear, install the python package using `pip install` or `easy-install` or use anaconda for python. 
 
-#### Load new Processed data
+### Loading & Viewing New Processed Results
 
 ###### Online in github
 - To view the processed data in online app, fork the project.
 - Go to the forked repository and replace the cascades-data.js in the gh-pages branch with the new data file.
   - To do this, using github. Go to the forked repo; from home page change from master branch to gh-pages branch; go to CSaransh-files dir. and delete the cascades-data.js file; select upload files and upload your cascades-data.js file.
   - Alternatively, if you know git commands, clone the forked repo, checkout to gh-pages branch, replace the cascades-data.js file with your data file, commit the change and push changes to the main branch.
+- In your forked repository, go to the gh-pages link which would be something like: https://{yourusername}.github.io/csaransh/
 
 ###### On your system in gh-pages branch:
-- To view the new processed data on your system using HTML app(that can be downloaded from releases or by checking out into gh-pages branch after cloning or downloading the gh-pages branch), copy the cascades-data.js to CSaransh-files directory.
-
-###### On web application with node server:
-- To view the new processed data with server app, copy the cascades-data.js to csaransh-server/public/js/ directory. 
-
-### Running the CSaransh interface
-
-#### Ready to run app:
-
-###### Online in github
-
-In your forked repository, go to the gh-pages link which would be something like: https://{yourusername}.github.io/csaransh/
-
-###### On your system in gh-pages branch:
+- To view the new processed data on your system using HTML app(that can be downloaded from releases or by checking out into gh-pages branch after cloning or downloading the gh-pages branch from github interface), copy the cascades-data.js to `CSaransh-files` directory.
 - Open the `index.html` file that can be found in the gh-pages branch that you got by downloading or checking out into gh-pages branch. You can open it in any modern browser, preferably firefox.
 - The only problem with this client only app is that the 3D clusters webGL plot may not be visible in some browsers, however it will load perfectly fine on github forked repository. One way to solve this is to start a simple local server using something like `python3 -m http.server 3000 --bind 127.0.0.1` from the directory that has index.html and then going to address localhost:3000 from the web browser.
 
-#### Server:
+### Installing npm Server (optional)
+##### (only if you wish to modify viewer or run viewer via npm server)
 
+- Go the the csaransh-sever directory and run `npm install --only=production` or `yarn --prod`.
+- To view the new processed data with server app, copy the cascades-data.js to csaransh-server/public/js/ directory. 
 - Go to csaransh-server directory.
 - Run `npm start` or `nodejs ./bin/www` for older node versions to start the server in default 3000 port. Remember to run `npm install csaransh-server` prior to npm start to install the required npm modules.
 - Now you can load the interface on any modern browser, type `localhost:3000` in the address bar.
 
-## Getting Started
+## Getting started: Using csaransh web-app to explore cascades data
 
 When you open the app you see a clickable green header at the top, some summary information for the complete data and four panel headers that you can open by clicking.
 
