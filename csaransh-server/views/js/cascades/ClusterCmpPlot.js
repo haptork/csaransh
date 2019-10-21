@@ -52,7 +52,7 @@ const getClusterTypeAndClass = (row, cid) => {
   if (cid.length == 0) cid = getInitialSelection(row);
   if (cid) {
     return [(row.clusterSizes[cid] > 0) ? "majority interstitials" : "majority vacancies", 
-            (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty(cid) && row.clusterClasses[cid] >= 0) ? "; class-" + row.clusterClasses[cid] : ""];
+            (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty(cid) && row.clusterClasses[cid] !== -1 && row.clusterClasses[cid] !== "noise") ? "; class-" + row.clusterClasses[cid] : ""];
   }
   return [-1, -1];
 };
@@ -75,8 +75,6 @@ export const getInitialSelection = (row) => {
 };
 
 const getCmpCoord = (row, cid, data, mode, isSize, val) => {
-  console.log("row - 1");
-  console.log(row);
   if (cid == '') return getClusterCoord(row, cid);
   if (!(row.clust_cmp_size.hasOwnProperty(cid))) {
     const cids = getCids(row);
@@ -102,12 +100,11 @@ const getCmpCids = (row, cid, data, mode, isSize) => {
   if (isSize) {
     scores = row.clust_cmp_size[cid][mode];
   }
-  console.log(scores);
   scores = scores.filter(x => x.length >= 3);
   return scores.map(x => {
     const name = x[2] + '-' + data[x[1]].name;
     const iorv = (data[x[1]].clusterSizes[x[2]] > 0) ? "; inter." : "; vac.";
-    const clabel = (data[x[1]].hasOwnProperty("clusterClasses") && data[x[1]].clusterClasses.hasOwnProperty(x[2]) && data[x[1]].clusterClasses[x[2]] >= 0) ? ("; class-" + data[x[1]].clusterClasses[x[2]]) : ""; 
+    const clabel = (data[x[1]].hasOwnProperty("clusterClasses") && data[x[1]].clusterClasses.hasOwnProperty(x[2]) && data[x[1]].clusterClasses[x[2]] !== -1 && data[x[1]].clusterClasses[x[2]] !== "noise") ? ("; class-" + data[x[1]].clusterClasses[x[2]]) : ""; 
     const info = "diff: " + (x[0]).toFixed(2) + " eigen-var: " + 
            data[x[1]].eigen_features[x[2]]["var"][0] + ", " + data[x[1]].eigen_features[x[2]]["var"][1] +
            iorv + clabel;
