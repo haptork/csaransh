@@ -20,8 +20,18 @@ function Footer({ ...props }) {
             </a>
             </ListItem>
             <ListItem className={classes.inlineBlock}>
+            <a href="http://joss.theoj.org/papers/72f2ddde2112497826753319956ea8ab" className={classes.a}>
+              For Csaransh citation
+            </a>
+            </ListItem>
+            <ListItem className={classes.inlineBlock}>
+            <a href="https://haptork.github.io/csaransh/presentation/index.html" className={classes.a}>
+              Cluster classification presentation
+            </a>
+            </ListItem>
+             <ListItem className={classes.inlineBlock}>
             <a href="https://doi.org/10.1016/j.commatsci.2019.109364" className={classes.a}>
-              Defect Classification Description Paper
+              Defect identification & cluster classification paper
             </a>
             </ListItem>
           </List>
