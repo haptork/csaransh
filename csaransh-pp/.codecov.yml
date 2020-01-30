@@ -1,6 +1,9 @@
 ignore:
-  - "csaransh-pp/third_party/*" # ignoring catch and disjoint-set
+  - "csaransh-pp/third_party/*" # ignoring catch, clipp and disjoint-set
   - "csaransh-pp/src/main.cpp"  # ignoring for only boilerplate 
   - "csaransh-pp/src/printJson.cpp" # ignoring for only printing boilerplate 
   - "csaransh-pp/include/printJson.hpp" # ignoring for only printing boilerplate 
-  - "csaransh-pp/include/printJson.hpp" # ignoring for only printing boilerplate 
+  - "third_party/*" # ignoring catch, clipp and disjoint-set
+  - "src/main.cpp"  # ignoring for only boilerplate 
+  - "src/printJson.cpp" # ignoring for only printing boilerplate 
+  - "include/printJson.hpp" # ignoring for only printing boilerplate
