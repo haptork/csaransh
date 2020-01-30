@@ -10,6 +10,7 @@ from sklearn.neighbors import NearestNeighbors
 from scipy.spatial import ConvexHull
 import math
 import sys
+import os
 
 import numba
 import umap
@@ -281,9 +282,10 @@ def addClusterCmp(data):
     quadAngle = quadCustom(1.0, 0.0)
     quadDist = quadCustom(0.0, 1.0)
     quadBoth = quad
-    neigh[keys[0]] = NearestNeighbors(topsize * 3, metric=quadAngle)
-    neigh[keys[1]] = NearestNeighbors(topsize * 3, metric=quadDist)
-    neigh[keys[2]] = NearestNeighbors(topsize * 3, metric=quadBoth)
+    defaultK = topsize * 3 if topsize * 3 < len(feat) else len(feat) - 1
+    neigh[keys[0]] = NearestNeighbors(defaultK, metric=quadAngle)
+    neigh[keys[1]] = NearestNeighbors(defaultK, metric=quadDist)
+    neigh[keys[2]] = NearestNeighbors(defaultK, metric=quadBoth)
     dists = {} 
     neighbours = {}
     for key in neigh:
@@ -313,7 +315,12 @@ def trainKnn(feat, true_labels, n_neighbors, metric, weights):
     return neigh
 
 def getTrainData():
-    f = open("training-data.json", 'r')
+    training_data_file = "training-data.json"
+    if not os.path.exists(training_data_file) or os.path.isdir(training_data_file):
+        training_data_file = os.path.join("..", training_data_file)
+        if not os.path.exists(training_data_file) or os.path.isdir(training_data_file):
+            raise "Training File Missing"
+    f = open(training_data_file, 'r')
     di = json.load(f)
     f.close()
     return di['feat'], di['label']
@@ -352,9 +359,8 @@ def supervisedClustersClassification(testFeat):
 
 def unsupervisedClustersClassification(feat):
     rndSeed = 42
-    reduced_dim = umap.UMAP(n_components=20, n_neighbors=30, min_dist=0.0,
-                            metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
-    clusterer = hdbscan.HDBSCAN(min_cluster_size=8)
+    reduced_dim = umap.UMAP(n_components=9, n_neighbors=9, min_dist=0.11, metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=6)
     return clusterer.fit_predict(reduced_dim)
 
 def classesDataToSave(cluster_labels, show_dim, tag):
