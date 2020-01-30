@@ -30,7 +30,8 @@ private:
   std::vector<std::array<long double, 3>> _sites;
   std::array<long double, 3> _origin;
   long double _latConst;
+  long double roundOffTo = 10000.0;
 };
-}
+} // namespace csaransh
 
 #endif // ADDOFFSET_CSARANSH_HPP

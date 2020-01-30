@@ -18,13 +18,23 @@ import CustomTabs from "components/CustomTabs/CustomTabs.js";
 
 import AngleIcon from "@material-ui/icons/CallSplit";
 import DistIcon from "@material-ui/icons/LinearScale";
+import Select from 'react-select';
 
 const accessorDefault = name => x => x[name];
 const accessorOned = x => parseFloat(x["eigen_var"][0]);
 const accessorTwod = x => parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1]);
 const accessorSubc = x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length);
 
-const groupBars = (data, fields) => {
+const groupByKey = (row, groupingLabels) => {
+  let res = '';
+  for (const label of groupingLabels) {
+    res += row[label.value] + '-';
+  }
+  res = res.slice(0, -1); 
+  return res;
+};
+
+const groupBars = (data, fields, groupingLabels) => {
   let keys = [];
   let keys2 = [];
   const defaultType = "box";
@@ -44,8 +54,8 @@ const groupBars = (data, fields) => {
     mn.push(0.0);
   }
   for (const x of data) {
-    keys.push(x.substrate + "_" + x.energy);
-    keys2.push(x.name);
+    keys.push(groupByKey(x, groupingLabels));
+    //keys2.push(x.name);
     for (let val of vals) {
       const key = val.label;
       val.values.push(fields[key].accessor(x));
@@ -117,21 +127,51 @@ export class Statistics extends React.Component {
       "subcascade impact":{"id":"dclust_sec_impact"},
       "energy":{"id":"energy", "type":"no-box"}
     };
+    this.options = [
+      { value: 'substrate', label: 'Material' },
+      { value: 'energy', label: 'Energy' },
+      { value: 'temperature', label: 'Temperature' },
+      { value: 'potentialUsed', label: 'Potential' },
+      { value: 'author', label: 'Author' },
+      { value: 'tags', label: 'Tags' },
+    ];
+    this.defaultGroupingLabels = this.options.slice(0, 2);
+    this.state = {
+      groupingLabels: this.defaultGroupingLabels
+    };
   }
 
+  handleChange = groupingLabels => {
+   this.setState(
+      { groupingLabels }
+    );
+  };
+
   shouldComponentUpdate(nextProps, nextState){
-    return this.props.data != nextProps.data;
+    return this.props.data != nextProps.data || this.state.groupingLabels != nextState.groupingLabels;
   }
 
   render() {
+
+    const { groupingLabels } = this.state;
     const { classes } = this.props;
-    const [nDefects, splomKeys, splomVals] = groupBars(this.props.data, this.fields); 
-    const [statDists, statAngles] = calcStatDistsAngles(this.props.data);
+    const [nDefects, splomKeys, splomVals] = groupBars(this.props.data, this.fields, this.state.groupingLabels); 
+    //const [statDists, statAngles] = calcStatDistsAngles(this.props.data);
     return (
       <Grid container justify="center">
        <GridItem xs={12} sm={12} md={12}>
           <Card chart>
-            <CardHeader color="info"> Statistics grouped by Elements and Energy </CardHeader>
+            <CardHeader color="info"> <span>Statistics grouped by </span>
+              <span style={{display:"inline-block", top:"8px", position:"relative", marginLeft:"10px"}}>
+              <Select
+                value={groupingLabels}
+                closeOnSelect={false}
+                multi
+                options={this.options}
+                onChange={this.handleChange}
+              />
+              </span>
+            </CardHeader>
             <CardBody>
               <NDefectsPlot data= {nDefects} fields = {this.fields}/>
             </CardBody>
@@ -158,6 +198,11 @@ export class Statistics extends React.Component {
           </Card>
         </GridItem>
  
+     </Grid>
+    );
+  }
+}
+/*
         <GridItem xs={12} sm={12} md={12}>
           <Card>
             <CardHeader color="primary">
@@ -219,7 +264,5 @@ export class Statistics extends React.Component {
               ]}
             />
           </GridItem>
-     </Grid>
-    );
-  }
-}
+
+*/

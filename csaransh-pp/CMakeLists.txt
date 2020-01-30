@@ -22,10 +22,11 @@ endif()
 
 include_directories(include third_party)
 
-set(SOURCES src/AddOffset.cpp src/cluster2features.cpp src/printJson.cpp src/reader.cpp src/results.cpp src/xyz2defects.cpp)
+set(SOURCES src/AddOffset.cpp src/cluster2features.cpp src/printJson.cpp src/infoReader.cpp src/reader.cpp src/results.cpp src/xyz2defects.cpp src/xyzReader.cpp src/optimizeOrigin.cpp src/NextExpected.cpp src/helper.cpp)
 file(GLOB TESTS test/*.cpp)
 
 add_library(${PROJECT_NAME}_lib ${SOURCES})
+add_library(${PROJECT_NAME}_shared SHARED ${SOURCES} src/somain.cpp)
 add_executable(${PROJECT_NAME} src/main.cpp)
 add_executable(${PROJECT_NAME}_test ${TESTS})
 

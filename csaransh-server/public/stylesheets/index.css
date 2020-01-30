@@ -123,6 +123,14 @@
   margin: -5px;
 }
 
+.ReactTable .rt-tbody .rt-td {
+  overflow: hidden;
+}
+
+.ReactTable .rt-thead.-filters input {
+  padding: 0;
+}
+
 .table-glyph {
   top: 0px;
 }

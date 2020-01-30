@@ -24,6 +24,8 @@ import StepButton from '@material-ui/core/StepButton';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
+import { getData, uniqueKey } from "../utils";
+
 const getClusterCoord = (row, cid) => {
   let c = [[],[],[]];
   cid = "" + cid;
@@ -89,7 +91,7 @@ const getCmpCoord = (row, cid, data, mode, isSize, val) => {
   return getClusterCoord(data[fid], x[val][2]);
 };
 
-const getCmpCids = (row, cid, data, mode, isSize) => {
+const getCmpCids = (row, cid, data, mode, isSize, shortName) => {
   if (cid == '') return [];
   if (!(row.clust_cmp_size.hasOwnProperty(cid))) {
     const cids = getCids(row);
@@ -102,7 +104,7 @@ const getCmpCids = (row, cid, data, mode, isSize) => {
   }
   scores = scores.filter(x => x.length >= 3);
   return scores.map(x => {
-    const name = x[2] + '-' + data[x[1]].name;
+    const name = "cid " + x[2] + ' of ' + shortName(data[x[1]]);
     const iorv = (data[x[1]].clusterSizes[x[2]] > 0) ? "; inter." : "; vac.";
     const clabel = (data[x[1]].hasOwnProperty("clusterClasses") && data[x[1]].clusterClasses.hasOwnProperty(x[2]) && data[x[1]].clusterClasses[x[2]] !== -1 && data[x[1]].clusterClasses[x[2]] !== "noise") ? ("; class-" + data[x[1]].clusterClasses[x[2]]) : ""; 
     const info = "diff: " + (x[0]).toFixed(2) + " eigen-var: " + 
@@ -118,7 +120,7 @@ export class Cluster2CmpPlot extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return this.props.row.id != nextProps.row.id
+    return uniqueKey(this.props.row) != uniqueKey(nextProps.row)
            || this.props.cid != nextProps.cid;
   }
 
@@ -135,7 +137,6 @@ export class ClusterCmpPlot extends React.Component {
   constructor(props) {
     super(props);
     this.allModes = [{label:"Angles", value:"angle"}, 
-                     {label:"Adjacency", value:"adjNn2"},
                      {label:"Distances", value:"dist"},
                      {label:"All", value:"all"}
                     ];
@@ -179,7 +180,7 @@ export class ClusterCmpPlot extends React.Component {
 
   render() {
     const {classes, row, cid, data, allCids} = this.props;
-    const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize);
+    const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize, this.props.shortName);
     const cmpCoords = getCmpCoord(row, cid, data, this.state.curMode, this.state.isSize, this.state.curShow);
     const mainVariance = getClusterVar(row, cid);
     const typeAndClass = getClusterTypeAndClass(row, cid);

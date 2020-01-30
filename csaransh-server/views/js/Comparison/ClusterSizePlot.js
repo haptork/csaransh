@@ -1,6 +1,6 @@
 import React from 'react';
 import {Bar} from 'react-chartjs-2';
-import { getColorGrad } from "../utils";
+import { getColorGrad, uniqueKey } from "../utils";
 
 const calcDefectSizeDistribution = (row) => {
   var frequency = {};
@@ -126,7 +126,7 @@ const calcDefectSizeDistribution = (row) => {
 
   export function addDefectsSizeDistrib(curDef, row) {
     return {
-      labels: [...curDef.labels, ["int | vac", row.name]],
+      labels: [...curDef.labels, ["int | vac", uniqueKey(row)]],
       datasets : addedDataSets(curDef, row)
     };
   }
@@ -141,7 +141,7 @@ const calcDefectSizeDistribution = (row) => {
     }
     //console.log(curDef.labels);
     return {
-      labels: [...curDef.labels, cookDataLabel(row.name)],
+      labels: [...curDef.labels, cookDataLabel(row.id)],
       datasets : addedDataSets(curDef, row)
     };
   }
@@ -149,7 +149,7 @@ const calcDefectSizeDistribution = (row) => {
   export function removeDefectsSizeDistrib(curDef, row) {
     let toDel = 0;
     for (const i in curDef.labels) {
-      if (curDef.labels[i][1] == row.name) {
+      if (curDef.labels[i][1] == uniqueKey(row)) {
         toDel = i;
         break;
       }

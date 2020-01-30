@@ -1,9 +1,88 @@
+/*jshint esversion: 6 */
 import React from "react";
 //import { data } from "./cascades-data"
 import Palette from "./palette";
 
+export const accessorsAndParseFns = {
+  "accessorDefault" : name => x => x[name],
+  "accessorTwod" : x => (parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1])) * 100,
+  "accessorSubc": x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length),
+  "roundOff" : x => +parseFloat(x).toFixed(2),
+  "noParse" : x => x,
+  "parseVol" : x => parseInt(x / 1000),
+  "parseFileName" : x => x.split('\\').pop().split('/').pop()
+};
+
+const ac = accessorsAndParseFns;
+// all inputs first followed by outputs. short name depends on this
+export const getAllCol = () => {
+  const res = [
+    { value: 'substrate', label: 'Material', isShow: true, filterType: "select", type:"input", parseFn: ac.noParse},
+    { value: 'energy', label: 'Energy (keV)', isShow: true, filterType: "select", type:"input"},
+    { value: 'temperature', label: 'Temperature', isShow: true, filterType: "select", type:"input"},
+    { value: 'simulationTime', label: 'Simulation Time', isShow: false, filterType: "range", type: "input"},
+    { value: 'author', label: 'Author', isShow: false, filterType: "select", type: "input", parseFn: ac.noParse},
+    { value: 'potentialUsed', label: 'Potential Used', isShow: false, filterType: "select", type: "input" , parseFn: ac.noParse},
+    { value: 'xyzFilePath', label: 'Xyz file path', isShow: false, filterType: "text" , type: "input", parseFn: ac.noParse},
+    { value: 'xyzFileName', label: 'Xyz file name', isShow: false, filterType: "text" , type: "input", accessor: ac.accessorDefault("xyzFilePath"), parseFn: ac.parseFileName},
+    { value: 'infile', label: 'Input File', isShow: false, filterType: "text" , type: "input", parseFn: ac.noParse},
+    { value: 'infileName', label: 'Input File Name', isShow: false, filterType: "text" , type: "input", accessor: ac.accessorDefault("infile"), parseFn: ac.parseFileName},
+    { value: 'tags', label: 'Tags', isShow: false, filterType: "text" , type: "input", parseFn: ac.noParse},
+    { value: 'rectheta', label: 'PKA angle - theta', isShow: false, filterType: "range" , type: "input", parseFn: ac.roundOff},
+    { value: 'recphi', label: 'PKA angle - phi', isShow: false, filterType: "range" , type: "input", parseFn: ac.roundOff},
+    { value: 'n_defects', label: 'Defects Count', isShow: true },
+    { value: 'max_cluster_size', label: 'Max cluster size', isShow: true },
+    { value: 'in_cluster', label: '% defects in cluster', isShow: true },
+    { value: 'n_clusters', label: 'Clusters Count', isShow: true },
+    { value: 'hull_vol', label: 'Volume of cascade hull(K)', isShow: true, parseFn: ac.parseVol },
+    { value: 'twod', label: 'Planarity', isShow: true, parseFn: parseInt, "accessor": ac.accessorTwod },
+    { value: 'subc', label: 'Subcascades', isShow: true, parseFn: parseInt, "accessor": ac.accessorSubc },
+    { value: 'dclust_sec_impact', label: 'Impact fo 2nd big subcascade', isShow: false },
+    { value: 'max_cluster_size_I', label: 'Interstitial max cluster size', isShow: false },
+    { value: 'max_cluster_size_V', label: 'Vacancy max cluster size', isShow: false },
+    { value: 'in_cluster_I', label: '% interstitials in cluster', isShow: false },
+    { value: 'in_cluster_V', label: '% vacancies in cluster', isShow: false },
+    { value: 'hull_density', label: 'Density of cascade hull', isShow: false },
+    { value: 'hull_nsimplices', label: 'Hull simplices', isShow: false },
+  ];
+  const defaultParse = parseInt;
+  const defaultType = "output";
+  const defaultFilterType = "range";
+  const both = (f, g) => x => f(g(x));
+  for (const x of res) {
+   const key = x.value;
+   if (!x.hasOwnProperty("type")) {
+     x.type = defaultType;
+   }
+   if (!x.hasOwnProperty("filterType")) {
+     x.filterType = defaultFilterType;
+   }
+   if (x.hasOwnProperty("accessor")) {
+     if (x.hasOwnProperty("parseFn")) {
+       x.accessor = both(x.parseFn, x.accessor);
+     }
+   } else {
+     if (!x.hasOwnProperty("parseFn")) x.parseFn = defaultParse;
+     x.accessor = both(x.parseFn, ac.accessorDefault(key));
+   }
+  }
+  return res;
+};
+
 export function getData() {
   return window.cascades.data;
+}
+
+export function uniqueKey(row) {
+  return row.id + row.xyzFilePath;
+}
+
+export function uniqueName(row) {
+  return row.id + "-" + row.substrate + "-" + row.energy;
+}
+
+export function groupByKey(row) {
+  return row.substrate + "-" + row.energy;
 }
 
 export const exportToJson = (objectData) => {

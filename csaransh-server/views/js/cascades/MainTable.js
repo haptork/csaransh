@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 import React from 'react';
 import ReactTable from "react-table";
 import InputRange from 'react-input-range';
@@ -9,14 +10,19 @@ import HighlightOff from '@material-ui/icons/HighlightOff';
 
 import Gpsoff from '@material-ui/icons/GpsOff';
 import Gpsfix from '@material-ui/icons/GpsFixed';
+import matchSorter from 'match-sorter';
+
+import { uniqueKey, getAllCol } from "../utils";
+
+//import basename from 'path';
 
 class ActionButton extends React.Component {
   constructor(props) {
     super(props);
   }
   render() {
-    const isLook = this.props.look === this.props.cellInfo.name;
-    const isExcept = this.props.except.has(this.props.cellInfo.name);
+    const isLook = this.props.look === uniqueKey(this.props.cellInfo);
+    const isExcept = this.props.except.has(uniqueKey(this.props.cellInfo));
     const lookButColor = isLook ? 'primary' : 'default';
     const exButColor = isExcept ? 'secondary' : 'default';
 
@@ -28,8 +34,8 @@ class ActionButton extends React.Component {
         return this.props.onLookCur(this.props.cellInfo);
       }
       }
-        >
-        <Visibility/>
+      >
+      <Visibility/>
       </IconButton>
       </Tooltip>
  
@@ -41,7 +47,7 @@ class ActionButton extends React.Component {
         {(isExcept) ? <Gpsoff /> : <Gpsfix/>}
       </IconButton>
       </Tooltip>
-  
+      {this.props.cellInfo.id}
      </div>
     );
   }
@@ -75,30 +81,25 @@ const RangeFilter = props => {
 
 const defaultRangeFilterFn = (filter, row) => row[filter.id] >= filter.value.min && row[filter.id] < filter.value.max;
 
-const accessorDefault = name => x => x[name];
-const accessorOned = x => parseFloat(x["eigen_var"][0]) * 100;
-const accessorTwod = x => (parseFloat(x["eigen_var"][0]) + parseFloat(x["eigen_var"][1])) * 100;
-const accessorSubc = x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length);
-
-const minMaxPropsMaker = fields => (ar, name) => {
+const minMaxPropsMaker = (ar, fieldAccessor) => {
   let min = 0, max = 0;
   if (ar.length > 0) {
-    const val = fields[name].accessor(ar[0]);
+    const val = fieldAccessor(ar[0]);
     min = val;
     max = val;
   }
   for (const x of ar) {
-    const val = fields[name].accessor(x);
+    const val = fieldAccessor(x);
     min = Math.min(min, val);
     max = Math.max(max, val);
   }
   return {min:Math.floor(min), max:Math.ceil(max + 0.01)};
 }; 
 
-const uniqueAr = (ar, key) => {
+const uniqueAr = (ar, fieldAccessor) => {
   let s = new Set();
   for (const x of ar) {
-    s.add(x[key]);
+    s.add(fieldAccessor(x));
   }
   const resAr = [...s]; 
   let res = [];
@@ -108,68 +109,54 @@ const uniqueAr = (ar, key) => {
   return res;
 }
 
+const isShowCol = (key, showCol) => {
+  for (const x of showCol) {
+    if (key == x.value) return true
+  }
+  return false;
+}
+
 export class MainTable extends React.Component {
  constructor(props) {
     super(props);
-    const roundOff = x => +parseFloat(x).toFixed(2);
-    const defaultParse = parseInt;
-    const defaultType = "output";
-    const both = (f, g) => x => f(g(x));
-    this.fields = {
-      "n_defects":{"name":"Defects Count"},
-      "max_cluster_size":{"name":"Max cluster size"}, 
-      "in_cluster":{"name":"% defects in cluster"}, 
-      "rectheta":{ "type": "input", "parseFn": roundOff}, 
-      "recphi":{"type": "input",  "parseFn": roundOff}, 
-      //"oned":{"name":"1st dim var", "accessor":accessorOned, "parseFn":parseInt}, 
-      "twod":{"name":"Planarity", "accessor":accessorTwod, "parseFn":parseInt}, 
-      "subc":{"name":"Subcascades", "accessor":accessorSubc, "parseFn":parseInt}, 
-      "dclust_sec_impact":{"name":"Impact of 2nd big subcascade"},
-      "hull_vol":{"name":"hVol"}, 
-      //"hull_area":{"name":"hArea"}, 
-      //"hull_nvertices":{"name":"hNVertex"}, 
-      "hull_nsimplices":{"name":"hNSimplix"}
-      //"hull_density":{"name":"hDensity"}
-    };
-    for (const key in this.fields) {
-      let x = this.fields[key];
-      if (!x.hasOwnProperty("type")) {
-        x.type = defaultType;
-      }
-      if (x.hasOwnProperty("accessor")) {
-        if (x.hasOwnProperty("parseFn")) {
-          x['accessor'] = both(x.parseFn, x['accessor']);
-        }
-        continue;
-      }
-      if (!x.hasOwnProperty("parseFn")) x['parseFn'] = defaultParse;
-      x['accessor'] = both(x.parseFn, accessorDefault(key));
+    this.fields = getAllCol();
+    this.keyPos = {}
+    let i = 0;
+    for (const x of this.fields) {
+      this.keyPos[x['value']] = i++;
     }
-    this.minMaxProps = minMaxPropsMaker(this.fields);
     this.rows = this.props.data;
     this.filters = this.defaultFilterBounds();
-    this.due = "";
     this.state = {
       vfilters : this.defaultFilterBounds(),
       isFilter : this.defaultIsFilter(),
-      substrate : uniqueAr(this.props.data, "substrate"),
-      energy : uniqueAr(this.props.data, "energy"),
+      filterSelectAr: this.defulatFilterSelectAr(),
       filtered : []
     };
+  }
+  
+  defulatFilterSelectAr() {
+    let res = {};
+    for (const field of this.fields) {
+      if (field.filterType != 'select') continue;
+      res[field['value']] = uniqueAr(this.props.data, field['accessor'])
+    }
+    return res;
   }
 
   defaultFilterBounds() {
     let res = {};
-    for (let x in this.fields) {
-      res[x] = this.minMaxProps(this.props.data, x);
+    for (const field of this.fields) {
+      if (field.filterType != 'range') continue;
+      res[field['value']] = minMaxPropsMaker(this.props.data, field['accessor']);
     }
     return res;
   }
 
   defaultIsFilter() {
     let res = {};
-    for (let x in this.fields) {
-      res[x] = false;
+    for (let field of this.fields) {
+      res[field['value']] = false;
     }
     return res;
   }
@@ -177,7 +164,7 @@ export class MainTable extends React.Component {
   finalFilters() {
    let vfilters = JSON.parse(JSON.stringify(this.state.vfilters));
     for (const key in vfilters) {
-      vfilters[key] = this.minMaxProps(this.rows, key);
+      vfilters[key] = minMaxPropsMaker(this.rows, this.fields[this.keyPos[key]]['accessor']);
     }
     this.setState({ vfilters });
   }
@@ -187,7 +174,7 @@ export class MainTable extends React.Component {
       this.rows.push(cellInfo);
     } else {
       for (const i in this.rows) {
-        if (cellInfo.name === this.rows[i].name) {
+        if (uniqueKey(cellInfo) === uniqueKey(this.rows[i])) {
           this.rows.splice(i, 1);
         }
       }
@@ -200,7 +187,8 @@ export class MainTable extends React.Component {
     let vfilters = {};
     let isFilter = this.defaultIsFilter();
     for (const x of filtered) {
-      if (x.id === "substrate" || x.id === "energy") {
+      const filterType = this.fields[this.keyPos[x.id]].filterType;
+      if (filterType == "select" || filterType == "text") {
         if (x.value.length > 0) {
           isFilter[x.id] = true;
         }
@@ -211,22 +199,42 @@ export class MainTable extends React.Component {
         if (x.id === curFilter) {
           if (isFilter[x.id]) vfilters[x.id] = x.value;
           else {
-            vfilters[x.id] = this.minMaxProps(this.rows, x.id);
+            vfilters[x.id] = minMaxPropsMaker(this.rows, this.fields[this.keyPos[x.id]]['accessor']);
           }
         }
       }
     }
+    let filterSelectAr = {}
+    /*
+    for (const field in this.fields) {
+      const filterType = this.fields[this.keyPos[x.id]].filterType;
+      if (filterType == "select") {
+        filterSelectAr[x.id] = isFilter[x.id] ? this.state.filterSelectAr[x.id] : uniqueAr(this.rows, this.fields[this.keyPos[x.id]]['accessor']);
+        if (isFilter[x.id]) {
+
+        } else {
+          console.log("what");
+          console.log(filterSelectAr[x.id]);
+        }
+      }
+    }
+    */
+    /*
     let energy = isFilter.energy ? this.state.energy : uniqueAr(this.rows, "energy");
     let substrate = isFilter.substrate ? this.state.substrate : uniqueAr(this.rows, "substrate");
+    */
     for (const key in isFilter) {
-      if (key === "substrate" || key === "energy") continue;
-      if (key !== curFilter) {
-        vfilters[key] = this.minMaxProps(this.rows, key);
+      const filterType = this.fields[this.keyPos[key]].filterType;
+      if (filterType == "select")  {
+        filterSelectAr[key] = isFilter[key] ? this.state.filterSelectAr[key] : uniqueAr(this.rows, this.fields[this.keyPos[key]]['accessor']);
+      }
+      else if (key !== curFilter) {
+        vfilters[key] = minMaxPropsMaker(this.rows,  this.fields[this.keyPos[key]]['accessor']);
       }
     }
     //this.setState({vfilters, filtered, isFilter, substrate, energy}, () => this.props.setRows(this.rows));
     this.props.setRows(this.rows);
-    this.setState({vfilters, filtered, isFilter, substrate, energy});
+    this.setState({vfilters, filtered, isFilter, filterSelectAr});
   }
  
   defaultRangeFilterAllFn() {
@@ -254,6 +262,19 @@ export class MainTable extends React.Component {
     });
   }
 
+  filterMethodText() {
+    return ((filter, rows) => {
+      if (filter.value.length === 0) {
+        //this.rows = rows;
+        return rows;
+      }
+      //const ans = rows.filter(row => row[filter.id].indexOf(filter.value) != -1);
+      //const ans = rows.filter(row => row[filter.id].indexOf(filter.value) != -1);
+      return matchSorter(rows, filter.value, {"keys": [filter.id]});
+      //this.rows = ans;
+    });
+  }
+
   filterSelect(id) {
     return (({ filter, onChange }) => {
                     return (
@@ -265,26 +286,75 @@ export class MainTable extends React.Component {
                         onChange={val => {
                           return onChange(val);
                         }}
-                        options={this.state[id]}
+                        options={this.state.filterSelectAr[id]}
                       />);
                     });
   }
 
+  filterRange(id) {
+    return (({ filter, onChange }) => {
+                    return (
+                      <RangeFilter 
+                        filter={filter} 
+                        vfilter={this.state.vfilters[id]} 
+                        onChangeComplete={() => this.finalFilters()}  
+                        onChange={onChange} 
+                        isFilter={this.state.isFilter[id]} 
+                        minMax={this.filters[id]}
+                      />
+                    );
+                  });
+  }
+
+  TextColumnFilter({ filter, onChange}) {
+    return (
+      <input
+        value={filter ? filter.value : ''}
+        onChange={e => {
+          setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
+        }}
+        placeholder={`Search records...`}
+      />
+    )
+  }
+
   render() {
     let resultCols = [];
-    for (const key in this.fields) {
-      if (this.fields[key].type != "output") continue;
-      const field = this.fields[key];
-      resultCols.push(
-        {
-          Header: field.name,
-          id: key,
-          accessor: field.accessor,
-          Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters[key]} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter[key]} minMax={this.filters[key]}/>,
-          filterAll: true,
-          filterMethod: this.defaultRangeFilterAllFn()
-        }
-      )
+    let inputCols = [];
+    for (const field of this.fields) {
+      const key = field.value;
+      let isFilterable = true;
+      let filter = undefined;
+      let filterMethod = undefined;
+      let filterAll = true;
+      if (field.filterType == "range") {
+        isFilterable = true;
+        filterAll = true;
+        filter = this.filterRange(key); 
+        filterMethod = this.defaultRangeFilterAllFn(); 
+      } else if (field.filterType == 'select') {
+        isFilterable = true;
+        filterAll = true;
+        filter = this.filterSelect(key); 
+        filterMethod = this.filterMethodSelect(); 
+      } else if (field.filterType == "text") {
+        filterMethod = this.filterMethodText();
+      }
+      const col = {
+            Header: field.label,
+            id: key,
+            accessor: field.accessor,
+            filterable: isFilterable,
+            Filter: filter,
+            filterAll: filterAll,
+            filterMethod: filterMethod,
+            show: isShowCol(key, this.props.showCol)
+          };
+      if (field.type == "input") {
+        inputCols.push(col)
+      } else {
+        resultCols.push(col)
+      }
     }
     return (
       <div style={{width:"100%"}}>
@@ -297,47 +367,19 @@ export class MainTable extends React.Component {
             {
               Header: "Actions",
               id: "actions",
-              accessor: cellInfo => [this.props.look === cellInfo.name, this.props.except.has(cellInfo.name), false, cellInfo],//cellInfo,
-              Cell: props => <ActionButton cellInfo={props.value[3]} except = {this.props.except} look={this.props.look} onBan={(info, is) => this.banHandler(info, is)} onLookCur={this.props.onLookCur}/>, 
+              accessor: cellInfo => [this.props.look === uniqueKey(cellInfo), this.props.except.has(uniqueKey(cellInfo)), parseInt(cellInfo.id), false, cellInfo],//cellInfo,
+              Cell: props => <ActionButton cellInfo={props.value[4]} except = {this.props.except} look={this.props.look} onBan={(info, is) => this.banHandler(info, is)} onLookCur={this.props.onLookCur}/>, 
+              sortMethod: (a, b) => (a[2] > b[2]) ? 1 : -1,
               filterable: false,
+              /*
+              Filter: this.TextColumnFilter,
+              filterMethod: (filter, value) => true,
+              */
               sortable: true
             },
             {
               Header: "Inputs",
-              columns: [
-                {
-                  Header: "Material",
-                  accessor: "substrate",
-                  id: "substrate",
-                  filterAll: true,
-                  filterMethod: this.filterMethodSelect(),
-                  Filter: this.filterSelect("substrate")
-                },
-                {
-                  Header: "Energy (keV)",
-                  accessor: "energy",
-                  id: "energy",
-                  filterAll: true,
-                  filterMethod: this.filterMethodSelect(),
-                  Filter: this.filterSelect("energy")
-                },
-                {
-                  Header: "PKA (θ)",
-                  id: "rectheta",
-                  accessor: this.fields['rectheta'].accessor,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.rectheta} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter.rectheta} minMax={this.filters.rectheta}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                },
-                {
-                  Header: "PKA (φ)",
-                  id: "recphi",
-                  accessor: this.fields['recphi'].accessor,
-                  Filter: ({filter, onChange}) => <RangeFilter filter={filter} vfilter={this.state.vfilters.recphi} onChangeComplete={() => this.finalFilters()}  onChange={onChange} isFilter={this.state.isFilter.recphi} minMax={this.filters.recphi}/>,
-                  filterAll: true,
-                  filterMethod: this.defaultRangeFilterAllFn()
-                }
-              ]
+              columns: inputCols
             },
             {
               Header: "Output Defects Information",
@@ -368,8 +410,8 @@ export class MainTable extends React.Component {
         {(state, makeTable, instance) => {
           let rows = [];
           for (const x of state.sortedData) {
-            if (this.props.except.has(x.actions[3].name)) continue;
-            rows.push(x.actions[3])
+            if (this.props.except.has(x.actions[4].name)) continue;
+            rows.push(x.actions[4])
           }
           this.rows = rows;//state.sortedData;
           return (

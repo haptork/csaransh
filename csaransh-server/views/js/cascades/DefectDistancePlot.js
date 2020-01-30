@@ -1,6 +1,7 @@
 import React from 'react';
 //import { getColor } from "./utils";
 import Plot from 'react-plotly.js';
+import { uniqueKey, groupByKey } from "../utils";
 
 
 const getColor = i => (i === 1) ? "#bebada" : "#8dd3c7";
@@ -9,8 +10,8 @@ export const calcStatDistsAngles = (rows) => {
   let dists = {};
   let angles = {};
   for (const row of rows) {
-    const name = row.substrate + "-" + row.energy;
-    if (!dists.hasOwnProperty([name])) {
+    const name = groupByKey(row);
+    if (!dists.hasOwnProperty(name)) {
       dists[name] = [row.distancesI, row.distancesV];
       angles[name] = [row.anglesI, row.anglesV];
     } else {
@@ -66,7 +67,7 @@ function getTrace(row, name, group, color, showLegend, side) {
             line: {
                 color: getColor(color)
             },
-            y0: name/* + curDefDist.length*/,
+            y0: uniqueKey(row),//name/* + curDefDist.length*/,
             x: row,
             orientation: "h"
         };
@@ -75,7 +76,7 @@ function getTrace(row, name, group, color, showLegend, side) {
 //export function getTrace(row, name, group, color, showLegend, side);
 export function addDefectAngles(curData1, row, limit) {
   for(const x of curData1) {
-    if (x.y0 == row.name) return curData1;
+    if (x.y0 == uniqueKey(row)) return curData1;
   }
   let curData;
   if (curData1.length > limit + 2) {
@@ -94,7 +95,7 @@ export function addDefectAngles(curData1, row, limit) {
 
 export function addDefectDistance(curData1, row, limit) {
   for(const x of curData1) {
-    if (x.y0 == row.name) return curData1;
+    if (x.y0 == uniqueKey(row)) return curData1;
   }
   let curData;
   if (curData1.length > limit + 2) {
@@ -112,7 +113,7 @@ export function addDefectDistance(curData1, row, limit) {
 }
 
 export function removeDefectDistance(curData, row) {
-  return curData.filter(x => x.y0 != row.name);
+  return curData.filter(x => x.y0 != uniqueKey(row));
 }
 
 export class DefectDistancePlot extends React.Component {

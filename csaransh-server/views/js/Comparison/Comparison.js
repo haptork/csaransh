@@ -16,6 +16,8 @@ import DistIcon from "@material-ui/icons/LinearScale";
 
 import TableView from "./TableView.js";
 
+import { uniqueKey } from "../utils";
+
 import {
   ClusterSizePlot,
   lookDefectsSizeDistrib
@@ -39,7 +41,7 @@ class ComparisonTable extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return this.state.lock != nextState.lock || (!this.state.lock && this.row.id != nextProps.row.id);
+    return this.state.lock != nextState.lock || (!this.state.lock && uniqueKey(this.row) != uniqueKey(nextProps.row));
   }
 
   toggleLock() {
@@ -191,9 +193,9 @@ export class Comparison extends React.Component {
   render() {
     const { classes } = this.props;
     const row = this.props.data;
-    const compareRowsHas = this.compareRows.has(row.id);
+    const compareRowsHas = this.compareRows.has(uniqueKey(row));
     if (!compareRowsHas) {
-      this.compareRows.add(row.id);
+      this.compareRows.add(uniqueKey(row));
       if (this.compareRows.size > this.limit) {
         this.compareRows.delete(this.compareRows.values().next().value);
       }

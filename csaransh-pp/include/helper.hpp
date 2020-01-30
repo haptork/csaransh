@@ -10,41 +10,82 @@
 #include <array>
 #include <cmath>
 #include <fstream>
+#include <logger.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace csaransh {
 
 enum class readStatus : bool { fail, success };
 
-enum class SimulationCode : int { parcas, lammps, lammpsDisplacedCompute };
+enum class XyzFileType : int {
+  cascadesDbLikeCols,
+  parcasWithStdHeader,
+  lammpsWithStdHeader,
+  lammpsDisplacedCompute
+};
 
 enum class ErrorStatus : int {
   inputFileMissing,
   InputFileincomplete,
   inputFileReadError,
+  xyzFileDefectsProcessingError,
   xyzFileMissing,
   xyzFileReadError,
+  unknownSimulator,
   unknownError,
   noError
 };
 
-struct Info {
-  int ncell;
-  double boxSize;
-  double energy;
-  double rectheta;
-  double recphi;
-  double xrec;
-  double yrec;
-  double zrec;
-  double latticeConst;
-  double origin;
+std::string errToStr(ErrorStatus err);
+
+struct InputInfo {
+  int ncell{-1};
+  double boxSize{-1.0};
+  double latticeConst{-1.0};
+  double originX;
+  double originY;
+  double originZ;
+  int originType{0}; // 0->only given, 1-> only estimated, 2-> both
+  double temperature{0.0};
+  XyzFileType xyzFileType{};
+  std::string xyzFilePath{""};
   std::string structure;
-  std::string infile;
-  std::string name;
+  // int latConstType{0}; // 0->only given, 1-> only optimized, 2-> both
+};
+
+struct ExtraInfo {
+  double energy;
+  double simulationTime;
+  int id{1};
+  // For distribution around PKA
+  bool isPkaGiven{false};
+  double xrec{0.0};
+  double yrec{0.0};
+  double zrec{0.0};
+  double rectheta{0.0};
+  double recphi{0.0};
   std::string substrate;
-  SimulationCode simulationCode;
+  std::string infile;
+  std::string tags;
+  std::string potentialUsed;
+  std::string author;
+};
+
+struct Config {
+  bool onlyDefects{false};
+  bool isFindDistribAroundPKA{true};
+  bool isFindClusterFeatures{true};
+  bool filterZeroSizeClusters{false};
+  bool isIgnoreBoundaryDefects{false};
+  bool isAddThresholdInterstitials{true};
+  bool safeRunChecks{true};
+  double thresholdFactor{0.345};
+  double extraDefectsSafetyFactor{50.0};
+  int logMode{csaransh::LogMode::warning | csaransh::LogMode::error};
+  std::string logFilePath{"log-csaransh-pp-cpp.txt"};
+  std::string outputJSONFilePath{"cascades-data.json"};
 };
 
 using Coords = std::array<double, 3>;
@@ -85,9 +126,10 @@ static inline void ltrim(std::string &s) {
 
 // right trim the given string
 static inline void rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-            return !std::isspace(ch);
-          }).base(), s.end());
+  s.erase(std::find_if(s.rbegin(), s.rend(),
+                       [](int ch) { return !std::isspace(ch); })
+              .base(),
+          s.end());
 }
 
 // trim a string from both ends and return as a new string
@@ -110,10 +152,19 @@ static inline bool replaceStr(std::string &fromStr, const std::string &match,
 // parcas comments are defined as: characters followed by a space in a value
 static inline std::string removeParcasComments(std::string s) {
   ltrim(s);
-  s.erase(std::find_if(s.begin(), s.end(), [](int ch) {
-            return std::isspace(ch);
-          }), s.end());
+  s.erase(
+      std::find_if(s.begin(), s.end(), [](int ch) { return std::isspace(ch); }),
+      s.end());
   return s;
 }
+
+template <typename T, size_t s> auto strAr(std::array<T, s> ar) {
+  std::string res;
+  for (auto it : ar) {
+    res += std::to_string(it) + " ";
+  }
+  return res;
 }
+
+} // namespace csaransh
 #endif

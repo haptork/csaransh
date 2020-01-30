@@ -11,8 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <helper.hpp>
 #include <cluster2features.hpp>
+#include <helper.hpp>
 
 namespace csaransh {
 
@@ -45,7 +45,24 @@ static inline void isInterstitial(DefectT &_d, bool a) { std::get<1>(_d) = a; }
 static inline void clusterId(DefectT &_d, int id) { std::get<2>(_d) = id; }
 static inline void isSurviving(DefectT &_d, bool s) { std::get<3>(_d) = s; }
 static inline auto isVacancy(const DefectT &_d) { return !std::get<1>(_d); }
-}
+} // namespace DefectTWrap
+
+struct resultsT {
+  ErrorStatus err;
+  int nDefects;
+  int nClusters;
+  int maxClusterSizeI;
+  int maxClusterSizeV;
+  double inClusterFractionI;
+  double inClusterFractionV;
+  DefectVecT defects;
+  std::vector<std::array<int, 2>> dumbellPairs;
+  std::array<std::vector<double>, 2> dists;
+  std::array<std::vector<double>, 2> angles;
+  std::unordered_map<int, std::vector<int>> clusters;
+  std::unordered_map<int, int> clustersIV;
+  std::unordered_map<int, featT> feats;
+};
 
 // group defects into clusters
 DefectVecT groupDefects(const DefectVecT &defects, const double &latticeConst);
@@ -87,9 +104,9 @@ getMaxClusterSizes(csaransh::ClusterSizeMapT &clusterCounts,
 
 // distances of vacancies and interstitials separately measured from pka origin
 std::array<std::vector<double>, 2>
-getDistanceDistribution(const DefectVecT &defects, const Info &info);
+getDistanceDistribution(const DefectVecT &defects, const ExtraInfo &info);
 // angles of vacancies and interstitials separately measured from pka origin
 std::array<std::vector<double>, 2>
-getAngularDistribution(const DefectVecT &defects, const Info &info);
-}
+getAngularDistribution(const DefectVecT &defects, const ExtraInfo &info);
+} // namespace csaransh
 #endif // CSARANSH_RESULTS_HPP

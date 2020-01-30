@@ -5,13 +5,16 @@
  * */
 #include <cmath>
 
+#include <UnionFind.hpp>
 #include <helper.hpp>
 #include <results.hpp>
-#include <UnionFind.hpp>
+
+#include <iostream>
 
 // group defects into clusters
 csaransh::DefectVecT csaransh::groupDefects(const csaransh::DefectVecT &defects,
                                             const double &latticeConst) {
+  // std::cout << "Grouping defects " << defects.size() << '\n' << std::flush;
   using UF = csaransh::UnionFind<2, csaransh::DefectT>;
   auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-6;
   auto nn2 = latticeConst + 1e-6; // std::sqrt(3) * info.latticeConst + 0.01;
@@ -41,6 +44,7 @@ csaransh::DefectVecT csaransh::groupDefects(const csaransh::DefectVecT &defects,
   for (const auto &it : defects) {
     uf.uniteIf(it, pred);
   }
+  // std::cout << "Finished grouping defects\n" << std::flush;
   return uf.getAll();
   // coords, isInterstitial, ClusterId, isSurviving
 }
@@ -122,6 +126,7 @@ csaransh::getNDefectsAndClusterFractions(const csaransh::DefectVecT &defects) {
     }
   }
   auto nDefects = inClusterI + singlesI;
+  // auto nDefects = inClusterV + singlesV;
   double inClusterFractionI =
       (nDefects > 0) ? (double)(inClusterI)*100.0 / nDefects : 0;
   double inClusterFractionV =
@@ -171,10 +176,12 @@ csaransh::getMaxClusterSizes(csaransh::ClusterSizeMapT &clusterCounts,
 // distance distribution of defects from PKA origin
 std::array<std::vector<double>, 2>
 csaransh::getDistanceDistribution(const csaransh::DefectVecT &defects,
-                                  const csaransh::Info &info) {
+                                  const csaransh::ExtraInfo &info) {
   using namespace csaransh::DefectTWrap;
   std::vector<double> distsI;
   std::vector<double> distsV;
+  if (!info.isPkaGiven)
+    return std::array<std::vector<double>, 2>{{distsI, distsV}};
   std::array<double, 3> pka{{info.xrec, info.yrec, info.zrec}};
   for (const auto &it : defects) {
     if (!isSurviving(it)) continue;
@@ -190,10 +197,12 @@ csaransh::getDistanceDistribution(const csaransh::DefectVecT &defects,
 // angular distribution of defects from PKA origin
 std::array<std::vector<double>, 2>
 csaransh::getAngularDistribution(const csaransh::DefectVecT &defects,
-                                 const csaransh::Info &info) {
+                                 const csaransh::ExtraInfo &info) {
   using namespace csaransh::DefectTWrap;
   std::vector<double> anglesI;
   std::vector<double> anglesV;
+  if (!info.isPkaGiven)
+    return std::array<std::vector<double>, 2>{{anglesI, anglesV}};
   std::array<double, 3> pka{{info.xrec, info.yrec, info.zrec}};
   for (const auto &it : defects) {
     if (!isSurviving(it)) continue;

@@ -1,11 +1,14 @@
 #include <catch.hpp>
 
 #include <AddOffset.hpp>
-#include <xyz2defects.hpp>
+#include <NextExpected.hpp>
 #include <results.hpp>
+#include <xyz2defects.hpp>
+#include <xyzReader.hpp>
+
+#include <iostream>
 
 using namespace csaransh;
-
 SCENARIO("Find nearest lattice site for a coordinate given lattice structure - "
          "Addoffset",
          "[defectsTest]") {
@@ -162,8 +165,12 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
          "[defectsTest]") {
   SECTION("Normal Case - 1") {
     // case 1
-    NextExpected ne{0.0,
-                    2.5}; // The min and max for two unit-cells with origin 0.0
+    auto origin = csaransh::Coords{{0., 0., 0.}};
+    auto max = csaransh::Coords{{2.5, 2.5, 2.5}};
+    auto maxInitial = getInitialMax(origin, max);
+    NextExpected ne{
+        origin, max,
+        maxInitial}; // The min and max for two unit-cells with origin 0.0
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.cur() == Coords{{0.0, 0.0, 0.0}});
     CHECK(ne.increment() == Coords{{0.0, 0.0, 1.0}});
@@ -237,8 +244,12 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
   }
   SECTION("Normal Case - 2") {
     // case 2
+    auto origin = csaransh::Coords{{0.25, 0.25, 0.25}};
+    auto max = csaransh::Coords{{2.75, 2.75, 2.75}};
+    auto maxInitial = getInitialMax(origin, max);
     NextExpected ne{
-        0.25, 2.75}; // The min and max for two unit-cells with origin 0.25
+        origin, max,
+        maxInitial}; // The min and max for two unit-cells with origin 0.25
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.cur() == Coords{{0.25, 0.25, 0.25}});
     CHECK(ne.increment() == Coords{{0.25, 0.25, 1.25}});
@@ -312,8 +323,10 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
   }
   SECTION("Edge Cases - 1") {
     // case 2
-    NextExpected ne{0.5,
-                    2.00}; // The min and max for one unit-cells with origin 0.5
+    auto origin = csaransh::Coords{{0.5, 0.5, 0.5}};
+    auto max = csaransh::Coords{{2.00, 2.00, 2.00}};
+    auto maxInitial = getInitialMax(origin, max);
+    NextExpected ne{origin, max, maxInitial};
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.increment() == Coords{{0.5, 0.5, 1.5}});
     REQUIRE_FALSE(ne.allMax());
@@ -339,7 +352,11 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
   }
   SECTION("Edge Cases - Almost invalid input - 1") {
     // case 1
-    NextExpected ne{0.0, 2.0}; // a valid max should have been 2.5, orign 0.0
+    auto origin = csaransh::Coords{{0.0, 0.0, 0.0}};
+    auto max = csaransh::Coords{
+        {2.00, 2.00, 2.00}}; // a valid max should have been 2.5, orign 0.0
+    auto maxInitial = getInitialMax(origin, max);
+    NextExpected ne{origin, max, maxInitial};
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.cur() == Coords{{0.0, 0.0, 0.0}});
     CHECK(ne.increment() == Coords{{0.0, 0.0, 1.0}});
@@ -355,15 +372,9 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
     CHECK(ne.increment() == Coords{{0.5, 0.5, 0.5}});
     CHECK(ne.increment() == Coords{{0.5, 0.5, 1.5}});
     REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{0.5, 0.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
     CHECK(ne.increment() == Coords{{0.5, 1.5, 0.5}});
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.increment() == Coords{{0.5, 1.5, 1.5}});
-    CHECK(ne.increment() == Coords{{0.5, 1.5, 2.5}});
-    CHECK(ne.increment() == Coords{{0.5, 2.5, 0.5}});
-    CHECK(ne.increment() == Coords{{0.5, 2.5, 1.5}});
-    CHECK(ne.increment() == Coords{{0.5, 2.5, 2.5}});
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.increment() == Coords{{1.0, 0.0, 0.0}});
     CHECK(ne.increment() == Coords{{1.0, 0.0, 1.0}});
@@ -378,16 +389,12 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.increment() == Coords{{1.5, 0.5, 0.5}});
     CHECK(ne.increment() == Coords{{1.5, 0.5, 1.5}});
-    CHECK(ne.increment() == Coords{{1.5, 0.5, 2.5}});
     CHECK(ne.increment() == Coords{{1.5, 1.5, 0.5}});
     CHECK(ne.increment() == Coords{{1.5, 1.5, 1.5}});
     REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{1.5, 1.5, 2.5}});
-    CHECK(ne.increment() == Coords{{1.5, 2.5, 0.5}});
-    CHECK(ne.increment() == Coords{{1.5, 2.5, 1.5}});
-    CHECK(ne.increment() == Coords{{1.5, 2.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.0, 0.0, 0.0}});
+    CHECK(ne.increment() == Coords{{2.0, 0.5, 0.5}});
+    CHECK(ne.increment() == Coords{{2.0, 0.5, 1.5}});
+    /*
     CHECK(ne.increment() == Coords{{2.0, 0.0, 1.0}});
     CHECK(ne.increment() == Coords{{2.0, 0.0, 2.0}});
     CHECK(ne.increment() == Coords{{2.0, 1.0, 0.0}});
@@ -398,87 +405,9 @@ SCENARIO("Enumerate all lattice sites for a bcc in ascending order given min "
     CHECK(ne.increment() == Coords{{2.0, 2.0, 1.0}});
     REQUIRE_FALSE(ne.allMax());
     CHECK(ne.increment() == Coords{{2.0, 2.0, 2.0}});
+    //REQUIRE(ne.max() ==  Coords{{0.0,0.0,0.0}});
     REQUIRE(ne.allMax());
-  }
-  SECTION("Edge Cases - Almost invalid input - 2") {
-    NextExpected ne{0.0, 2.1}; // 2.1 is not a lattice site
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.cur() == Coords{{0.0, 0.0, 0.0}});
-    CHECK(ne.increment() == Coords{{0.0, 0.0, 1.0}});
-    CHECK(ne.increment() == Coords{{0.0, 0.0, 2.0}});
-    CHECK(ne.increment() == Coords{{0.0, 1.0, 0.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{0.0, 1.0, 1.0}});
-    CHECK(ne.increment() == Coords{{0.0, 1.0, 2.0}});
-    CHECK(ne.increment() == Coords{{0.0, 2.0, 0.0}});
-    CHECK(ne.increment() == Coords{{0.0, 2.0, 1.0}});
-    CHECK(ne.increment() == Coords{{0.0, 2.0, 2.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{0.5, 0.5, 0.5}});
-    CHECK(ne.increment() == Coords{{0.5, 0.5, 1.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{0.5, 0.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{0.5, 1.5, 0.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{0.5, 1.5, 1.5}});
-    CHECK(ne.increment() == Coords{{0.5, 1.5, 2.5}});
-    CHECK(ne.increment() == Coords{{0.5, 2.5, 0.5}});
-    CHECK(ne.increment() == Coords{{0.5, 2.5, 1.5}});
-    CHECK(ne.increment() == Coords{{0.5, 2.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{1.0, 0.0, 0.0}});
-    CHECK(ne.increment() == Coords{{1.0, 0.0, 1.0}});
-    CHECK(ne.increment() == Coords{{1.0, 0.0, 2.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{1.0, 1.0, 0.0}});
-    CHECK(ne.increment() == Coords{{1.0, 1.0, 1.0}});
-    CHECK(ne.increment() == Coords{{1.0, 1.0, 2.0}});
-    CHECK(ne.increment() == Coords{{1.0, 2.0, 0.0}});
-    CHECK(ne.increment() == Coords{{1.0, 2.0, 1.0}});
-    CHECK(ne.increment() == Coords{{1.0, 2.0, 2.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{1.5, 0.5, 0.5}});
-    CHECK(ne.increment() == Coords{{1.5, 0.5, 1.5}});
-    CHECK(ne.increment() == Coords{{1.5, 0.5, 2.5}});
-    CHECK(ne.increment() == Coords{{1.5, 1.5, 0.5}});
-    CHECK(ne.increment() == Coords{{1.5, 1.5, 1.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{1.5, 1.5, 2.5}});
-    CHECK(ne.increment() == Coords{{1.5, 2.5, 0.5}});
-    CHECK(ne.increment() == Coords{{1.5, 2.5, 1.5}});
-    CHECK(ne.increment() == Coords{{1.5, 2.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.0, 0.0, 0.0}});
-    CHECK(ne.increment() == Coords{{2.0, 0.0, 1.0}});
-    CHECK(ne.increment() == Coords{{2.0, 0.0, 2.0}});
-    CHECK(ne.increment() == Coords{{2.0, 1.0, 0.0}});
-    CHECK(ne.increment() == Coords{{2.0, 1.0, 1.0}});
-    CHECK(ne.increment() == Coords{{2.0, 1.0, 2.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.0, 2.0, 0.0}});
-    CHECK(ne.increment() == Coords{{2.0, 2.0, 1.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.0, 2.0, 2.0}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.1, 0.5, 0.5}});
-    CHECK(ne.increment() == Coords{{2.1, 0.5, 1.5}});
-    CHECK(ne.increment() == Coords{{2.1, 0.5, 2.5}});
-    CHECK(ne.increment() == Coords{{2.1, 1.5, 0.5}});
-    CHECK(ne.increment() == Coords{{2.1, 1.5, 1.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.1, 1.5, 2.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 0.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 1.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 2.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 2.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 2.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 2.5}});
-    CHECK(ne.increment() == Coords{{2.1, 2.5, 2.5}});
-    REQUIRE_FALSE(ne.allMax());
-    // Never goes true for this invalid input.
+    */
   }
 }
 
@@ -488,40 +417,51 @@ TEST_CASE("Read atom coordinates from a parcas xyz file line",
     Coords c;
     csaransh::lineStatus ls;
     // coords
-    std::tie(ls, c) = csaransh::getCoordParcas("Fe   -76.770403   +7.2e2   .7");
+    std::tie(ls, c) = csaransh::getCoordParcas("Fe   -76.770403   +7.2e2   .7",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{-76.770403, 720, 0.7}});
     std::tie(ls, c) =
-        csaransh::getCoordParcas("what   +76.770403   -7.2e2   0.700 Frame");
+        csaransh::getCoordParcas("what   +76.770403   -7.2e2   0.700 Frame",
+                                 csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{76.770403, -720, 0.7}});
-    std::tie(ls, c) =
-        csaransh::getCoordParcas("  what 0.000000 +7.2e2 3f whatever  ");
+    std::tie(ls, c) = csaransh::getCoordParcas(
+        "  what 0.000000 +7.2e2 3f whatever  ", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{0.0, 720, 3.0}});
     // garbage
     std::tie(ls, c) =
-        csaransh::getCoordParcas("53   +76.770403   -7.2e2   0.700 Frame");
-    CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordParcas("garbage");
-    CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordParcas("-76.770403   +7.2e2   .7");
-    CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordParcas("what 34 2.5");
+        csaransh::getCoordParcas("53   +76.770403   -7.2e2   0.700 Frame",
+                                 csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
     std::tie(ls, c) =
-        csaransh::getCoordParcas("-76.770403   +7.2e2   .7 garbage");
+        csaransh::getCoordParcas("garbage", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordParcas("what 34 2.5 garbage");
+    std::tie(ls, c) = csaransh::getCoordParcas("-76.770403   +7.2e2   .7",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordParcas("what Frame 2.5 garbage");
+    std::tie(ls, c) =
+        csaransh::getCoordParcas("what 34 2.5", csaransh::frameStatus::inFrame);
+    CHECK(ls == csaransh::lineStatus::garbage);
+    std::tie(ls, c) = csaransh::getCoordParcas(
+        "-76.770403   +7.2e2   .7 garbage", csaransh::frameStatus::inFrame);
+    CHECK(ls == csaransh::lineStatus::garbage);
+    std::tie(ls, c) = csaransh::getCoordParcas("what 34 2.5 garbage",
+                                               csaransh::frameStatus::inFrame);
+    CHECK(ls == csaransh::lineStatus::garbage);
+    std::tie(ls, c) = csaransh::getCoordParcas("what Frame 2.5 garbage",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
     // border
-    std::tie(ls, c) = csaransh::getCoordParcas("Frame 2.5 garbage");
+    std::tie(ls, c) = csaransh::getCoordParcas("Frame 2.5 garbage",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::frameBorder);
-    std::tie(ls, c) = csaransh::getCoordParcas("Frame");
+    std::tie(ls, c) =
+        csaransh::getCoordParcas("Frame", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::frameBorder);
-    std::tie(ls, c) = csaransh::getCoordParcas("  Frame 0.000000 +7.2e2 3f");
+    std::tie(ls, c) = csaransh::getCoordParcas("  Frame 0.000000 +7.2e2 3f",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::frameBorder);
   }
 }
@@ -532,37 +472,47 @@ TEST_CASE("Read atom coordinates from a line from lammps xyz file",
     Coords c;
     csaransh::lineStatus ls;
     // coords
-    std::tie(ls, c) = csaransh::getCoordLammps("Fe   -76.770403   +7.2e2   .7");
+    std::tie(ls, c) = csaransh::getCoordLammps("Fe   -76.770403   +7.2e2   .7",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{-76.770403, 720, 0.7}});
     std::tie(ls, c) =
-        csaransh::getCoordLammps("54   +76.770403   -7.2e2   0.700 ITEM:");
+        csaransh::getCoordLammps("54   +76.770403   -7.2e2   0.700 ITEM:",
+                                 csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{76.770403, -720, 0.7}});
-    std::tie(ls, c) =
-        csaransh::getCoordLammps("  what 0.000000 +7.2e2 3f whatever  ");
+    std::tie(ls, c) = csaransh::getCoordLammps(
+        "  what 0.000000 +7.2e2 3f whatever  ", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{0.0, 720, 3.0}});
     // garbage
-    std::tie(ls, c) = csaransh::getCoordLammps("garbage");
+    std::tie(ls, c) =
+        csaransh::getCoordLammps("garbage", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordLammps("-76.770403   +7.2e2   .7");
-    CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordLammps("what 34 2.5");
+    std::tie(ls, c) = csaransh::getCoordLammps("-76.770403   +7.2e2   .7",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
     std::tie(ls, c) =
-        csaransh::getCoordLammps("-76.770403   +7.2e2   .7 garbage");
+        csaransh::getCoordLammps("what 34 2.5", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordLammps("what 34 2.5 garbage");
+    std::tie(ls, c) = csaransh::getCoordLammps(
+        "-76.770403   +7.2e2   .7 garbage", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
-    std::tie(ls, c) = csaransh::getCoordLammps("what ITEM: 2.5 garbage");
+    std::tie(ls, c) = csaransh::getCoordLammps("what 34 2.5 garbage",
+                                               csaransh::frameStatus::inFrame);
+    CHECK(ls == csaransh::lineStatus::garbage);
+    std::tie(ls, c) = csaransh::getCoordLammps("what ITEM: 2.5 garbage",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::garbage);
     // border
-    std::tie(ls, c) = csaransh::getCoordLammps("ITEM: 2.5 garbage");
+    std::tie(ls, c) = csaransh::getCoordLammps("ITEM: 2.5 garbage",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::frameBorder);
-    std::tie(ls, c) = csaransh::getCoordLammps("ITEM:");
+    std::tie(ls, c) =
+        csaransh::getCoordLammps("ITEM:", csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::frameBorder);
-    std::tie(ls, c) = csaransh::getCoordLammps("  ITEM: 0.000000 +7.2e2 3f");
+    std::tie(ls, c) = csaransh::getCoordLammps("  ITEM: 0.000000 +7.2e2 3f",
+                                               csaransh::frameStatus::inFrame);
     CHECK(ls == csaransh::lineStatus::frameBorder);
   }
 }
@@ -622,14 +572,18 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
   SECTION("Normal cases") {
     SECTION("Single Dumbbell") {
       std::vector<std::tuple<Coords, double, Coords>> atoms;
+      auto origin = csaransh::Coords{{0.25, 0.25, 0.25}};
+      auto max = csaransh::Coords{{10.75, 10.75, 10.75}};
+      auto maxInitial = getInitialMax(origin, max);
       NextExpected ne{
-          0.25, 10.75}; // The min and max for ten unit-cells with origin 0.25
+          origin, max,
+          maxInitial}; // The min and max for two unit-cells with origin 0.0
       auto latticeConst = 2.85;
-      AddOffset addOffset{latticeConst, "bcc", Coords{0.25, 0.25, 0.25}}; // Fe
+      AddOffset addOffset{latticeConst, "bcc", origin}; // Fe
       Coords interstitialCoord, vacancyCoord;
       auto i = 0;
       auto pickAt = 30; // this is ~ 10th atom
-      while (!ne.allMax()) {
+      while (true) {
         Coords c = ne.cur();
         // if (i != pickAt) {
         for (auto &jt : c) {
@@ -649,9 +603,19 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           interstitialCoord = c;
         }
         atoms.emplace_back(addOffset(c));
+        if (ne.allMax()) break;
         ne.increment();
       }
-      auto ungroupedDefects = atoms2defects(atoms, latticeConst);
+      InputInfo info;
+      Config config;
+      config.safeRunChecks = false;
+      info.latticeConst = latticeConst;
+      info.originX = origin[0];
+      info.originY = origin[1];
+      info.originZ = origin[2];
+      ExtraInfo extraInfo;
+      auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
+      auto ungroupedDefects = ungroupedDefectsDumbbellPair.first;
       REQUIRE(ungroupedDefects.size() == 4); // 2 interstitials, 2 vacancies
       SECTION("Check cluster grouping") {
         int nDefects;
@@ -705,10 +669,11 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
                     Approx(1.0));
           }
           SECTION("Check angle and distance distribution") {
-            Info info;
+            ExtraInfo info;
             info.xrec = vacancyCoord[0];
             info.yrec = vacancyCoord[1];
             info.zrec = vacancyCoord[2];
+            info.isPkaGiven = true;
             auto distances = csaransh::getDistanceDistribution(defects, info);
             REQUIRE(distances[0].size() == 1);
             REQUIRE(distances[1].size() == 1);
@@ -738,14 +703,21 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
     }       // End of Single Dumbbell test
     SECTION("big interstitial cluster") {
       std::vector<std::tuple<Coords, double, Coords>> atoms;
+      auto origin = csaransh::Coords{{0.5, 0.5, 0.5}};
+      auto max = csaransh::Coords{{6.0, 6.0, 6.0}};
+      auto maxInitial = getInitialMax(origin, max);
       NextExpected ne{
-          0.5, 6.00}; // The min and max for five unit-cells with origin 0.5
+          origin, max,
+          maxInitial}; // The min and max for two unit-cells with origin 0.0
       auto latticeConst = 3.165; // W
-      AddOffset addOffset{latticeConst, "bcc", Coords{0.5, 0.5, 0.5}};
+      AddOffset addOffset{latticeConst, "bcc", origin};
       Coords lastInterstitialCoord, lastVacancyCoord;
       auto i = 0;
       auto pickAt = 300; // this is ~ 100th atom
-      while (!ne.allMax()) {
+      while (true) {
+        // std::cout << ne.cur()[0] << ", " << ne.cur()[1] << ", " <<
+        // ne.cur()[2] << " | " << ne.minCur()[0] << ", " << ne.maxCur()[0] <<
+        // '\n';
         Coords c = ne.cur();
         // if (i != pickAt) {
         for (auto &jt : c) {
@@ -765,9 +737,19 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           lastInterstitialCoord = c;
         }
         atoms.emplace_back(addOffset(c));
+        if (ne.allMax()) break;
         ne.increment();
       }
-      auto ungroupedDefects = atoms2defects(atoms, latticeConst);
+      InputInfo info;
+      Config config;
+      config.safeRunChecks = false;
+      info.latticeConst = latticeConst;
+      info.originX = origin[0];
+      info.originY = origin[1];
+      info.originZ = origin[2];
+      ExtraInfo extraInfo;
+      auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
+      auto ungroupedDefects = ungroupedDefectsDumbbellPair.first;
       REQUIRE(ungroupedDefects.size() == 10);
       int nDefects;
       double inClusterFractionI, inClusterFractionV;
@@ -806,14 +788,18 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
     }
     SECTION("Interstitial and Vacancy in two big clusters") {
       std::vector<std::tuple<Coords, double, Coords>> atoms;
+      auto origin = csaransh::Coords{{0.0, 0.0, 0.0}};
+      auto max = csaransh::Coords{{4.5, 4.5, 4.5}};
+      auto maxInitial = getInitialMax(origin, max);
       NextExpected ne{
-          0.0, 5.00}; // The min and max for five unit-cells with origin 0.5
+          origin, max,
+          maxInitial}; // The min and max for two unit-cells with origin 0.0
       auto latticeConst = 3.165; // W
       AddOffset addOffset{latticeConst, "bcc", Coords{0., 0., 0.}};
       Coords lastInterstitialCoord, lastVacancyCoord;
       auto i = 0;
       auto pickAt = 300; // this is ~ 100th atom
-      while (!ne.allMax()) {
+      while (true) {
         Coords c = ne.cur();
         // if (i != pickAt) {
         for (auto &jt : c) {
@@ -833,9 +819,20 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           lastInterstitialCoord = c;
         }
         atoms.emplace_back(addOffset(c));
+        if (ne.allMax()) break;
         ne.increment();
       }
-      auto ungroupedDefects = atoms2defects(atoms, latticeConst);
+      InputInfo info;
+      Config config;
+      config.isIgnoreBoundaryDefects = false;
+      config.safeRunChecks = false;
+      info.latticeConst = latticeConst;
+      info.originX = origin[0];
+      info.originY = origin[1];
+      info.originZ = origin[2];
+      ExtraInfo extraInfo;
+      auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
+      auto ungroupedDefects = ungroupedDefectsDumbbellPair.first;
       REQUIRE(ungroupedDefects.size() == 200);
       int nDefects;
       double inClusterFractionI, inClusterFractionV;
@@ -848,34 +845,35 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
         SECTION("Check ndefects and cluster sizes") {
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
-          REQUIRE(nDefects == 96);
+          REQUIRE(nDefects == 98);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
           ignoreSmallClusters(defects, clusterSizeMap, 4, 2);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
-          REQUIRE(nDefects == 96);
+          REQUIRE(nDefects == 98);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
           auto clusterIdMap = csaransh::clusterMapping(defects);
           REQUIRE(clusterIdMap.size() ==
                   2); // 1 interstitial and 1 vacancy cluster
           auto it = std::begin(clusterIdMap);
-          REQUIRE((it->second.size() == 96 || it->second.size() == 104));
+          // REQUIRE((it->second.size() == 98 || it->second.size() == 104));
+          CHECK(it->second.size() == 98);
           it++;
-          REQUIRE((it->second.size() == 96 || it->second.size() == 104));
+          CHECK(it->second.size() == 102);
           auto clusterIVMap =
               csaransh::clusterIVType(clusterIdMap, clusterSizeMap);
           REQUIRE(clusterIVMap.size() == 2);
           auto jt = std::begin(clusterIVMap);
-          REQUIRE(std::abs(jt->second) == 96); // surviving
+          REQUIRE(std::abs(jt->second) == 98); // surviving
           jt++;
-          REQUIRE(std::abs(jt->second) == 96); // surviving
+          REQUIRE(std::abs(jt->second) == 98); // surviving
           int maxClusterSizeI, maxClusterSizeV;
           std::tie(maxClusterSizeI, maxClusterSizeV) =
               csaransh::getMaxClusterSizes(clusterSizeMap, clusterIdMap);
-          REQUIRE(maxClusterSizeI == 96);
-          REQUIRE(maxClusterSizeV == 96);
+          REQUIRE(maxClusterSizeI == 98);
+          REQUIRE(maxClusterSizeV == 98);
         } // ndefects and cluster sizes
       }   // cluster grouping
     }
@@ -884,13 +882,19 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
     SECTION(
         "One atom kicked out of the box : unwrapped coordinates are invalid") {
       std::vector<std::tuple<Coords, double, Coords>> atoms;
+
+      auto origin = csaransh::Coords{{0.25, 0.25, 0.25}};
+      auto max = csaransh::Coords{{10.75, 10.75, 10.75}};
+      auto maxInitial = getInitialMax(origin, max);
       NextExpected ne{
-          0.25, 10.75}; // The min and max for ten unit-cells with origin 0.25
+          origin, max,
+          maxInitial}; // The min and max for two unit-cells with origin 0.0
+      REQUIRE_FALSE(ne.allMax());
       auto latticeConst = 2.85;
-      AddOffset addOffset{latticeConst, "bcc", Coords{0.25, 0.25, 0.25}}; // Fe
+      AddOffset addOffset{latticeConst, "bcc", origin}; // Fe
       auto i = 0;
       auto pickAt = 30; // this is ~ 10th atom
-      while (!ne.allMax()) {
+      while (true) {
         Coords c = ne.cur();
         // if (i != pickAt) {
         for (auto &jt : c) {
@@ -904,9 +908,19 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           }
         }
         atoms.emplace_back(addOffset(c));
+        if (ne.allMax()) break;
         ne.increment();
       }
-      auto ungroupedDefects = atoms2defects(atoms, latticeConst);
+      InputInfo info;
+      Config config;
+      config.safeRunChecks = false;
+      info.latticeConst = latticeConst;
+      info.originX = origin[0];
+      info.originY = origin[1];
+      info.originZ = origin[2];
+      ExtraInfo extraInfo;
+      auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
+      auto ungroupedDefects = ungroupedDefectsDumbbellPair.first;
       // it should have been 4 but now alot more defects are counted as the
       // box size is inferred from the atom coordinates, including the atom
       // that we kicked out of the box
@@ -928,32 +942,58 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
   SECTION("Edge cases") {
     SECTION("Perfect lattice") {
       std::vector<std::tuple<Coords, double, Coords>> atoms;
+      auto origin = csaransh::Coords{{0.0, 0.0, 0.0}};
+      auto max = csaransh::Coords{{1.5, 1.5, 1.5}};
+      auto maxInitial = getInitialMax(origin, max);
       NextExpected ne{
-          0.0, 1.5}; // The min and max for two unit-cells with origin 0.0
-      AddOffset addOffset{1.0, "bcc", Coords{0.0, 0.0, 0.0}};
-      while (!ne.allMax()) {
+          origin, max,
+          maxInitial}; // The min and max for two unit-cells with origin 0.0
+      AddOffset addOffset{1.0, "bcc", origin};
+      while (true) {
         atoms.emplace_back(addOffset(ne.cur()));
+        if (ne.allMax()) break;
         ne.increment();
       }
-      auto x = atoms2defects(atoms, 1.0);
-      REQUIRE(x.empty());
+      InputInfo info;
+      Config config;
+      config.safeRunChecks = false;
+      info.latticeConst = 1.0;
+      info.originX = origin[0];
+      info.originY = origin[1];
+      info.originZ = origin[2];
+      ExtraInfo extraInfo;
+      auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
+      REQUIRE(ungroupedDefectsDumbbellPair.first.empty());
     }
     SECTION("slightly shaken lattice") {
       std::vector<std::tuple<Coords, double, Coords>> atoms;
+      auto origin = csaransh::Coords{{0.0, 0.0, 0.0}};
+      auto max = csaransh::Coords{{1.5, 1.5, 1.5}};
+      auto maxInitial = getInitialMax(origin, max);
       NextExpected ne{
-          0.0, 1.5}; // The min and max for two unit-cells with origin 0.0
+          origin, max,
+          maxInitial}; // The min and max for two unit-cells with origin 0.0
       AddOffset addOffset{1.0, "bcc", Coords{0.0, 0.0, 0.0}};
       auto i = 0;
-      while (!ne.allMax()) {
+      while (true) {
         Coords c = ne.cur();
         for (auto &jt : c) {
           jt += (i++ & 1) ? -0.1 : 0.15;
         }
         atoms.emplace_back(addOffset(c));
+        if (ne.allMax()) break;
         ne.increment();
       }
-      auto x = atoms2defects(atoms, 1.0);
-      REQUIRE(x.empty());
+      InputInfo info;
+      ExtraInfo extraInfo;
+      Config config;
+      config.safeRunChecks = false;
+      info.latticeConst = 1.0;
+      info.originX = origin[0];
+      info.originY = origin[1];
+      info.originZ = origin[2];
+      auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
+      REQUIRE(ungroupedDefectsDumbbellPair.first.empty());
     }
   }
 }
@@ -993,7 +1033,9 @@ SCENARIO("Given xyz coordinates of all the displaced atoms, output only the "
           {{Coords{{-163.799, -113.156, 19.7825}},
             Coords{{-151.98, 3.48003, -34.8472}}}}};
       auto latticeConst = 3.165;
-      auto ungroupedDefects = displacedAtoms2defects(displaced, latticeConst);
+      auto ungroupedDefectsDumbbellPair =
+          displacedAtoms2defects(displaced, latticeConst);
+      auto ungroupedDefects = ungroupedDefectsDumbbellPair.first;
       REQUIRE(ungroupedDefects.size() == 13 * 2);
       int nDefects;
       double inClusterFractionI, inClusterFractionV;

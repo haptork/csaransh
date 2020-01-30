@@ -26,7 +26,7 @@ import { HeatMapC } from "../cascades/HeatMap";
 import { ScatterPlot, ClusterPlot } from "../cascades/3d-plots.js";
 import {ClusterCmpPlot} from "../cascades/ClusterCmpPlot";
 
-import { toXyzArSplit } from "../utils";
+import { toXyzArSplit, uniqueKey } from "../utils";
 
 import {
   CascadeVisualizer3D,
@@ -169,7 +169,7 @@ export class CascadesAndClusterCmp extends React.Component {
   }
   
   shouldComponentUpdate(nextProps, nextState) {
-    return this.props.row.id != nextProps.row.id || this.props.cid != nextProps.cid;
+    return uniqueKey(this.props.row) != uniqueKey(nextProps.row) || this.props.cid != nextProps.cid;
   }
 
   /*
@@ -193,7 +193,7 @@ export class CascadesAndClusterCmp extends React.Component {
             <Typography className={classes.heading}>Visualize and Find Patterns</Typography>
           </div>
           <div className={classes.column}>
-            <Typography className={classes.secondaryHeading}>Currently Viewing - {row.name}</Typography>
+            <Typography className={classes.secondaryHeading}>Currently Viewing - {this.props.shortName(row)}</Typography>
           </div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.details}>
@@ -201,7 +201,7 @@ export class CascadesAndClusterCmp extends React.Component {
           <CascadeViews1 classes={classes} row = {row} handleClusterCmp={this.props.handleClusterCmp}/>
           <CascadeViews2 classes={classes} row = {row} />
           <GridItem xs={12} sm={12} md={12}>
-          <ClusterCmpPlot classes={classes} row={row} cid={cid} data={data} handleClusterCmp={this.props.handleClusterCmp} allCids={allCids}/>
+          <ClusterCmpPlot classes={classes} row={row} cid={cid} data={data} handleClusterCmp={this.props.handleClusterCmp} shortName={this.props.shortName} allCids={allCids}/>
           </GridItem>
        </Grid>
         </ExpansionPanelDetails>

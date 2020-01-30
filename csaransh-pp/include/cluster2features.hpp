@@ -23,5 +23,5 @@ using adjNn2FeatT = std::array<double, 20>;
 using featT = std::tuple<distFeatT, angleFeatT, adjNn2FeatT>;
 featT pairHists(const std::vector<std::array<double, 3>> &v,
                 const std::vector<bool> &v2, double latConst);
-}
+} // namespace csaransh
 #endif // CLUSTER2FEATURES_CSARANSH_HPP

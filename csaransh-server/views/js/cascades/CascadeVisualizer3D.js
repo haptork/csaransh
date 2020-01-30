@@ -4,6 +4,8 @@ import * as THREE from "three";
 import reactCSS from "reactcss";
 import Palette from "../palette";
 import { ChromePicker } from "react-color";
+import { uniqueKey } from "../utils";
+
 const invertcolor = require("invert-color");
 var OrbitControls = require("three-orbit-controls")(THREE);
 
@@ -14,7 +16,7 @@ export function getCurrentCascade(loadedCascadesOrig, row) {
 export function removeCurrentCascade(loadedCascades, row) {
   var currIdx = undefined;
   for (var i = 0; i < loadedCascades.length; i++) {
-    if (loadedCascades[i].name === row.name) {
+    if (uniqueKey(loadedCascades[i]) === uniqueKey(row)) {
       currIdx = i;
       break;
     }
@@ -94,10 +96,6 @@ export class CascadeVisualizer3D extends React.Component {
     const controls = new OrbitControls(activeCamera, this.mdview);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: "#433F81" });
-    //const cube = new THREE.Mesh(geometry, material)
 
     activeCamera.position.z = 4;
     // scene.add(cube)
@@ -239,10 +237,9 @@ export class CascadeVisualizer3D extends React.Component {
   showCurrentFrame() {
     const frame = this.all_frames[this.last_frame_name];
     if (frame !== undefined) {
-      const boxsize = frame["boxsize"];
+      const boxsize = frame["boxSize"];
       this.wireframe.scale.set(boxsize, boxsize, boxsize);
       this.resetCameraOrientation();
-      const coords = frame["coords"];
       frame["ps"].forEach(ps => {
         this.scene.add(ps);
         ps.children.forEach(p => {
@@ -251,7 +248,7 @@ export class CascadeVisualizer3D extends React.Component {
           }
         });
       });
-      this.scene.add(frame["pka"]);
+      if (frame['pka']) this.scene.add(frame["pka"]);
       if (this.props.focusOn) {
         const [row_name, cluster_id] = this.props.focusOn;
         if (row_name == this.last_frame_name) {
@@ -283,11 +280,7 @@ export class CascadeVisualizer3D extends React.Component {
 
   resetCameraOrientation() {
     const frame = this.all_frames[this.last_frame_name];
-    const boxsize = frame["boxsize"];
-    let pos = [0.0, 0.0, 0.0];
-    if (frame["simulationCode"] != "parcas") {
-      pos = [boxsize / 2, boxsize / 2, boxsize / 2];
-    }
+    const pos = [frame['xrec'], frame['yrec'], frame['zrec']];
     this.wireframe.position.set(pos[0], pos[1], pos[2]);
     this.controls.target.set(pos[0], pos[1], pos[2]);
     this.activeCamera.position.x = pos[0];
@@ -308,20 +301,24 @@ export class CascadeVisualizer3D extends React.Component {
           this.all_frames[this.last_frame_name]["ps"].forEach(ps => {
             this.scene.remove(ps);
           });
-          this.scene.remove(this.all_frames[this.last_frame_name]["pka"]);
+          if (this.all_frames[this.last_frame_name]["pka"]) {
+            this.scene.remove(this.all_frames[this.last_frame_name]["pka"]);
+          }
         }
         delete this.all_frames[this.last_frame_name];
         this.last_frame_name = undefined;
       }
-      if (n_frames > 0 && data[n_frames - 1].name !== this.last_frame_name) {
+      if (n_frames > 0 && uniqueKey(data[n_frames - 1]) !== this.last_frame_name) {
         // remove pka-arrow and frame-group from the scene
         if (this.last_frame_name !== undefined) {
           this.all_frames[this.last_frame_name]["ps"].forEach(ps => {
             this.scene.remove(ps);
           });
-          this.scene.remove(this.all_frames[this.last_frame_name]["pka"]);
+          if (this.all_frames[this.last_frame_name]["pka"]) {
+            this.scene.remove(this.all_frames[this.last_frame_name]["pka"]);
+          }
         }
-        this.last_frame_name = data[n_frames - 1].name;
+        this.last_frame_name = uniqueKey(data[n_frames - 1]);
         //console.log(this.last_frame_name);
         if (this.last_frame_name in this.all_frames) {
           // if it already exists
@@ -330,16 +327,8 @@ export class CascadeVisualizer3D extends React.Component {
           this.all_frames[this.last_frame_name] = {};
           // create ps and pka
           var coords = this_frame_data["coords"];
-          var clusterIds = new Set();
           this.all_frames[this.last_frame_name]["coords"] = coords;
-          this.all_frames[this.last_frame_name]["simulationCode"] = this_frame_data["simulationCode"];
-          var xrec = this_frame_data["xrec"];
-          var yrec = this_frame_data["yrec"];
-          var zrec = this_frame_data["zrec"];
-          var recphi = this_frame_data["recphi"];
-          var rectheta = this_frame_data["rectheta"];
-          var boxsize = this_frame_data["boxSize"];
-          this.all_frames[this.last_frame_name]["boxsize"] = boxsize;
+          this.all_frames[this.last_frame_name]["xyzFilePath"] = this_frame_data['xyzFilePath'];
           var energy = this_frame_data["energy"];
           var frequency = this_frame_data["clusterSizes"];
           var classes = this_frame_data.hasOwnProperty("clusterClasses") ? this_frame_data["clusterClasses"] : {};
@@ -413,24 +402,34 @@ export class CascadeVisualizer3D extends React.Component {
           }
           this.all_frames[this.last_frame_name]["ps"] = particles_systems;
 
-          var theta = Math.PI * (parseFloat(rectheta) / 180.0);
-          var phi = Math.PI * (parseFloat(recphi) / 180.0);
-          var dir = new THREE.Vector3(
-            Math.sin(theta) * Math.cos(phi),
-            Math.sin(theta) * Math.sin(phi),
-            Math.cos(theta)
-          );
-          dir.normalize();
-          var size = energy / 10.0;
-          this.all_frames[this.last_frame_name]["pka"] = new THREE.ArrowHelper(
-            dir,
-            new THREE.Vector3(xrec, yrec, zrec),
-            size * 2,
-            0xff0000,
-            size,
-            size / 2
-          );
-          this.showCurrentFrame();
+          var xrec = this_frame_data["xrec"];
+          var yrec = this_frame_data["yrec"];
+          var zrec = this_frame_data["zrec"];
+          var recphi = this_frame_data["recphi"];
+          var rectheta = this_frame_data["rectheta"];
+          this.all_frames[this.last_frame_name]["xrec"] = xrec;
+          this.all_frames[this.last_frame_name]["yrec"] = yrec;
+          this.all_frames[this.last_frame_name]["zrec"] = zrec;
+          if (this_frame_data['isPkaGiven'] === 1) {
+            var theta = Math.PI * (parseFloat(rectheta) / 180.0);
+            var phi = Math.PI * (parseFloat(recphi) / 180.0);
+            var dir = new THREE.Vector3(
+              Math.sin(theta) * Math.cos(phi),
+              Math.sin(theta) * Math.sin(phi),
+              Math.cos(theta)
+            );
+            dir.normalize();
+            var size = energy / 10.0;
+            this.all_frames[this.last_frame_name]["pka"] = new THREE.ArrowHelper(
+              dir,
+              new THREE.Vector3(xrec, yrec, zrec),
+              size * 2,
+              0xff0000,
+              size,
+              size / 2
+            );
+          }
+         this.showCurrentFrame();
         }
       }
     }
@@ -441,7 +440,7 @@ export class CascadeVisualizer3D extends React.Component {
       var idx = -1;
       for (var i = 0; i < this.props.data.length; i++) {
         content = content + "<option>" + this.props.data[i].name + "</option>";
-        if (this.props.data[i].name === this.selected_frame) {
+        if (uniqueKey(this.props.data[i]) === this.selected_frame) {
           idx = i;
         }
       }

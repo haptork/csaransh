@@ -1,9 +1,10 @@
-#include <printJson.hpp>
 #include <cluster2features.hpp>
+#include <printJson.hpp>
 #include <results.hpp>
+#include <sstream>
 
 void printClusterIds(const std::unordered_map<int, std::vector<int>> clusters,
-                     std::ofstream &outfile) {
+                     std::ostream &outfile) {
   size_t i = 0;
   for (const auto &it : clusters) {
     outfile << '"' << it.first << "\":";
@@ -17,7 +18,7 @@ void printClusterIds(const std::unordered_map<int, std::vector<int>> clusters,
 }
 
 void printClusterIVs(const std::unordered_map<int, int> clusters,
-                     std::ofstream &outfile) {
+                     std::ostream &outfile) {
   size_t i = 0;
   for (const auto &it : clusters) {
     outfile << '"' << it.first << "\":";
@@ -36,10 +37,12 @@ void printSingleFeat(const csaransh::featT &feats, std::ostream &outfile) {
   outfile << "\"angle\": ";
   outfile << "[";
   csaransh::writeStdAr(std::get<1>(feats), outfile);
+  /*
   outfile << "],\n";
   outfile << "\"adjNn2\": ";
   outfile << "[";
   csaransh::writeStdAr(std::get<2>(feats), outfile);
+  */
   outfile << "]\n";
 }
 
@@ -56,23 +59,44 @@ void printFeats(const std::unordered_map<int, csaransh::featT> &feats,
   }
 }
 
-auto strSimulationCode(csaransh::SimulationCode code) {
-  return (code == csaransh::SimulationCode::parcas)
-             ? "parcas"
-             : ((code == csaransh::SimulationCode::lammps) ? "lammps-xyz"
-                                                           : "lammps-disp");
+const auto
+printDumbbellPairs(const std::vector<std::array<int, 2>> &dumbbellPairs,
+                   std::ostream &outfile) {
+  size_t count = 0;
+  for (const auto &it : dumbbellPairs) {
+    outfile << "[" << it[0] << ", " << it[1] << "]";
+    if (count++ != dumbbellPairs.size() - 1) outfile << ", ";
+  }
 }
 
-void csaransh::printJson(
-    std::ofstream &outfile, const csaransh::Info &i, int id,
-    const int &nDefects, const int &nClusters, const int &maxClusterSizeI,
-    const int &maxClusterSizeV, const double &inClusterFractionI,
-    const double &inClusterFractionV, const csaransh::DefectVecT &defects,
-    const std::array<std::vector<double>, 2> &dists,
-    const std::array<std::vector<double>, 2> &angles,
-    const std::unordered_map<int, std::vector<int>> clusters,
-    const std::unordered_map<int, int> clustersIV,
-    const std::unordered_map<int, csaransh::featT> &feats) {
+auto strSimulationCode(csaransh::XyzFileType code) {
+  return (code == csaransh::XyzFileType::parcasWithStdHeader)
+             ? "parcasWithStdHeader"
+             : (code == csaransh::XyzFileType::lammpsWithStdHeader)
+                   ? "lammpsWithStdHeader"
+                   : (code == csaransh::XyzFileType::cascadesDbLikeCols)
+                         ? "cascadesDbLikeCols"
+                         : "lammpsDisp";
+}
+
+std::string errorStr(csaransh::ErrorStatus err) {
+  if (err == csaransh::ErrorStatus::inputFileMissing) {
+    return "Could not read input file";
+  } else if (err == csaransh::ErrorStatus::inputFileMissing) {
+    return "Could not read input file";
+  } else if (err == csaransh::ErrorStatus::InputFileincomplete) {
+    return "Input file doesn't have all the info";
+  } else if (err == csaransh::ErrorStatus::unknownSimulator) {
+    return "Input file doesn't have LAMMPS/PARCAS/DISPLACED simulation input "
+           "type";
+  } else if (err == csaransh::ErrorStatus::xyzFileDefectsProcessingError) {
+    return "XYZ file has too many defects or zero atoms";
+  }
+  return "";
+}
+
+void csaransh::resToKeyValue(std::ostream &outfile,
+                             const csaransh::resultsT &res) {
   auto printDefects = [&outfile](const csaransh::DefectVecT &d) {
     size_t count = 0;
     for (const auto &x : d) {
@@ -82,65 +106,107 @@ void csaransh::printJson(
       if (count++ < (d.size() - 1)) outfile << ", ";
     }
   };
-  outfile << "{";
-  outfile << "\"infile\": \"" << i.infile << "\",\n"
-          << "\"name\": \"" << i.name << "\",\n"
-          << "\"id\": \"" << id << "\",\n"
-          << "\"substrate\": \"" << i.substrate << "\",\n"
-          << "\"simulationCode\": \"" << strSimulationCode(i.simulationCode)
-          << "\",\n"
-          << "\"boxSize\":" << i.boxSize << ",\n"
-          << "\"energy\":" << i.energy << ",\n"
-          << "\"ncell\":" << i.ncell << ",\n"
-          << "\"rectheta\":" << i.rectheta << ",\n"
-          << "\"recphi\":" << i.recphi << ",\n"
-          << "\"xrec\":" << i.xrec << ",\n"
-          << "\"yrec\":" << i.yrec << ",\n"
-          << "\"zrec\":" << i.zrec << ",\n"
-          << "\"latticeConst\":" << i.latticeConst << ",\n"
-          << "\"origin\":" << i.origin << ",\n";
-  outfile << "\"n_defects\":" << nDefects << ",\n"
-          << "\"n_clusters\":" << nClusters << ",\n"
-          << "\"max_cluster_size_I\":" << maxClusterSizeI << ",\n"
-          << "\"max_cluster_size_V\":" << maxClusterSizeV << ",\n"
+  outfile << "\"error\":\"" << errorStr(res.err) << "\",\n"
+          << "\"n_defects\":" << res.nDefects << ",\n"
+          << "\"n_clusters\":" << res.nClusters << ",\n"
+          << "\"max_cluster_size_I\":" << res.maxClusterSizeI << ",\n"
+          << "\"max_cluster_size_V\":" << res.maxClusterSizeV << ",\n"
           << "\"max_cluster_size\":"
-          << std::max(maxClusterSizeI, maxClusterSizeV) << ",\n"
-          << "\"in_cluster_I\":" << inClusterFractionI << ",\n"
-          << "\"in_cluster_V\":" << inClusterFractionV << ",\n"
+          << std::max(res.maxClusterSizeI, res.maxClusterSizeV) << ",\n"
+          << "\"in_cluster_I\":" << res.inClusterFractionI << ",\n"
+          << "\"in_cluster_V\":" << res.inClusterFractionV << ",\n"
           << "\"in_cluster\":"
-          << (inClusterFractionI + inClusterFractionV) / 2.0 << ",\n";
+          << (res.inClusterFractionI + res.inClusterFractionV) / 2.0 << ",\n";
   outfile << "\"coords\": [";
-  printDefects(defects);
+  printDefects(res.defects);
   outfile << "],\n";
   outfile << "\"clusters\": ";
   outfile << "{";
-  printClusterIds(clusters, outfile);
+  printClusterIds(res.clusters, outfile);
   outfile << "}";
   outfile << ",\n";
   outfile << "\"clusterSizes\": ";
   outfile << "{";
-  printClusterIVs(clustersIV, outfile);
+  printClusterIVs(res.clustersIV, outfile);
   outfile << "}";
   outfile << ",\n";
   outfile << "\"features\": ";
   outfile << "{";
-  printFeats(feats, outfile);
+  printFeats(res.feats, outfile);
   outfile << "}";
   outfile << ",\n";
   outfile << "\"distancesI\": [";
-  csaransh::writeVector(dists[0], outfile);
+  csaransh::writeVector(res.dists[0], outfile);
   outfile << "]";
   outfile << ",\n";
   outfile << "\"distancesV\": [";
-  csaransh::writeVector(dists[1], outfile);
+  csaransh::writeVector(res.dists[1], outfile);
   outfile << "]";
   outfile << ",\n";
   outfile << "\"anglesI\": [";
-  csaransh::writeVector(angles[0], outfile);
+  csaransh::writeVector(res.angles[0], outfile);
   outfile << "]";
   outfile << ",\n";
   outfile << "\"anglesV\": [";
-  csaransh::writeVector(angles[1], outfile);
+  csaransh::writeVector(res.angles[1], outfile);
+  outfile << "]";
+  outfile << ",\n";
+  outfile << "\"dumbbellPairs\": [";
+  printDumbbellPairs(res.dumbellPairs, outfile);
   outfile << "]\n";
+}
+
+void csaransh::infoToKeyValue(std::ostream &outfile,
+                              const csaransh::InputInfo &i,
+                              const csaransh::ExtraInfo &ei) {
+  outfile << "\"xyzFilePath\": \"" << i.xyzFilePath << "\",\n"
+          << "\"id\": \"" << ei.id << "\",\n"
+          << "\"substrate\": \"" << ei.substrate << "\",\n"
+          << "\"simulationCode\": \"" << strSimulationCode(i.xyzFileType)
+          << "\",\n"
+          << "\"energy\":" << ei.energy << ",\n"
+          << "\"simulationTime\":" << ei.simulationTime << ",\n"
+          << "\"ncell\":" << i.ncell << ",\n"
+          << "\"boxSize\":" << i.boxSize << ",\n"
+          << "\"origin\": [" << i.originX << ", " << i.originY << ", "
+          << i.originZ << "],\n"
+          << "\"rectheta\":" << ei.rectheta << ",\n"
+          << "\"recphi\":" << ei.recphi << ",\n"
+          << "\"xrec\":" << ei.xrec << ",\n"
+          << "\"yrec\":" << ei.yrec << ",\n"
+          << "\"zrec\":" << ei.zrec << ",\n"
+          << "\"latticeConst\":" << i.latticeConst << ",\n"
+          << "\"temperature\":" << i.temperature << ",\n"
+          << "\"infile\": \"" << ei.infile << "\",\n"
+          << "\"tags\": \"" << ei.tags << "\",\n"
+          << "\"potentialUsed\": \"" << ei.potentialUsed << "\",\n"
+          << "\"author\": \"" << ei.author << "\",\n"
+          << "\"isPkaGiven\":" << ei.isPkaGiven << ",\n"
+          << "\"originType\":" << i.originType; // << ",\n";
+}
+
+void csaransh::configToKeyValue(std::ostream &outfile,
+                                const csaransh::Config &c) {
+  outfile << "\"onlyDefects\": \"" << c.onlyDefects << "\",\n"
+          << "\"isFindDistribution\": \"" << c.isFindDistribAroundPKA << "\",\n"
+          << "\"isFindClusterFeatures\": \"" << c.isFindClusterFeatures << "\",\n"
+          << "\"isIgnoreBoundaryDefects\": \"" << c.isIgnoreBoundaryDefects << "\",\n"
+          << "\"isAddThresholdInterstitials\": \""
+          << c.isAddThresholdInterstitials << "\",\n"
+          << "\"filterZeroSizeClusters\":" << c.filterZeroSizeClusters << ",\n"
+          << "\"thresholdFactor\":" << c.thresholdFactor << ",\n"
+          << "\"logMode\":" << c.logMode << ",\n"
+          << "\"logFilPath\": \"" << c.logFilePath << "\",\n"
+          << "\"outputJSONFilePath\": \"" << c.outputJSONFilePath << "\""; // << ",\n";
+}
+
+void csaransh::printJson(std::ostream &outfile, const csaransh::InputInfo &i,
+                         const csaransh::ExtraInfo &ei,
+                         const csaransh::resultsT &res) {
+  outfile << "{";
+  csaransh::infoToKeyValue(outfile, i, ei);
+  outfile << ",\n";
+  csaransh::resToKeyValue(outfile, res);
   outfile << "}\n";
 }
+// const char * c = outfile.str().c_str();

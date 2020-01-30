@@ -108,6 +108,7 @@ csaransh::AddOffset::operator()(const std::array<double, 3> &c) {
   std::array<double, 3> cellPos;
   for (int i = 0; i < 3; i++) {
     long double orig = coords[i] - (_origin[i] * _latConst);
+    // long double orig = coords[i] - (_origin[i]);
     modCoords[i] = std::fmod(orig, _latConst);
     divCoords[i] = int(orig / _latConst);
   }
@@ -119,8 +120,9 @@ csaransh::AddOffset::operator()(const std::array<double, 3> &c) {
       min = temp;
       for (int i = 0; i < 3; i++) {
         cellPos[i] =
+            //(divCoords[i] + mirror[i] + it[i] + _origin[i]) / _latConst;
             (divCoords[i] + mirror[i] + it[i] / _latConst) + _origin[i];
-        cellPos[i] = floorf(cellPos[i] * 100) / 100;
+        cellPos[i] = floorf(cellPos[i] * roundOffTo) / roundOffTo;
       }
     }
   }

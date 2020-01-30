@@ -18,16 +18,17 @@ import Paper from '@material-ui/core/Paper';
 
 const getData = (curMode) => {
   return window.cluster_classes[curMode];
-}
+};
 
-const getName = (curMode, classIndex, index, data) => {
+const getName = (curMode, classIndex, index, data, shortName) => {
   const d = getData(curMode);
   if (!d.tags.hasOwnProperty(classIndex) || index >= d.tags[classIndex].length) {
     return "";
   }
   let row = data[d.tags[classIndex][index][0]];
   let cid = d.tags[classIndex][index][1];
-  return row.substrate + " @ " + row.energy + "keV; cluster-id: " + cid + "; file: " +  row.infile;
+  return "cluster-id " + cid + ' of ' + shortName(row);
+  //return row.substrate + " @ " + row.energy + "keV; cluster-id: " + cid + "; file: " +  row.infile;
 };
 
 const getClusterCoords = (curMode, classIndex, index, data) => {
@@ -53,13 +54,13 @@ export class ClusterClassesPlot extends React.Component {
     for (const k in window.cluster_classes) {
       this.allModes.push({label:k, value:k});
     }
-    const curMode = this.allModes[0]['value'];
+    const curMode = this.allModes[0].value;
     const featureCoords = getData(curMode).show_point;
     this.state = {
       curMode : curMode,
       featureCoords : featureCoords,
       clusterCoords: getClusterCoords(curMode, 0, 0, this.props.data),
-      nm: getName(curMode, 0, 0, this.props.data),
+      nm: getName(curMode, 0, 0, this.props.data, this.props.shortName),
       curIndex: 0
     };
   }
@@ -67,7 +68,7 @@ export class ClusterClassesPlot extends React.Component {
   handleShow(classIndex, index) {
     this.setState({
       clusterCoords : getClusterCoords(this.state.curMode, classIndex, index, this.props.data),
-      nm: getName(this.state.curMode, classIndex, index, this.props.data),
+      nm: getName(this.state.curMode, classIndex, index, this.props.data, this.props.shortName),
       curIndex : index
     });
   }
@@ -77,7 +78,7 @@ export class ClusterClassesPlot extends React.Component {
       curMode,
       featureCoords : getData(curMode).show_point,
       clusterCoords: getClusterCoords(curMode, 0, 0, this.props.data),
-      nm: getName(curMode, 0, 0, this.props.data),
+      nm: getName(curMode, 0, 0, this.props.data, this.props.shortName),
       curIndex: 0
     })
   }
@@ -132,7 +133,7 @@ export class ClusterClassesPlot extends React.Component {
       </CardBody>
       <CardFooter chart>
         <div className={this.props.classes.stats}>
-          <ClassesIcon/> Shows cluster classification. Click on a point on left to view the cluster. <a href="https://arxiv.org/abs/1811.10923">_More Discussion_</a>
+          <ClassesIcon/> Shows cluster classification. Different classes are shown with different colors. Click on a point on left to view the cluster on right. Click on legend to toggle a class and double click on legend label to only make that class points appear. The classes are found using supervised learning on the classes described <a href="https://www.sciencedirect.com/science/article/pii/S0927025619306639">: here</a>.
         </div>
       </CardFooter>
    </Card>

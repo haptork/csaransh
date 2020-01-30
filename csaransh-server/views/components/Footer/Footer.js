@@ -20,7 +20,7 @@ function Footer({ ...props }) {
             </a>
             </ListItem>
             <ListItem className={classes.inlineBlock}>
-            <a href="https://arxiv.org/abs/1811.10923" className={classes.a}>
+            <a href="https://doi.org/10.1016/j.commatsci.2019.109364" className={classes.a}>
               Defect Classification Description Paper
             </a>
             </ListItem>

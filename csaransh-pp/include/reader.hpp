@@ -11,18 +11,14 @@
 
 #include <cluster2features.hpp>
 #include <helper.hpp>
+#include <results.hpp>
 
 namespace csaransh {
 
-std::pair<std::string, std::string> getInfileFromXyzfile(std::string xyzfile);
+csaransh::ErrorStatus processFile(std::string xyzfile, std::ostream &outfile,
+                                  const Config &config, int id);
 
-std::pair<csaransh::SimulationCode, bool> getSimulationCode(std::string fname);
-
-std::pair<csaransh::Info, bool> extractInfoParcas(std::string fname);
-
-std::pair<csaransh::Info, bool> extractInfoLammps(std::string fname);
-
-csaransh::readStatus processFile(std::string xyzfile, std::ofstream &outfile,
-                                 int id);
-}
+csaransh::resultsT process(csaransh::InputInfo &i, csaransh::ExtraInfo &ei,
+                           const Config &config);
+} // namespace csaransh
 #endif

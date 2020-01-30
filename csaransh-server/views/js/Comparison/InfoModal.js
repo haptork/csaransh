@@ -22,7 +22,7 @@ const CustomTableCell = withStyles(theme => ({
 
 
 const inputData1 = (row) => [
-                    ["File", row.infile],
+                    ["File", row.xyzFilePath],
                     ["Substrate", row.substrate],
                     ["Energy", row.energy],
                     ["Cells", row.ncell]

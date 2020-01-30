@@ -1,12 +1,12 @@
 #include <algorithm>
 #include <array>
-#include <iostream>
+#include <cmath>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <cmath>
 
 #include <cluster2features.hpp>
 #include <helper.hpp>

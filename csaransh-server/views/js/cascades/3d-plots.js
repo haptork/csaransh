@@ -223,7 +223,6 @@ const cookDataClasses = (classData) => {
   let i = 0;
   let labelsOrdered = Object.keys(classData);
   labelsOrdered.sort();
-  console.log(labelsOrdered);
   for (const classLabel of labelsOrdered) {
     traces.push(
       {

@@ -17,7 +17,7 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
 // charts import
-import { getData } from "../utils";
+import { getData, uniqueKey, getAllCol} from "../utils";
 import { MainTable } from "../cascades/MainTable";
 import {getCids, getInitialSelection} from "../cascades/ClusterCmpPlot";
 import {ClusterClassesPlot} from "../ClusterClasses.js";
@@ -26,6 +26,8 @@ import { getCurrentCascade } from "../cascades/CascadeVisualizer3D";
 import { Statistics } from "../statistics/Statistics";
 import { Comparison } from "../Comparison/Comparison";
 import {CascadesAndClusterCmp} from "../cascades/CascadesAndClusterCmp";
+//other components
+import Select from 'react-select';
 
 const styles = theme => ({
   heading: {
@@ -80,11 +82,13 @@ const overallStats = data => {
   ];
 };
 
+
 class DashboardSimple extends React.Component {
   constructor(props) {
     super(props);
     this.data = getData();//.slice(0,4);
     this.dataOutline = overallStats(this.data);
+    this.allCols = getAllCol();
     const initialPick = 0;//Math.floor(Math.random() * this.data.length);
     this.state = {
       curRows: this.data,
@@ -94,9 +98,25 @@ class DashboardSimple extends React.Component {
       mobileOpen: false,
       lookrow: this.data[initialPick],
       cidCmp: getInitialSelection(this.data[initialPick]),
-      allCids: getCids(this.data[initialPick])
+      allCids: getCids(this.data[initialPick]),
+      showCol: this.allCols.filter(x => x['isShow'])//.map(x => {return {'value':x['value'], 'label':x['label']}; })
     };
   }
+
+  shortName = (row) => {
+    let name = row.id;
+    for (const x of this.state.showCol) {
+      if (x.type != 'input') continue;
+      name += "-" + x.parseFn(x.accessor(row));
+    }
+    return name;
+  }
+
+  handleShowCols = showCol => {
+   this.setState(
+      { showCol }
+    );
+  };
 
   handleClusterCmp(cid) {
     cid = '' + cid;
@@ -127,12 +147,12 @@ class DashboardSimple extends React.Component {
   }
 
   exceptCurRowHandler(row) {
-    const isExcepted = this.state.except.has(row.name);
+    const isExcepted = this.state.except.has(uniqueKey(row));
     let except = new Set(this.state.except);
     if (isExcepted) {
-      except.delete(row.name);
+      except.delete(uniqueKey(row));
     } else {
-      except.add(row.name);
+      except.add(uniqueKey(row));
     }
     this.setState({
       except
@@ -143,10 +163,10 @@ class DashboardSimple extends React.Component {
     const isLooking = (this.state.look === row.name)
     if (isLooking) return;
     const compareRows = new Set(this.state.compareRows);
-    compareRows.add(row.id);
+    compareRows.add(uniqueKey(row));
    this.setState({
       cascadeData: getCurrentCascade(this.state.cascadeData, row),
-      look: row.name,
+      look: uniqueKey(row),
       lookrow: row,
       compareRows,
       cidCmp: getInitialSelection(row),
@@ -179,9 +199,18 @@ class DashboardSimple extends React.Component {
           <GridItem id="mainTable" xs={12}>
 <ExpansionPanel id="mainTablePanel" expanded={this.state.mobileOpen} onChange={this.handleToggleDrawer}>
           <ExpansionPanelSummary /*onMouseEnter={this.handleShowDrawer}*/ expandIcon={<ExpandMoreIcon />}>
-            <Typography className={classes.heading}>Cascades List - {this.state.curRows.length} cascades {(this.state.curRows.length < this.data.length) ? " filtered out of total " + this.data.length : " - Filter View Plot Using Action Buttons"} </Typography>
+            <Typography className={classes.heading}>Cascades List - {this.state.curRows.length} cascades {(this.state.curRows.length < this.data.length) ? " filtered out of total " + this.data.length : " - Filter, View, Plot Using Action Buttons"} 
+           </Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
+            <div style={{display:"block", width:"100%"}}>
+              <Select
+                value={this.state.showCol}
+                closeOnSelect={false}
+                multi
+                options={this.allCols}
+                onChange={this.handleShowCols}
+              />
                 <MainTable
                   data={this.data}
                   except={this.state.except}
@@ -189,15 +218,17 @@ class DashboardSimple extends React.Component {
                   setRows={(rows) => this.setRows(rows)}
                   onLookCur={o => this.lookCurRowHandler(o)}
                   onExceptCur={o => this.exceptCurRowHandler(o)}
+                  showCol={this.state.showCol}
                 />
+            </div>
           </ExpansionPanelDetails>
-        </ExpansionPanel>
+       </ExpansionPanel>
           </GridItem>
         </ClickAwayListener>
           </Grid>
           <OutlineCards values= {this.dataOutline} classes={classes}/>
 
-       <CascadesAndClusterCmp classes={classes} row={this.state.lookrow} cid={this.state.cidCmp} allCids={this.state.allCids} handleClusterCmp={(cid)=>this.handleClusterCmp(cid)} data={this.data}/>
+       <CascadesAndClusterCmp classes={classes} row={this.state.lookrow} cid={this.state.cidCmp} allCids={this.state.allCids} handleClusterCmp={(cid)=>this.handleClusterCmp(cid)} data={this.data} shortName={this.shortName}/>
        <ExpansionPanel>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           <div className={classes.column}>
@@ -238,7 +269,7 @@ class DashboardSimple extends React.Component {
         <ExpansionPanelDetails className={classes.details}>
         <Grid container>
           <GridItem xs={12} sm={12} md={12}>
-            <ClusterClassesPlot classes={classes} data={this.data}/>
+            <ClusterClassesPlot classes={classes} data={this.data} shortName={this.shortName}/>
           </GridItem>
         </Grid>
         </ExpansionPanelDetails>
