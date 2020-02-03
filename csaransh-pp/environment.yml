@@ -10,5 +10,5 @@ dependencies:
   - hdbscan=0.8.22
   - umap-learn=0.3.8
   - numba=0.43.1
-  - xmltodic=0.12
+  - xmltodict=0.12
   - seaborn=0.90
