@@ -1,16 +1,34 @@
+#!/usr/bin/env python
+# coding: utf-8
+"""
+should be run from examples folder as current directory
+Defines basic info inplace and processes Fe cascades xyzFiles given as sample data.
+prints and plots some basic info from the processed data
+runs a http server and opens the web-app with processed data loaded
+"""
+
+# In[ ]:
+
 import sys
-sys.path.append('../')
+import os
+import seaborn as sns
+from pandas import DataFrame
+pathToCsaranshPP = ".." # change if required
+sys.path.append(pathToCsaranshPP)
 from csaranshpp import getDefaultConfig, getDefaultInfos, processXyzFilesInDirGivenInfo, processXyzFileGivenInfo
 
+
+# In[ ]:
+
+
 config = getDefaultConfig()
-config['logFilePath'] = "local-data-log-Fe.txt"
-config['outputJSONFilePath'] = "local-data-Fe.json"
-config['csaranshLib'] = "../_build/libcsaransh-pp_shared.so"
+config['logFilePath'] = "local-log-Fe.txt"
+config['csaranshLib'] = os.path.join(pathToCsaranshPP, "_build/libcsaransh-pp_shared.so")
 
 info, extraInfo = getDefaultInfos()
 extraInfo['substrate'] = "Fe"
 extraInfo['isPKAGiven'] = False
-info['temperature'] = 0.0
+info['energy'] = 10.0
 info['structure'] = "bcc"
 info['isIgnoreBoundary'] = False
 info['xyzFileType'] = "Parcas"
@@ -19,18 +37,82 @@ info['originType'] = 1
 extraInfo["potentialUsed"] = "Bjorkas"
 extraInfo["author"] = "IAEA"
 
-xyzDir = "../data/parcas/"
-isSuccess, res = processXyzFilesInDirGivenInfo(xyzDir, info, extraInfo, config)
+xyzDir = os.path.join(pathToCsaranshPP, "data", "parcas")
+isSuccess, cascades = processXyzFilesInDirGivenInfo(xyzDir, info, extraInfo, config)
 
+
+# In[ ]:
+
+
+# adding one more file
 info['xyzFileType'] = "lammps-disp"
-info['xyzFilePath'] = "../data/disp/Pos2.dispxyz"
+info['xyzFilePath'] = os.path.join(pathToCsaranshPP, "data", "disp", "Pos2.dispxyz")
 extraInfo['name'] = "lammps-disp"
-extraInfo['id'] = len(res) + 1
+extraInfo['id'] = len(cascades) + 1
 isSuccess, resAddon = processXyzFileGivenInfo(info, extraInfo, config)
-if isSuccess: res.append(resAddon)
+if isSuccess: cascades.append(resAddon)
 
-for cascade in res:
-    print(cascade['n_defects'], "defects in", cascade['name'])
+
+# In[ ]:
+
+
+for cascade in cascades:
+    print(cascade['n_defects'], "defects in", cascade['xyzFilePath'])
+
+
+# In[ ]:
+
+
+from csaranshpp_ml import analyseAndSaveJs
+
+# adds various other properties to each cascade &
+# saves a js file that can be visualized in csaransh web-app as we are doing next
+jsFile = "local-Fe.js"
+cascades, classes = analyseAndSaveJs(cascades, config, jsFile)
+
+import matplotlib.pyplot as plt
+# plotting number of defects for each temperature
+sns.swarmplot(x="id", y="hull_vol", data=DataFrame.from_dict(cascades))
+# each cascade has various properties, for description check documentation at bottom; to list all run: cascade[0].keys()
+plt.show()
+
+
+# In[ ]:
+
+indexFile = 'apps/index.html'
+supportDir = 'apps/CSaransh_files'
+if not(os.path.exists(indexFile) and os.path.exists(supportDir) and os.path.isdir(supportDir)):
+    print("please run file from examples directory to run the server automatically.")
+    sys.exit(0)
+
+import shutil
+import threading
+import webbrowser
+import time
+
+shutil.copy(jsFile, os.path.join(supportDir ,"cascades-data.js"))
+
+from http.server import HTTPServer, SimpleHTTPRequestHandler 
+
+def start_server(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler):
+    server_address = ('', 8080)
+    httpd = server_class(server_address, handler_class)
+    httpd.serve_forever()
+
+thread = threading.Thread(target=start_server)
+thread.start()
+
+print ("starting server - press ctrl + C to exit")
+url = 'http://0.0.0.0:8080/'+ indexFile
+webbrowser.open_new(url)
+
+while True:
+    try:
+        time.sleep(1)
+    except KeyboardInterrupt:
+        print ("exiting....")
+        sys.exit(0)
+sys.exit(0)
 
 
 #  optional arguments  for file selection in a dir:

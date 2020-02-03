@@ -110,13 +110,13 @@ class _InputInfoCpp(Structure):
 class _ExtraInfoCpp(Structure):
     _fields_ = [("energy", c_double),
                 ("simulationTime", c_double),
-                ("id", c_int),
                 ("isPkaGiven", c_bool),
                 ("xrec", c_double),
                 ("yrec", c_double),
                 ("zrec", c_double),
                 ("rectheta", c_double),
                 ("recphi", c_double),
+                ("id", c_char_p),
                 ("substrate", c_char_p),
                 ("infile", c_char_p),
                 ("tags", c_char_p),
@@ -144,7 +144,7 @@ class _ConfigCpp(Structure):
 def _cookInfoForCpp(info, infoCpp):
     for field, ctype in infoCpp._fields_:
         curValue = str.encode(
-            info[field]) if ctype == c_char_p else info[field]
+            str(info[field])) if ctype == c_char_p else info[field]
         setattr(infoCpp, field, curValue)
     return infoCpp
 
@@ -396,9 +396,10 @@ def processXyzFilesInDirGivenInfo(xyzDir, info, extraInfo, config, idStartIndex=
         xyzDir, prefix, suffix, excludePrefix, excludeSuffix)
     print(str(len(xyzFiles)) + " xyz files")
     res = []
+    preId = str(extraInfo['id']) + '-' if len(extraInfo['id']) > 0  else ""
     for i, xyzFile in enumerate(xyzFiles):
         print("processing " + str(i + 1) + ": " + xyzFile)
-        extraInfo['id'] = idStartIndex + i + 1
+        extraInfo['id'] = preId + str(idStartIndex + i + 1)
         info["xyzFilePath"] = xyzFile
         extraInfo["infile"] = xyzFile
         isSuccess, curRes = processXyzFileGivenInfo(info, extraInfo, config)
@@ -453,13 +454,13 @@ def getDefaultInfos():
     extraInfo = {
         "energy": 0.0,
         "simulationTime": 0.0,
-        "id": 1,
         "isPkaGiven": False,
         "xrec": 0.0,
         "yrec": 0.0,
         "zrec": 0.0,
         "rectheta": 0.0,
         "recphi": 0.0,
+        "id": "",
         "substrate": "",
         "infile": "",
         "tags": "",
@@ -591,7 +592,7 @@ def processXyzFilesInDirGivenMetaFile(metaFilePath, xyzDir, config, idStartIndex
     for i, xyzFile in enumerate(xyzFiles):
         print("processing " + str(i + 1) + ": " + xyzFile)
         info, extraInfo = getInfoFromMeta(metaInfo, metaFilePath, xyzFile)
-        extraInfo['id'] = idStartIndex + i + 1
+        extraInfo['id'] += "-" + str(idStartIndex + i + 1)
         isSuccess, curRes = processXyzFileGivenInfo(info, extraInfo, config)
         if (isSuccess):
             res.append(curRes)
@@ -828,10 +829,15 @@ def getInfoFromMeta(metaInfo, metaFilePath, xyzFilePath):
     extraInfo["boxSize"] = float(
         metaInfo['simulation_box']['box_X_length']['#text'])
     extraInfo["substrate"] = metaInfo['material']['formula']
-    extraInfo["potentialUsed"] = metaInfo['interatomic_potential']['uri']
+    potUsed = metaInfo['interatomic_potential']['uri']
+    cdborg = "https://cascadesdb.org/potential/"
+    if (potUsed.startswith(cdborg)): potUsed = potUsed[len(cdborg):] + "-cdbpot"
+    extraInfo["potentialUsed"] = potUsed
     extraInfo["isPKAGiven"] = False
     extraInfo["infile"] = metaFilePath
-    extraInfo["tags"] = "[pyscript]"
+    extraInfo["tags"] = "cdb: " + metaInfo['data']['archive_name']
+    extraInfo["author"] = metaInfo['attribution']['@id'] + "-" + metaInfo['attribution']['name']
+    extraInfo["id"] = metaInfo['@id']
     info["latticeConst"] = float(
         metaInfo['material']['lattice_parameters']['a']['#text'])
     info["boxSize"] = float(metaInfo['simulation_box']

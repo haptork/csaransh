@@ -20,6 +20,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 // charts import
 import { InputInfo, OutputInfo, DefectsList } from "../Comparison/InfoModal";
+//import { instructionsAriaMessage } from "react-select/src/accessibility";
+import {accessorsAndParseFns as ac} from "../utils";
 
 class TableView extends React.Component {
 
@@ -48,6 +50,17 @@ class TableView extends React.Component {
     */
    //console.log(this.props.row.name);
    //console.log(this.props.lock);
+   let xyzDl = this.props.row.xyzFilePath;
+   let inDl = this.props.row.infile;
+   if (this.props.row.tags.startsWith("cdb:")) {
+     const baseUrlXyz = "https://cascadesdb.org/data/cdb/";
+     const xyzNameTemp = this.props.row.tags.split(",")[0].split(":");
+     const xyzName = (xyzNameTemp.length > 1) ? xyzNameTemp[1].trim() : "";
+     xyzDl = baseUrlXyz + xyzName;
+     const baseUrlXml = "https://cascadesdb.org/cdbmeta/cdbrecord/xml/";
+     const inName = ac.parseFileName(inDl).trim().slice(0, -4);
+     inDl = baseUrlXml + inName;
+   }
    return (
             <CustomTabs
               title={"Details - " + this.props.row.name}
@@ -80,13 +93,13 @@ class TableView extends React.Component {
             >
             <div  className="fabButtonsInfo">
            <Tooltip id="tooltip-dlin" title="Download Input file" placement="top">
-           <Button style={{marginRight:"4px"}} href={'https://www-amdis.iaea.org/CDB/challenge/data/'+ this.props.row.infile + ".in"} variant="fab">
+           <Button style={{marginRight:"4px"}} href={inDl} variant="fab">
               <SaveIcon/>
             </Button>
             </Tooltip>
 
            <Tooltip id="tooltip-dlout" title="Download atomic coordinates file" placement="top">
-           <Button style={{marginLeft:"4px"}}href={'https://www-amdis.iaea.org/CDB/challenge/data/'+ this.props.row.infile.replace("md", "fpos") + ".xyz"} variant="fab">
+           <Button style={{marginLeft:"4px"}}href={xyzDl} variant="fab">
               <ArchiveIcon/>
             </Button>
             </Tooltip>

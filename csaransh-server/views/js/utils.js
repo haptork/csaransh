@@ -34,7 +34,7 @@ export const getAllCol = () => {
     { value: 'max_cluster_size', label: 'Max cluster size', isShow: true },
     { value: 'in_cluster', label: '% defects in cluster', isShow: true },
     { value: 'n_clusters', label: 'Clusters Count', isShow: true },
-    { value: 'hull_vol', label: 'Volume of cascade hull(K)', isShow: true, parseFn: ac.parseVol },
+    { value: 'hull_vol', label: 'Volume of cascade hull', isShow: false},
     { value: 'twod', label: 'Planarity', isShow: true, parseFn: parseInt, "accessor": ac.accessorTwod },
     { value: 'subc', label: 'Subcascades', isShow: true, parseFn: parseInt, "accessor": ac.accessorSubc },
     { value: 'dclust_sec_impact', label: 'Impact fo 2nd big subcascade', isShow: false },
@@ -42,7 +42,7 @@ export const getAllCol = () => {
     { value: 'max_cluster_size_V', label: 'Vacancy max cluster size', isShow: false },
     { value: 'in_cluster_I', label: '% interstitials in cluster', isShow: false },
     { value: 'in_cluster_V', label: '% vacancies in cluster', isShow: false },
-    { value: 'hull_density', label: 'Density of cascade hull', isShow: false },
+    { value: 'hull_density', label: 'Density of cascade hull', isShow: true, parseFn: ac.roundOff },
     { value: 'hull_nsimplices', label: 'Hull simplices', isShow: false },
   ];
   const defaultParse = parseInt;

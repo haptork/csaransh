@@ -58,7 +58,6 @@ struct InputInfo {
 struct ExtraInfo {
   double energy;
   double simulationTime;
-  int id{1};
   // For distribution around PKA
   bool isPkaGiven{false};
   double xrec{0.0};
@@ -66,6 +65,7 @@ struct ExtraInfo {
   double zrec{0.0};
   double rectheta{0.0};
   double recphi{0.0};
+  std::string id{};
   std::string substrate;
   std::string infile;
   std::string tags;

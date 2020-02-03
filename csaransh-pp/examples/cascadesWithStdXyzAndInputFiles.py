@@ -1,19 +1,94 @@
+#!/usr/bin/env python
+# coding: utf-8
+"""
+should be run from examples folder as current directory
+processes Fe cascades with xyz files and corresponding inputs given as sample data.
+prints some basic info from the processed data
+runs a http server and opens the web-app with processed data loaded
+"""
+
+# In[ ]:
+
+
 import sys
-sys.path.append('../')
+import os
+import seaborn as sns
+from pandas import DataFrame
+pathToCsaranshPP = ".." # change if required
+sys.path.append(pathToCsaranshPP)
 from csaranshpp import getDefaultConfig, processXyzFileWithInputFile, processXyzFilesInDirWithInputFiles
-from csaranshpp_ml import analyseAndSaveJs
+
+
+# In[ ]:
+
 
 config = getDefaultConfig()
-config['logFilePath'] = "local-data-log-Fe.txt"
-config['outputJSONFilePath'] = "local-data-Fe.json"
-config['csaranshLib'] = "../_build/libcsaransh-pp_shared.so"
-isSuccess, res = processXyzFilesInDirWithInputFiles("../data/parcas/", config)
+config['logFilePath'] = "local-log-Fe.txt"
+config['outputJSONFilePath'] = "local-Fe.json"
+config['csaranshLib'] = os.path.join(pathToCsaranshPP, "_build", "libcsaransh-pp_shared.so")
+xyzDir = os.path.join(pathToCsaranshPP, "data", "parcas")
+isSuccess, cascades = processXyzFilesInDirWithInputFiles(xyzDir, config)
 
-for cascade in res:
+
+# In[ ]:
+
+
+for cascade in cascades:
     print(cascade['n_defects'], "defects in", cascade['infile'])
 
-analyseAndSaveJs(res, config, "cascades-data.js")
-print("cascades-data.js can now be loaded on csaransh web-app by copying to server/public/js or CSaransh_files")
+
+# In[ ]:
+
+import matplotlib.pyplot as plt
+# plotting number of defects for each temperature
+sns.swarmplot(x="id", y="max_cluster_size", data=DataFrame.from_dict(cascades))
+# each cascade has various properties, for description check documentation at bottom; to list all run: cascade[0].keys()
+plt.show()
+
+# In[ ]:
+
+
+from csaranshpp_ml import analyseAndSaveJs
+jsFile = "local-Fe.js"
+cascades, classes = analyseAndSaveJs(cascades, config, jsFile)
+
+
+# In[ ]:
+
+indexFile = 'apps/index.html'
+supportDir = 'apps/CSaransh_files'
+if not(os.path.exists(indexFile) and os.path.exists(supportDir) and os.path.isdir(supportDir)):
+    print("please run file from examples directory to run the server automatically.")
+    sys.exit(0)
+
+import shutil
+import threading
+import webbrowser
+import time
+
+shutil.copy(jsFile, os.path.join(supportDir ,"cascades-data.js"))
+
+from http.server import HTTPServer, SimpleHTTPRequestHandler 
+
+def start_server(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler):
+    server_address = ('', 8080)
+    httpd = server_class(server_address, handler_class)
+    httpd.serve_forever()
+
+thread = threading.Thread(target=start_server)
+thread.start()
+
+print ("starting server - press ctrl + C to exit")
+url = 'http://0.0.0.0:8080/'+ indexFile
+webbrowser.open_new(url)
+
+while True:
+    try:
+        time.sleep(1)
+    except KeyboardInterrupt:
+        print ("exiting....")
+        sys.exit(0)
+sys.exit(0)
 
 #  optional arguments  for file selection in a dir and processing them:
 #  ----------------------------------------------------------------------

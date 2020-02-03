@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\rCurrently processing file " << curIndex + 1 << std::flush;
     Logger::inst().log_info("Started processing file \"" + file + "\"");
     csaransh::ErrorStatus ret;
-    ret = csaransh::processFile(file, outfile, config, success);
+    ret = csaransh::processFile(file, outfile, config, std::to_string(success));
     if (csaransh::ErrorStatus::noError != ret) {
       std::cerr << "\nError in processing file " << file << '\n';
       std::cerr << errToStr(ret) << '\n';

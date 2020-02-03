@@ -1,0 +1,119 @@
+.main-panel {
+    overflow: hidden;
+}
+
+.perfect-scrollbar-off .sidebar .sidebar-wrapper,
+.perfect-scrollbar-off .main-panel {
+    overflow: auto;
+}
+
+.main-panel {
+    position: relative;
+    /*
+    float: right;
+    width: calc(100% - 260px);
+    */
+    -webkit-transition: all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1);
+    -moz-transition: all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1);
+    -o-transition: all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1);
+    -ms-transition: all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1);
+    transition: all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1);
+    max-height: 100%;
+}
+
+.main-panel>.content {
+    margin-top: 70px;
+    padding: 30px 15px;
+    min-height: calc(100% - 123px);
+}
+
+.main-panel>.footer {
+    border-top: 1px solid #e7e7e7;
+}
+
+.main-panel>.navbar {
+    margin-bottom: 0;
+}
+
+header {
+    max-height:60px;
+}
+
+#mainTableC {
+   position:fixed;
+   width: calc(100% - 110px);
+   display:flex;
+   z-index:1110;
+   margin-left:110px;
+   margin-top:20px;
+}
+
+ExpansionPanel,#mainTablePanel {
+  /*
+  margin-top:28px;
+  margin-right:12px;
+  */
+
+  box-shadow: 0 4px 20px 0 rgba(0,0,0,.14), 0 7px 10px -5px rgba(205,205,205,.4)
+}
+
+#mainTablePanel > .MuiExpansionPanelSummary-root-186 {
+background: linear-gradient(60deg, #66bb6a, #43a047);
+    background-image: linear-gradient(60deg, rgb(102, 187, 106), rgb(67, 160, 71));
+    background-position-x: initial;
+    background-position-y: initial;
+    background-size: initial;
+    background-repeat-x: initial;
+    background-repeat-y: initial;
+    background-attachment: initial;
+    background-origin: initial;
+    background-clip: initial;
+    background-color: initial;
+}
+#mainTablePanel > div:first-child {
+background: linear-gradient(60deg, #66bb6a, #43a047);
+    background-image: linear-gradient(60deg, rgb(102, 187, 106), rgb(67, 160, 71));
+    background-position-x: initial;
+    background-position-y: initial;
+    background-size: initial;
+    background-repeat-x: initial;
+    background-repeat-y: initial;
+    background-attachment: initial;
+    background-origin: initial;
+    background-clip: initial;
+    background-color: initial;
+}
+
+.fabButtonsInfo {
+opacity:0.5; 
+position:absolute !important; 
+bottom:16px; 
+right:16px;
+}
+
+.fabButtonsInfo:hover {
+opacity:1.0; 
+}
+
+.tableButton {
+    padding:2px !important;
+    min-height: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    width: 24px !important;
+    margin: 1px !important;
+}
+
+.lockButton{
+    min-height:20px !important;
+    min-width:20px !important;
+    padding: 0px 4px !important;
+}
+
+#splomCardBody {
+  overflow-x: scroll;
+}
+
+#logoTitle {
+  color: rgb(95, 219, 99);
+}

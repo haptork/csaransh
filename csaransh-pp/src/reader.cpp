@@ -79,7 +79,7 @@ csaransh::resultsT csaransh::process(csaransh::InputInfo &info,
 
 csaransh::ErrorStatus csaransh::processFile(std::string xyzfile,
                                             std::ostream &outfile,
-                                            const Config &config, int id) {
+                                            const Config &config, std::string id) {
   std::string infile, tag;
   // std::cout << '\n' << xyzfile << '\n' << std::flush;
   std::tie(infile, tag) = csaransh::getInfileFromXyzfile(xyzfile);
@@ -95,8 +95,8 @@ csaransh::ErrorStatus csaransh::processFile(std::string xyzfile,
       (sc == csaransh::XyzFileType::parcasWithStdHeader)
           ? csaransh::extractInfoParcas(infile, tag)
           : csaransh::extractInfoLammps(infile, tag);
-  extraInfo.id = id;
   if (!isInfo) return csaransh::ErrorStatus::InputFileincomplete;
+  extraInfo.id = id;
   info.xyzFileType = sc;
   info.xyzFilePath = xyzfile;
   auto res = csaransh::process(info, extraInfo, config);

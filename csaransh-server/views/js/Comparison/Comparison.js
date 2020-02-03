@@ -81,7 +81,7 @@ export class ClusterSizeCmpItem extends React.Component {
   }
 
   render() {
-    const {classes, data, elems, energies} = this.props;
+    const {classes, data, elems} = this.props;
     return (
       <GridItem xs={12} sm={6} md={5}>
         <Card chart>
@@ -93,8 +93,7 @@ export class ClusterSizeCmpItem extends React.Component {
             <p className={classes.cardCategory}>
               <span className={classes.successText}>
               {elems} 
-              </span>{" "}
-              {energies} 
+              </span>
             </p>
           </CardBody>
           <CardFooter chart>
@@ -139,7 +138,7 @@ export class DistAngleCmpItem extends React.Component {
                   ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Angular distribution of defects around PKA direction
+                      <ViewIcon/> Angular distribution of defects around PKA direction - only if PKA angles are given in input while post-processing
                     </div>
                   )
 
@@ -158,7 +157,7 @@ export class DistAngleCmpItem extends React.Component {
                   ),
                   footerContent: (
                     <div className={classes.stats}>
-                      <ViewIcon/> Distribtion of defects distances from PKA position
+                      <ViewIcon/> Distribtion of defects distances from PKA position - only if PKA position is given in input while post-processing
                     </div>
                   )
 
@@ -203,23 +202,19 @@ export class Comparison extends React.Component {
       this.defectDistances = addDefectDistance(this.defectDistances, row, this.limit);
       this.defectAngles = addDefectAngles(this.defectAngles, row, this.limit);
       let elemsSet = new Set();
-      let energySet = new Set();
+      //console.log(this.defectSizeDistribConfig.labels);
       for (const i in this.defectSizeDistribConfig.labels) {
-        const x = this.defectSizeDistribConfig.labels[i][1].split("_");
+        //console.log(this.defectSizeDistribConfig.labels[i]);
+        const x = this.defectSizeDistribConfig.labels[i][1];
         elemsSet.add(x[0]);
-        energySet.add(x[1]);
       }
       elemsSet = [...elemsSet];
-      energySet = [...energySet];
       this.clusterElems = elemsSet.join(", ");
-      this.clusterEnergies = energySet.join(", ");
-      if (energySet.length == 1) this.clusterEnergies = " at energy " + this.clusterEnergies;
-      else this.clusterEnergies = " at energies " + this.clusterEnergies;
     }
     //if (this.compareRows.length > this.limit) this.compareRows.delete(this.compareRows.values[0]);
     return (
         <Grid container>
-          <ClusterSizeCmpItem elems={this.clusterElems} energies={this.clusterEnergies} data={this.defectSizeDistribConfig} compareRowsHas={compareRowsHas} classes={classes} />
+          <ClusterSizeCmpItem elems={this.clusterElems} data={this.defectSizeDistribConfig} compareRowsHas={compareRowsHas} classes={classes} />
           <DistAngleCmpItem defectAngles={this.defectAngles} defectDistances={this.defectDistances} compareRowsHas={compareRowsHas} classes={classes} />
           <ComparisonTable row={row} defaultLock={true}/> 
           <ComparisonTable row={row} defaultLock={false} /> 

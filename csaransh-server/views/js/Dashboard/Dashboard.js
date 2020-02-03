@@ -29,6 +29,8 @@ import {CascadesAndClusterCmp} from "../cascades/CascadesAndClusterCmp";
 //other components
 import Select from 'react-select';
 
+//import {ClusterClassesTrends} from "../ClusterClassesTrends.js";
+
 const styles = theme => ({
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -229,20 +231,6 @@ class DashboardSimple extends React.Component {
           <OutlineCards values= {this.dataOutline} classes={classes}/>
 
        <CascadesAndClusterCmp classes={classes} row={this.state.lookrow} cid={this.state.cidCmp} allCids={this.state.allCids} handleClusterCmp={(cid)=>this.handleClusterCmp(cid)} data={this.data} shortName={this.shortName}/>
-       <ExpansionPanel>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <div className={classes.column}>
-            <Typography className={classes.heading}>View and Compare Cascade Info</Typography>
-          </div>
-          <div className={classes.column}>
-            <Typography className={classes.secondaryHeading}>Plots, Distributions, Info to compare, copy, download</Typography>
-          </div>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.details}>
-            <Comparison classes={classes} data = {this.state.lookrow}/>
-        </ExpansionPanelDetails>
-        </ExpansionPanel>
-
         <ExpansionPanel>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           <div className={classes.column}>
@@ -274,7 +262,20 @@ class DashboardSimple extends React.Component {
         </Grid>
         </ExpansionPanelDetails>
         </ExpansionPanel>
-        <Footer />
+       <ExpansionPanel>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <div className={classes.column}>
+            <Typography className={classes.heading}>View and Compare Cascade Info</Typography>
+          </div>
+          <div className={classes.column}>
+            <Typography className={classes.secondaryHeading}>Plots, Distributions, Info to compare, copy, download</Typography>
+          </div>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.details}>
+            <Comparison classes={classes} data = {this.state.lookrow}/>
+        </ExpansionPanelDetails>
+        </ExpansionPanel>
+         <Footer />
       </div>
     );
   }
@@ -285,3 +286,22 @@ DashboardSimple.propTypes = {
 };
 
 export default withStyles(styles)(withStyles(dashboardStyle)(DashboardSimple));
+/*
+      <ExpansionPanel>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          <div className={classes.column}>
+            <Typography className={classes.heading}>Cluster Trends</Typography>
+          </div>
+          <div className={classes.column}>
+            <Typography className={classes.secondaryHeading}>Plots, Distributions, Info to compare, copy, download</Typography>
+          </div>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.details}>
+        <Grid container>
+          <GridItem xs={12} sm={12} md={12}>
+            <ClusterClassesTrends classes={classes} tags={window.cluster_classes['supervised (kNN)']['tags']} data={this.data}/>
+          </GridItem>
+          </Grid>
+        </ExpansionPanelDetails>
+        </ExpansionPanel>
+*/

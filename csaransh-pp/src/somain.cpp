@@ -27,7 +27,6 @@ struct InfoPyInput {
 struct InfoPyExtraInput {
   double energy;
   double simulationTime;
-  int id{1};
   // for distribution around PKA
   bool isPkaGiven;
   double xrec{0.0};
@@ -36,6 +35,7 @@ struct InfoPyExtraInput {
   double rectheta{0.0};
   double recphi{0.0};
   // extra
+  const char *id;
   const char *substrate;
   const char *infile;
   const char *tags;
@@ -108,13 +108,13 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   csaransh::ExtraInfo extra;
   extra.energy = pyextra.energy;
   extra.simulationTime = pyextra.simulationTime;
-  extra.id = pyextra.id;
   extra.isPkaGiven = pyextra.isPkaGiven;
   extra.xrec = pyextra.xrec;
   extra.yrec = pyextra.yrec;
   extra.zrec = pyextra.zrec;
   extra.rectheta = pyextra.rectheta;
   extra.recphi = pyextra.recphi;
+  extra.id = std::string{pyextra.id};
   extra.substrate = std::string{pyextra.substrate};
   extra.infile = std::string{pyextra.infile};
   extra.tags = std::string{pyextra.tags};
@@ -164,7 +164,7 @@ extern "C" char *pyProcessFileWoInfo(char *xyzfile, PyConfig pyConfig) {
   Logger::inst().file(config.logFilePath);
   Logger::inst().log_info("Started Processing file \"" + xyzfileStr + "\"");
   std::stringstream outfile;
-  auto res = csaransh::processFile(xyzfileStr, outfile, config, 0);
+  auto res = csaransh::processFile(xyzfileStr, outfile, config, std::string{});
   Logger::inst().log_info("Finished Processing");
   std::string str = outfile.str();
   char *writable = (char *)malloc(

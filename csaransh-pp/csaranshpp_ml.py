@@ -171,6 +171,7 @@ def dist(a, b):
 compare different histograms of a cluster with all other clusters
 """
 
+
 def compareWithCluster(pivotI, pivotCid, pivot, data, size, dim):
     res = {}
     res_with_size = {}
@@ -212,6 +213,7 @@ def chiSqr(x, y, startA, startB, endA, endB):  # brat_curtis
     else:
         return 0.0
 
+
 """
 Distance function for dimensionality reduction
 """
@@ -225,6 +227,7 @@ def quad1(x, y):
     preD = chiSqr(x, y, 36, 37, l - 1, l)
     postD = chiSqr(x, y, 37, 36, l, l - 1)
     return (0.5 * (preA + postA) + a + 0.9 * (0.1 * (preD + postD) + d)) / (2.0 + 1.2*0.9)
+
 
 """
 Distance function for dimensionality reduction
@@ -244,7 +247,8 @@ def quad(x, y):
     wDs = 0.25
     cA = (wAs * (preA + postA) + a) * wA / (2.0 * wAs + 1.0)
     cD = (wDs * (preD + postD) + d) * wD / (2.0 * wDs + 1.0)
-    return  (cA + cD) / (wA + wD)
+    return (cA + cD) / (wA + wD)
+
 
 def clusterClassData(data):
     feat = []
@@ -254,6 +258,7 @@ def clusterClassData(data):
             feat.append(x['features'][y]['angle'] + x['features'][y]['dist'])
             tag.append((i, y))
     return (feat, tag)
+
 
 def quadCustom(wA, wD):
     def quad(x, y):
@@ -268,12 +273,15 @@ def quadCustom(wA, wD):
         wDs = 0.25
         cA = (wAs * (preA + postA) + a) * wA / (2.0 * wAs + 1.0)
         cD = (wDs * (preD + postD) + d) * wD / (2.0 * wDs + 1.0)
-        return  (cA + cD) / (wA + wD)
+        return (cA + cD) / (wA + wD)
     return quad
+
 
 """
 Adds top 5 matching clusters for each cluster in the data
 """
+
+
 def addClusterCmp(data):
     topsize = 5
     feat, tag = clusterClassData(data)
@@ -286,7 +294,7 @@ def addClusterCmp(data):
     neigh[keys[0]] = NearestNeighbors(defaultK, metric=quadAngle)
     neigh[keys[1]] = NearestNeighbors(defaultK, metric=quadDist)
     neigh[keys[2]] = NearestNeighbors(defaultK, metric=quadBoth)
-    dists = {} 
+    dists = {}
     neighbours = {}
     for key in neigh:
         neigh[key].fit(feat)
@@ -302,17 +310,22 @@ def addClusterCmp(data):
             cascade['clust_cmp'][cid] = {}
             cascade['clust_cmp_size'][cid] = {}
         for key in neigh:
-            cascade['clust_cmp'][cid][key] = [(x, tag[y][0], tag[y][1]) for x, y in zip(dists[key][index][:topsize], neighbours[key][index][:topsize])] 
+            cascade['clust_cmp'][cid][key] = [(x, tag[y][0], tag[y][1]) for x, y in zip(
+                dists[key][index][:topsize], neighbours[key][index][:topsize])]
             curLen = len(cascade['clusters'][cid])
-            lenDiff = [(abs(curLen - len(data[tag[x][0]]['clusters'][tag[x][1]])), i) for i, x in enumerate(neighbours[key][index])]
+            lenDiff = [(abs(curLen - len(data[tag[x][0]]['clusters'][tag[x][1]])), i)
+                       for i, x in enumerate(neighbours[key][index])]
             lenDiff.sort()
-            cascade['clust_cmp_size'][cid][key] = [(dists[key][index][x[1]], tag[neighbours[key][index][x[1]]][0], tag[neighbours[key][index][x[1]]][1]) for x in lenDiff[:topsize]]
+            cascade['clust_cmp_size'][cid][key] = [
+                (dists[key][index][x[1]], tag[neighbours[key][index][x[1]]][0], tag[neighbours[key][index][x[1]]][1]) for x in lenDiff[:topsize]]
 
 
 def trainKnn(feat, true_labels, n_neighbors, metric, weights):
-    neigh = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric, weights=weights)
-    neigh.fit(feat, true_labels) 
+    neigh = KNeighborsClassifier(
+        n_neighbors=n_neighbors, metric=metric, weights=weights)
+    neigh.fit(feat, true_labels)
     return neigh
+
 
 def getTrainData():
     training_data_file = "training-data.json"
@@ -325,16 +338,21 @@ def getTrainData():
     f.close()
     return di['feat'], di['label']
 
+
 def supervisedClustersClassification(testFeat):
     # raw
     trainFeat, trainLabels = getTrainData()
     raw_knn = trainKnn(trainFeat, trainLabels, 3, quad, "distance")
     # umap
-    umap_feat = umap.UMAP(n_components=5, n_neighbors=12, min_dist=0.20, metric=quad, random_state=41).fit_transform(trainFeat+testFeat)
-    umap_knn = trainKnn(umap_feat[:len(trainFeat)], trainLabels, 4, "minkowski", "distance")
+    umap_feat = umap.UMAP(n_components=5, n_neighbors=12, min_dist=0.20,
+                          metric=quad, random_state=41).fit_transform(trainFeat+testFeat)
+    umap_knn = trainKnn(umap_feat[:len(trainFeat)],
+                        trainLabels, 4, "minkowski", "distance")
     # tsne
-    tsne_feat = TSNE(n_components=2, metric = quad, random_state=7).fit_transform(trainFeat+testFeat)
-    tsne_knn = trainKnn(tsne_feat[:len(trainFeat)], trainLabels, 3, "minkowski", "distance")
+    tsne_feat = TSNE(n_components=2, metric=quad,
+                     random_state=7).fit_transform(trainFeat+testFeat)
+    tsne_knn = trainKnn(tsne_feat[:len(trainFeat)],
+                        trainLabels, 3, "minkowski", "distance")
 
     raw_test_proba = raw_knn.predict_proba(testFeat)
     umap_test_proba = umap_knn.predict_proba(umap_feat[len(trainFeat):])
@@ -343,7 +361,7 @@ def supervisedClustersClassification(testFeat):
     allLabels = list(set(trainLabels))
     allLabels.sort()
     soft_ensemble_labels = []
-    noiseThreshold = [1.5, 0.0]
+    noiseThreshold = [1.5]
     for thresh in noiseThreshold:
         soft_ensemble_labels.append([])
         for x, y, z in zip(raw_test_proba, umap_test_proba, tsne_test_proba):
@@ -351,25 +369,28 @@ def supervisedClustersClassification(testFeat):
             labelIndex = total.argmax()
             labelScore = total[labelIndex]
             label = allLabels[labelIndex]
-            if (labelScore > thresh):    
+            if (labelScore > thresh):
                 soft_ensemble_labels[-1].append(label)
             else:
                 soft_ensemble_labels[-1].append("noise")
-    return soft_ensemble_labels[0]
+    return soft_ensemble_labels[0], tsne_feat[len(trainFeat):].tolist()
+
 
 def unsupervisedClustersClassification(feat):
     rndSeed = 42
-    reduced_dim = umap.UMAP(n_components=9, n_neighbors=9, min_dist=0.11, metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
+    reduced_dim = umap.UMAP(n_components=9, n_neighbors=9, min_dist=0.11,
+                            metric=quad, random_state=rndSeed).fit_transform(feat).tolist()
     clusterer = hdbscan.HDBSCAN(min_cluster_size=6)
     return clusterer.fit_predict(reduced_dim)
+
 
 def classesDataToSave(cluster_labels, show_dim, tag):
     class_points = {}
     class_tags = {}
     for i, label in enumerate(cluster_labels):
         label = str(label)
-        if not label in class_points: 
-            class_points[label] = [[],[],[]]
+        if not label in class_points:
+            class_points[label] = [[], [], []]
             class_tags[label] = []
         class_points[label][0].append(show_dim[i][0])
         class_points[label][1].append(show_dim[i][1])
@@ -377,17 +398,30 @@ def classesDataToSave(cluster_labels, show_dim, tag):
         class_tags[label].append(tag[i])
     return class_points, class_tags
 
+
 def clusterClasses(data):
     feat, tag = clusterClassData(data)
-    rndSeed = 7
-    show_dim = TSNE(n_components=2, metric=quad,
-                    random_state=rndSeed).fit_transform(feat).tolist()
-    supervisedLabels = supervisedClustersClassification(feat)
-    unsupervisedLabels = unsupervisedClustersClassification(feat)
-    classesData = [] 
-    classesData.append({'name':'supervised (kNN)', 'data':classesDataToSave(supervisedLabels, show_dim, tag)})
-    classesData.append({'name':'unsupervised (UMAP + HDBSCAN)', 'data':classesDataToSave(unsupervisedLabels, show_dim, tag)})
+    classesData = []
+    show_dim = []
+    try:
+        supervisedLabels, show_dim = supervisedClustersClassification(feat)
+        classesData.append({'name': 'supervised (kNN)', 'data': classesDataToSave(
+            supervisedLabels, show_dim, tag)})
+    except:
+        print("Error in supervised classification")
+        print(sys.exc_info()[0])
+        rndSeed = 7
+        show_dim = TSNE(n_components=2, metric=quad,
+                        random_state=rndSeed).fit_transform(feat).tolist()
+    try:
+        unsupervisedLabels = unsupervisedClustersClassification(feat)
+        classesData.append({'name': 'unsupervised (UMAP + HDBSCAN)',
+                            'data': classesDataToSave(unsupervisedLabels, show_dim, tag)})
+    except:
+        print("Error in unsupervised classification")
+        print(sys.exc_info()[0])
     return classesData
+
 
 def addHull(data):
     for cascade in data:
@@ -419,6 +453,7 @@ def addHull(data):
 # top level user functions
 # -------------------------
 
+
 def analyse(cascades, isAddClusterComparison=True, isAddClassification=True):
     print("Adding coordinates in eigen dimensions and convex hulls for cascades...")
     addEigenAndSubcascades(cascades)
@@ -442,13 +477,9 @@ def analyseAndClassify(cascades, isAddClusterComparison=True, isAddClassificatio
     sys.stdout.flush()
     print("Classification...")
     res = ([], [])
-    classifications = []
-    try:
-        classifications = clusterClasses(cascades)
-        if (len(classifications) > 0): res = classifications[0]['data']
-    except:
-        print("Warning during classification")
-        print(sys.exc_info()[0])
+    classifications = clusterClasses(cascades)
+    if (len(classifications) > 0):
+        res = classifications[0]['data']
     for label in res[1]:
         for tag in res[1][label]:
             if not 'clusterClasses' in cascades[tag[0]]:
@@ -468,7 +499,7 @@ def saveJs(cascades, config, classification, filePath):
         f.write(";\nvar cluster_classes = \n")
         di = {}
         for x in classification:
-            di[x['name']] = {"show_point":x['data'][0], "tags":x['data'][1]}
+            di[x['name']] = {"show_point": x['data'][0], "tags": x['data'][1]}
         json.dump(di, f)
         f.close()
     except IOError:

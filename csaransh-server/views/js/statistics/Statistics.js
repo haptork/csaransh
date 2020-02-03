@@ -117,14 +117,14 @@ export class Statistics extends React.Component {
       "max vac size":{"id":"max_cluster_size_V"}, 
       "int in cluster":{"id":"in_cluster_I"}, 
       "vac in cluster":{"id":"in_cluster_V"}, 
-      "hull vol":{"id":"hull_vol"}, 
+      "volume":{"id":"hull_vol"}, 
       //"hull area":{"id":"hull_area"}, 
       //"hull nvert":{"id":"hull_nvertices"}, 
-      "hull nsimpl":{"id":"hull_nsimplices"}, 
-      "hull density":{"id":"hull_density"}, 
+      "density":{"id":"hull_density"}, 
       "planarity":{"id":"planarity", "accessor":accessorTwod }, 
       "subcascades":{"id":"subc", "accessor":accessorSubc }, 
       "subcascade impact":{"id":"dclust_sec_impact"},
+      "hull nsimpl":{"id":"hull_nsimplices"}, 
       "energy":{"id":"energy", "type":"no-box"}
     };
     this.options = [
@@ -132,8 +132,8 @@ export class Statistics extends React.Component {
       { value: 'energy', label: 'Energy' },
       { value: 'temperature', label: 'Temperature' },
       { value: 'potentialUsed', label: 'Potential' },
-      { value: 'author', label: 'Author' },
-      { value: 'tags', label: 'Tags' },
+      { value: 'author', label: 'Author' }
+      //{ value: 'tags', label: 'Tags' },
     ];
     this.defaultGroupingLabels = this.options.slice(0, 2);
     this.state = {
@@ -177,7 +177,7 @@ export class Statistics extends React.Component {
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <StatsIcon /> Statistical Plot - Correlations, colors represent number of defects; filter data and remove outliers from table action buttons for better idea on correlations.
+                <StatsIcon /> Statistical Plot - Select grouping from the top selection. Filter data and remove outliers from table action button-2.
               </div>
             </CardFooter>
           </Card>
@@ -192,7 +192,7 @@ export class Statistics extends React.Component {
             </CardBody>
             <CardFooter chart>
               <div className={classes.stats}>
-                <StatsIcon /> Statistical Plot - Correlations, filter data and remove outliers from table action buttons for better idea on correlations.
+                <StatsIcon /> Statistical Plot - Correlations between different parameters. Filter data and remove outliers from table action button-2.
               </div>
             </CardFooter>
           </Card>

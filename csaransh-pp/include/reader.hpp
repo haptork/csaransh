@@ -16,7 +16,7 @@
 namespace csaransh {
 
 csaransh::ErrorStatus processFile(std::string xyzfile, std::ostream &outfile,
-                                  const Config &config, int id);
+                                  const Config &config, std::string id);
 
 csaransh::resultsT process(csaransh::InputInfo &i, csaransh::ExtraInfo &ei,
                            const Config &config);
