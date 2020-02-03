@@ -1,0 +1,14 @@
+name: csaransh
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy=1.16.3
+  - python=3.7.3
+  - scikit-learn=0.20.3
+  - scipy=1.2.1
+  - hdbscan=0.8.22
+  - umap-learn=0.3.8
+  - numba=0.43.1
+  - xmltodic=0.12
+  - seaborn=0.90

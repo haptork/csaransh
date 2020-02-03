@@ -1,0 +1,2 @@
+mkdir csaransh-pp/_build 
+cd csaransh-pp/_build && cmake .. && make
