@@ -17,6 +17,13 @@ from pandas import DataFrame
 pathToCsaranshPP = ".."
 sys.path.append(pathToCsaranshPP)
 from csaranshpp import getDefaultConfig, writeResultsToJSON
+buildDir = os.path.join(pathToCsaranshPP, "_build")
+libPath = os.path.join(buildDir, "libcsaransh-pp_shared.so")
+if (not os.path.exists(buildDir) or not os.path.exists(libPath)):
+    print("Library not found at", libPath)
+    print("This might be due to build errors in cmake.")
+    print("If built successfully, edit this source and correct build directory & lib file (so / dlib / dll) path.")
+
 
 
 # In[ ]:
@@ -27,7 +34,7 @@ dataDir = os.path.join(pathToCsaranshPP, "data", "cascadesdb-dl") # dir to downl
 config = getDefaultConfig() # check bottom cell for various keys / options to configure
 config['logFilePath'] = os.path.join(dataDir, "log-cdb-test.txt")
 config['outputJSONFilePath'] = os.path.join(dataDir, "cdb-test.json")
-config['csaranshLib'] = os.path.join(pathToCsaranshPP, "_build", "libcsaransh-pp_shared.so") # path to csaransh library
+config['csaranshLib'] = libPath
 # energy in keV and temperature in Kelvin, other options like author etc. can be selected check last cell for more details
 isSuccess, cascades = queryCdbToProcess(dataDir, config, material="W", energyRange=[2, 2], tempRange=["", 1500])
 writeResultsToJSON(cascades, config) # writes the json file config['outputJSONFilePath']. Can be loaded again with json.load()

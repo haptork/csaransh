@@ -16,6 +16,13 @@ from pandas import DataFrame
 pathToCsaranshPP = ".." # change if required
 sys.path.append(pathToCsaranshPP)
 from csaranshpp import getDefaultConfig, getDefaultInfos, processXyzFilesInDirGivenInfo, processXyzFileGivenInfo
+buildDir = os.path.join(pathToCsaranshPP, "_build")
+libPath = os.path.join(buildDir, "libcsaransh-pp_shared.so")
+if (not os.path.exists(buildDir) or not os.path.exists(libPath)):
+    print("Library not found at", libPath)
+    print("This might be due to build errors in cmake.")
+    print("If built successfully, edit this source and correct build directory & lib file (so / dlib / dll) path.")
+
 
 
 # In[ ]:
@@ -23,7 +30,7 @@ from csaranshpp import getDefaultConfig, getDefaultInfos, processXyzFilesInDirGi
 
 config = getDefaultConfig()
 config['logFilePath'] = "local-log-Fe.txt"
-config['csaranshLib'] = os.path.join(pathToCsaranshPP, "_build/libcsaransh-pp_shared.so")
+config['csaranshLib'] = libPath
 
 info, extraInfo = getDefaultInfos()
 extraInfo['substrate'] = "Fe"
