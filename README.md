@@ -24,7 +24,7 @@ The sofware suite to post-process, explore and visualize Molecular Dynamics (MD)
 *A feature loaded table view with column selection, multi-sort, reflective filters that provide a way to query the data quickly. If you select a filter, other filters reflect the options left.*
 
 ![drawing](docs/csaransh4stats.gif)
-*Quickly view and compare the statistics on of different parameters such as defects count, cascade volume etc. split on any combination of input fields such as grouped by energy & elements, temperature, potential etc.*
+*Quickly view and compare the statistics of different parameters such as defects count, cascade volume etc. split on any combination of input fields such as grouped by energy & elements, temperature, potential etc.*
 
 ![drawing](docs/csaransh4classes.gif)
 *clusters classification into different shape classes with interactive 3D view.*
