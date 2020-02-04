@@ -27,7 +27,7 @@ The sofware suite to post-process, explore and visualize Molecular Dynamics (MD)
 *Quickly view and compare the statistics of different parameters such as defects count, cascade volume etc. split on any combination of input fields such as grouped by energy & elements, temperature, potential etc.*
 
 ![drawing](docs/csaransh4classes.gif)
-*clusters classification into different shape classes with interactive 3D view.*
+*Clusters classification into different shape classes with interactive 3D view.*
 
 
 Play with the cascades database youself by running the example notebook online [here](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh-pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb).
