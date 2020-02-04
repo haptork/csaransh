@@ -15,7 +15,7 @@ The sofware suite to post-process, explore and visualize Molecular Dynamics (MD)
 
 ## Features
 
-- In no time process xyz cascades database to get resulting properties ready to be explored with python or interactive web-app.
+- One line to get all the cascade results in a python variable `isSuccess, cascades = queryCdbToProcess(dataDir, config, material="W", energyRange=[2, 3], tempRange=["", 1500])` which is ready to be explored with python or opened in interactive web-app loaded with interactive plots.
 ![drawing](docs/csaransh4py.gif)
 *Starting from selecting cascades of interest based on different criterion (energy range, temperature, author etc.), to download, processing, visualizations, to statistics based on different grouping, it is all automated.*
 
