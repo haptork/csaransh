@@ -191,14 +191,8 @@ We use [UMAP](https://umap-learn.readthedocs.io/en/latest/) and [t-SNE](https://
 
 ## Contributions
 
-Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. We think exploring parameters of subcascades such as their volume using convex hull etc. can be a good direction to extend. Adding more methods to pattern match subcascades and cascades can be helpful in understand them better. To begin understanding the implementation of algorithms in the post-processor, you can check tests written in the `csaransh-pp/test` directory.
+Contributions are welcome in the form of suggestions, ideas, code, bug fixes, constructive feedback. To begin understanding the implementation of algorithms in the post-processor, you can check tests written in the `csaransh-pp/test` directory.
 
 The current direction for web interface is to add help to different sections, add more interactions to plots and improve the efficiency of the interface by splitting the single webpack js file into different bundles. 
 
 Check issues for more specific contributions.
-
-We hope the current software can help explore many new ideas. We believe that it is just the beginning.
-
-## Citation
-
-You can use this [paper](https://arxiv.org/abs/1811.10923) for citation until we submit a JOSS paper on the implementation for the use of code, methods or results. Also, please consider to cite the link to this github project page.
