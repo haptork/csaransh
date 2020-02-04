@@ -52,20 +52,22 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utk
 
 ### Quick start
 
-- You can run csaransh online on [binder](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh-pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) or [colab](https://colab.research.google.com/drive/1PmXmoPo7_hGqTK62serwlx4hdksCuGQO).
+- You can run csaransh online on [binder](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh-pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) or [colab](https://colab.research.google.com/drive/1PmXmoPo7_hGqTK62serwlx4hdksCuGQO). These are free online python notebook environments.
 
-- Method 1:
+Alternatively use any of the following methods for using offline on your local system:
+
+- Method 1 (with python notebook):
   - You will need to install required python packages to run it on your system for that, run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
   - After installation open any example python notebook from `csaransh-pp/examples` (can be done by running `jupyter notebook` command from terminal). You can modify these examples to process your own data. All the necessary information for modification is given in the notebooks.
 
-- Method 2:
+- Method 2 (with python):
   - Install python packages as given in Method 1 above.
   - Build csaransh-pp:
     - Go to csaransh-pp directory.
     - Make a new directory `_build`. Go to this directory and run `cmake ..` and then `cmake --build .`.
-  - Run any python example given in `csaransh-pp/examples` directory with `examples` as current directory. You can modify these examples to process your own data. All the necessary information for modification is given in the comments of the examples directory.
+  - Run any python `.py` example given in `csaransh-pp/examples` directory with `examples` as current directory. The command would look something like `python cascadesWithOnlyXyz.py`. You can modify these examples to process your own data. All the necessary information for modification is given in the comments of the examples directory.
   
-- Method 3:
+- Method 3 (with csaransh executable):
   
   - After installing python packages and building the application as given in Method 2, the executable `csaransh_pp` can be found in the `_build` directory. This is the main post-processor for processing xyz files. You can run `make install` to add it to the system path. You can run the tests from the *csaransh_pp* directory by running the `csaransh_pp_test` application that gets built in the `_build` directory, the command would look like `./_build/csaransh_pp_test`.
   
@@ -86,7 +88,7 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utk
     - Alternatively, if you know git commands, clone the forked repo, checkout to gh-pages branch, replace the cascades-data.js file with your data file, commit the change and push changes to the main branch.
     - In your forked repository, go to the gh-pages link which would be something like: https://{yourusername}.github.io/csaransh/
 
-## Using csaransh web-app to explore cascades data
+## More info on using csaransh web-app to explore cascades data
 
 When you open the app you see a clickable green header at the top, some summary information for the complete data and four panel headers that you can open by clicking.
 
