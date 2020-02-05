@@ -111,6 +111,7 @@ class _ExtraInfoCpp(Structure):
     _fields_ = [("energy", c_double),
                 ("simulationTime", c_double),
                 ("isPkaGiven", c_bool),
+                ("es", c_bool),
                 ("xrec", c_double),
                 ("yrec", c_double),
                 ("zrec", c_double),
@@ -434,6 +435,7 @@ def getDefaultInfos():
     ExtraInfo (all optional)
     ----------
     isPkaGiven (is pka coorinate is known for the simulation)
+    es (is electronic stopping is included in the simulation)
     x/y/zrec: coordinates of PKA
     rec(theta/phi): angles of PKA
     substrate: element or material e.g. Fe or W.
@@ -455,6 +457,7 @@ def getDefaultInfos():
         "energy": 0.0,
         "simulationTime": 0.0,
         "isPkaGiven": False,
+        "es": True,
         "xrec": 0.0,
         "yrec": 0.0,
         "zrec": 0.0,
@@ -833,6 +836,7 @@ def getInfoFromMeta(metaInfo, metaFilePath, xyzFilePath):
     cdborg = "https://cascadesdb.org/potential/"
     if (potUsed.startswith(cdborg)): potUsed = potUsed[len(cdborg):] + "-cdbpot"
     extraInfo["potentialUsed"] = potUsed
+    extraInfo["es"] = metaInfo['electronic_stopping'].lower() == "true"
     extraInfo["isPKAGiven"] = False
     extraInfo["infile"] = metaFilePath
     extraInfo["tags"] = "cdb: " + metaInfo['data']['archive_name']

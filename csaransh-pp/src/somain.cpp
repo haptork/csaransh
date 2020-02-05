@@ -29,6 +29,7 @@ struct InfoPyExtraInput {
   double simulationTime;
   // for distribution around PKA
   bool isPkaGiven;
+  bool es;
   double xrec{0.0};
   double yrec{0.0};
   double zrec{0.0};
@@ -109,6 +110,7 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   extra.energy = pyextra.energy;
   extra.simulationTime = pyextra.simulationTime;
   extra.isPkaGiven = pyextra.isPkaGiven;
+  extra.es = pyextra.es;
   extra.xrec = pyextra.xrec;
   extra.yrec = pyextra.yrec;
   extra.zrec = pyextra.zrec;

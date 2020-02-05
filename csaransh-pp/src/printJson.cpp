@@ -182,6 +182,7 @@ void csaransh::infoToKeyValue(std::ostream &outfile,
           << "\"potentialUsed\": \"" << ei.potentialUsed << "\",\n"
           << "\"author\": \"" << ei.author << "\",\n"
           << "\"isPkaGiven\":" << ei.isPkaGiven << ",\n"
+          << "\"es\":" << ei.es << ",\n"
           << "\"originType\":" << i.originType; // << ",\n";
 }
 

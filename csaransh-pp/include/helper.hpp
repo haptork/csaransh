@@ -60,6 +60,7 @@ struct ExtraInfo {
   double simulationTime;
   // For distribution around PKA
   bool isPkaGiven{false};
+  bool es{true};
   double xrec{0.0};
   double yrec{0.0};
   double zrec{0.0};
