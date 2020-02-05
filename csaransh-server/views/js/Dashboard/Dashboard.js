@@ -28,8 +28,9 @@ import { Comparison } from "../Comparison/Comparison";
 import {CascadesAndClusterCmp} from "../cascades/CascadesAndClusterCmp";
 //other components
 import Select from 'react-select';
+import Paper from '@material-ui/core/Paper';
 
-//import {ClusterClassesTrends} from "../ClusterClassesTrends.js";
+import {ClusterClassesTrends} from "../ClusterClassesTrends.js";
 
 const styles = theme => ({
   heading: {
@@ -255,9 +256,20 @@ class DashboardSimple extends React.Component {
           </div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.details}>
-        <Grid container>
+        <Grid container justify="center">
           <GridItem xs={12} sm={12} md={12}>
             <ClusterClassesPlot classes={classes} data={this.data} shortName={this.shortName}/>
+          </GridItem>
+         <GridItem xs={12} sm={12} md={10}>
+          <Paper>
+            <img style={{width:"100%"}} src="images/drawing.png" />
+            <div className={this.props.classes.stats}>
+              A schematic diagram of all the classes used for supervised learning. The typical cluster shape for each class is also shown. The classes are placed in a way similar to where dimensionality reduction above places them relative to each other.
+            </div>
+          </Paper>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={12}>
+            <ClusterClassesTrends classes={classes} data={this.data}/>
           </GridItem>
         </Grid>
         </ExpansionPanelDetails>

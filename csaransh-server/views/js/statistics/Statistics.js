@@ -28,7 +28,7 @@ const accessorSubc = x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Obje
 const groupByKey = (row, groupingLabels) => {
   let res = '';
   for (const label of groupingLabels) {
-    res += row[label.value] + '-';
+    res += row[label.value] + '_';
   }
   res = res.slice(0, -1); 
   return res;
@@ -132,6 +132,7 @@ export class Statistics extends React.Component {
       { value: 'energy', label: 'Energy' },
       { value: 'temperature', label: 'Temperature' },
       { value: 'potentialUsed', label: 'Potential' },
+      { value: 'es', label: 'Electronic stopping' },
       { value: 'author', label: 'Author' }
       //{ value: 'tags', label: 'Tags' },
     ];

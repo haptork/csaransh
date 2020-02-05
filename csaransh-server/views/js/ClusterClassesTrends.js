@@ -13,9 +13,42 @@ import CompareIcon from '@material-ui/icons/InsertChart';
 import CustomTabs from "components/CustomTabs/CustomTabs.js";
 import AngleIcon from "@material-ui/icons/CallSplit";
 import DistIcon from "@material-ui/icons/LinearScale";
+import StatsIcon from '@material-ui/icons/MultilineChart';
 
 import Plot from 'react-plotly.js';
 import Paper from '@material-ui/core/Paper';
+import Select from 'react-select';
+
+const getTags = () => {
+  const clusterClasses = window.cluster_classes;
+  let picked = "";
+  for (const key in clusterClasses) {
+    if (picked.lenth == 0) picked = key;
+    if (key.startsWith('supervised')) {
+      picked = key;
+    }
+  }
+  if ((picked.length) == 0) return {};
+  return clusterClasses[picked].tags;
+};
+
+const groupByKey = (row, groupingLabels) => {
+  let res = '';
+  for (const label of groupingLabels) {
+    res += row[label.value] + '_';
+  }
+  res = res.slice(0, -1); 
+  return res;
+};
+
+const groupByName = (groupingLabels) => {
+  let res = '';
+  for (const label of groupingLabels) {
+    res += label.value + '_';
+  }
+  res = res.slice(0, -1); 
+  return res;
+};
 
 const ClusterClassesPieChart = props => {
   let classesCount = {};
@@ -32,9 +65,9 @@ const ClusterClassesPieChart = props => {
   classLabels.sort();
   let familyLabels = Object.keys(familyCount);
   familyLabels.sort();
-  let labels = []
-  let parents = []
-  let values = []
+  let labels = [];
+  let parents = [];
+  let values = [];
   labels.push("All Clusters");
   parents.push("");
   values.push(total);
@@ -75,18 +108,15 @@ const ClusterClassesPieChart = props => {
 
 const ClusterClassesEnergyBar1 = props => {
   let labels = Object.keys(props.tags);
+  const groupingLabels = props.groupingLabels;
   labels.sort();
   let totalCascades = {};
-  for (const x of props.data) {
-    if (!totalCascades.hasOwnProperty(x.energy)) totalCascades[x.energy] = 0;
-    totalCascades[x.energy]++;
+  for (const row of props.data) {
+    const groupingLabel = groupByKey(row, groupingLabels);
+    if (!totalCascades.hasOwnProperty(groupingLabel)) totalCascades[groupingLabel] = 0;
+    totalCascades[groupingLabel]++;
   }
-  let energySet = new Set();
-  for (const x of props.data) {
-    energySet.add(parseFloat(x.energy));
-  }
-  let allEnergies = [...energySet];
-  allEnergies.sort(function(a, b) { return a - b; });
+  const allEnergies = Object.keys(totalCascades);
   let vals = [];
   for (const x in allEnergies) {
     let cur = [];
@@ -98,7 +128,8 @@ const ClusterClassesEnergyBar1 = props => {
   for (const classLabel in props.tags) {
     const y = labels.indexOf(classLabel);
     for (const cluster of props.tags[classLabel]) {
-      const x = allEnergies.indexOf(props.data[cluster[0]].energy);
+      const groupingLabel = groupByKey(props.data[cluster[0]], groupingLabels);
+      const x = allEnergies.indexOf(groupingLabel);
       vals[x][y]++;
     }
   }
@@ -114,8 +145,7 @@ const ClusterClassesEnergyBar1 = props => {
       x: labels,
       y: vals[i],
       type: 'bar',
-      orientation: 'h',
-      name: allEnergies[i] + "keV"
+      name: allEnergies[i]
     });
   }
   const layout = {
@@ -139,18 +169,9 @@ const ClusterClassesEnergyBar1 = props => {
   );
 }
 
-const groupByKey = (row, groupingLabels) => {
-  let res = '';
-  for (const label of groupingLabels) {
-    res += row[label.value] + '-';
-  }
-  res = res.slice(0, -1); 
-  return res;
-};
-
 const ClusterClassesEnergyBar2 = props => {
   let labels = Object.keys(props.tags);
-  const groupingLabels = [{value:"temperature"}];
+  const groupingLabels = props.groupingLabels;
   labels.sort();
   let totalCascades = {};
   for (const row of props.data) {
@@ -196,7 +217,7 @@ const ClusterClassesEnergyBar2 = props => {
      barmode: 'stack',
      xaxis: {
        title: {
-         text: "energies (keV)"
+         text: groupByName(groupingLabels)
        }
      },
      yaxis: {
@@ -214,7 +235,7 @@ const ClusterClassesEnergyBar2 = props => {
 
 const ClusterClassesEnergyBar3 = props => {
   let labels = Object.keys(props.tags);
-  const groupingLabels = [{value:"temperature"}];
+  const groupingLabels = props.groupingLabels;
   labels.sort();
   let totalCascades = {};
   for (const classLabel in props.tags) {
@@ -264,7 +285,7 @@ const ClusterClassesEnergyBar3 = props => {
      barmode: 'stack',
      xaxis: {
        title: {
-         text: "energies (keV)"
+         text: groupByName(groupingLabels)
        }
      },
      yaxis: {
@@ -282,7 +303,7 @@ const ClusterClassesEnergyBar3 = props => {
 
 const ClusterClassesEnergyLine = props => {
   let labels = Object.keys(props.tags);
-  const groupingLabels = [{value:"temperature"}];
+  const groupingLabels = props.groupingLabels;
   labels.sort();
   let totalCascades = {};
   for (const row of props.data) {
@@ -370,7 +391,7 @@ const ClusterClassesEnergyLine = props => {
      updatemenus: updatemenus,
      xaxis: {
        title: {
-         text: "energies (keV)"
+         text: groupByName(groupingLabels)
        }
      },
      yaxis: {
@@ -381,7 +402,7 @@ const ClusterClassesEnergyLine = props => {
   };
 
   return (
-    <Plot data={traces} layout={layout} 
+    <Plot data={traces} layout={layout} config={{displayModeBar: false}}
       style={{height: "320px", width: "100%"}}
     useResizeHandler/>
   );
@@ -391,15 +412,75 @@ const ClusterClassesEnergyLine = props => {
 export class ClusterClassesTrends extends React.Component {
   constructor(props) {
     super(props);
+    this.tags = getTags();
+    this.options = [
+      { value: 'substrate', label: 'Material' },
+      { value: 'energy', label: 'Energy' },
+      { value: 'temperature', label: 'Temperature' },
+      { value: 'potentialUsed', label: 'Potential' },
+      { value: 'es', label: 'Electronic stopping' },
+      { value: 'author', label: 'Author' }
+      //{ value: 'tags', label: 'Tags' },
+    ];
+    this.defaultGroupingLabels = this.options.slice(0, 1);
+    this.state = {
+      groupingLabels: this.defaultGroupingLabels
+    };
   }
 
+  handleChange = groupingLabels => {
+   this.setState(
+      { groupingLabels }
+    );
+  };
+
   shouldComponentUpdate(nextProps, nextState){
-    return this.props.data != nextProps.data;// || this.state.groupingLabels != nextState.groupingLabels;
+    return this.props.data != nextProps.data || this.state.groupingLabels != nextState.groupingLabels;
   }
 
   render() {
-    const tags = this.props.tags;
+    const { groupingLabels } = this.state;
+    const { classes } = this.props;
+    const tags = this.tags;
     const data = this.props.data;
+    return (
+      <Grid container justify="center">
+       <GridItem xs={12} sm={12} md={12}>
+          <Card chart>
+            <CardHeader color="primary"> <span>Classification grouped by </span>
+              <span style={{display:"inline-block", top:"8px", position:"relative", marginLeft:"10px"}}>
+              <Select
+                value={groupingLabels}
+                closeOnSelect={false}
+                multi
+                options={this.options}
+                onChange={this.handleChange}
+              />
+              </span>
+            </CardHeader>
+            <CardBody>
+
+         <Grid container justify="center">
+         <GridItem xs={12} sm={12} md={8}>
+              <ClusterClassesEnergyBar1 tags={tags} data={data} groupingLabels={groupingLabels}/>
+         </GridItem>
+         <GridItem xs={12} sm={12} md={4}>
+            <Paper>
+            <ClusterClassesEnergyLine tags={tags} data={data} groupingLabels={groupingLabels}/>
+            </Paper>
+          </GridItem>
+          </Grid>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <StatsIcon /> Distribution of classes among groups - Select grouping from the top selection.
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+      </Grid>
+    );
+    /*
     return (
         <Grid container>
          <GridItem xs={12} sm={12} md={2}>
@@ -420,7 +501,7 @@ export class ClusterClassesTrends extends React.Component {
           </GridItem>
          <GridItem xs={12} sm={3} md={2}>
             <Paper>
-            <ClusterClassesEnergyBar2 tags={tags} data={data}/>
+            <ClusterClassesEnergyBar2 tags={tags} data={data} groupingLabels={groupingLabels}/>
             <div className={this.props.classes.stats}>
               Shows average number of clusters per cascade in each class for different energies.
             </div>
@@ -428,7 +509,7 @@ export class ClusterClassesTrends extends React.Component {
           </GridItem>
          <GridItem xs={12} sm={12} md={6}>
             <Paper>
-            <ClusterClassesEnergyBar1 tags={tags} data={data}/>
+            <ClusterClassesEnergyBar1 tags={tags} data={data} groupingLabels={groupingLabels}/>
             <div className={this.props.classes.stats}>
               Shows average number of clusters for each class label at different energies. Mouse over to look for exact fractions for each energy.
             </div>
@@ -436,7 +517,7 @@ export class ClusterClassesTrends extends React.Component {
           </GridItem>
           <GridItem xs={12} sm={12} md={4}>
           <Paper>
-            <ClusterClassesEnergyLine tags={tags} data={data}/>
+            <ClusterClassesEnergyLine tags={tags} data={data} groupingLabels={groupingLabels}/>
             <div className={this.props.classes.stats}>
               Shows mean per cascade count for various classes and families against PKA energies. Select a family from the drop down list. Some of the trends are: Number of bigger 5f clusters increase after 150keV, 5e after 100keV while medium sized 5c starts decreasing after 100keV.
             </div>
@@ -444,7 +525,7 @@ export class ClusterClassesTrends extends React.Component {
           </GridItem>
          <GridItem xs={12} sm={3} md={2}>
             <Paper style={{marginTop:"10px"}}>
-            <ClusterClassesEnergyBar3 tags={tags} data={data}/>
+            <ClusterClassesEnergyBar3 tags={tags} data={data} groupingLabels={groupingLabels}/>
             <div className={this.props.classes.stats}>
               Shows average number of clusters in each class normalized by the total number of clusters in each energy.
             </div>
@@ -452,6 +533,7 @@ export class ClusterClassesTrends extends React.Component {
           </GridItem>
         </Grid>
     );
+    */
   }
 }
 /*

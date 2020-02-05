@@ -206,7 +206,7 @@ export class Comparison extends React.Component {
       for (const i in this.defectSizeDistribConfig.labels) {
         //console.log(this.defectSizeDistribConfig.labels[i]);
         const x = this.defectSizeDistribConfig.labels[i][1];
-        elemsSet.add(x[0]);
+        elemsSet.add(x);
       }
       elemsSet = [...elemsSet];
       this.clusterElems = elemsSet.join(", ");

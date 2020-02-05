@@ -9,6 +9,7 @@ export const accessorsAndParseFns = {
   "accessorSubc": x => (Object.keys(x.dclust_coords).length) <= 1 ? 0 : (Object.keys(x.dclust_coords).length),
   "roundOff" : x => +parseFloat(x).toFixed(2),
   "noParse" : x => x,
+  "boolParse" : x => (x.toLowerCase() == "true" || x.toLowerCase() == "yes"),
   "parseVol" : x => parseInt(x / 1000),
   "parseFileName" : x => x.split('\\').pop().split('/').pop()
 };
@@ -23,6 +24,7 @@ export const getAllCol = () => {
     { value: 'simulationTime', label: 'Simulation Time', isShow: false, filterType: "range", type: "input"},
     { value: 'author', label: 'Author', isShow: false, filterType: "select", type: "input", parseFn: ac.noParse},
     { value: 'potentialUsed', label: 'Potential Used', isShow: false, filterType: "select", type: "input" , parseFn: ac.noParse},
+    { value: 'es', label: 'Electronic Stopping', isShow: false, filterType: "select", type: "input" , parseFn: ac.noParse},
     { value: 'xyzFilePath', label: 'Xyz file path', isShow: false, filterType: "text" , type: "input", parseFn: ac.noParse},
     { value: 'xyzFileName', label: 'Xyz file name', isShow: false, filterType: "text" , type: "input", accessor: ac.accessorDefault("xyzFilePath"), parseFn: ac.parseFileName},
     { value: 'infile', label: 'Input File', isShow: false, filterType: "text" , type: "input", parseFn: ac.noParse},
