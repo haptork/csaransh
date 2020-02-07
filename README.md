@@ -57,7 +57,7 @@ entry from [Bhabha Atomic Research Center (BARC)](http://www.barc.gov.in) by Utk
 Alternatively use any of the following methods for using offline on your local system:
 
 - Method 1 (with python notebook):
-  - You will need to install required python packages to run it on your system for that, run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies.
+  - You will need to install required python packages to run it on your system for that, run `conda env create -f environment.yml` and `conda activate csaransh` if you are using conda, or you can use `pip install -r requirements.txt` from the csaransh-pp directory to install python dependencies. Both `environment.yml` and `requirements.txt` files are in csaransh-pp directory, so run the above commands from csaransh-pp directory or give full path to these files in the command.
   - After installation open any example python notebook from `csaransh-pp/examples` (can be done by running `jupyter notebook` command from terminal). You can modify these examples to process your own data. All the necessary information for modification is given in the notebooks.
 
 - Method 2 (with python):
