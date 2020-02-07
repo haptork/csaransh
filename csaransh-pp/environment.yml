@@ -12,3 +12,4 @@ dependencies:
   - numba=0.43.1
   - xmltodict=0.12
   - seaborn=0.9.0
+  - jupyter>=1.0.0
