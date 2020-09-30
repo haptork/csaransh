@@ -30,12 +30,12 @@ def findEigen(points, others):
     other_trans = []
     for x in others:
         temp = pca.transform(x)
-        temp = [[round(x[0], 2), round(x[1], 2), round(x[2], 2)]
+        temp = [[round(x[0], 4), round(x[1], 4), round(x[2], 4)]
                 for x in temp.tolist()]
         other_trans.append(temp)
-    eigen_coords = [[round(x[0], 2), round(x[1], 2), round(x[2], 2)]
+    eigen_coords = [[round(x[0], 4), round(x[1], 4), round(x[2], 4)]
                     for x in eigen_coords.tolist()]
-    var = [round(x, 2) for x in var]
+    var = [round(x, 4) for x in var]
     return eigen_coords, var, other_trans
 
 
@@ -101,7 +101,7 @@ def addEigenAndSubcascades(data):
         fdata['eigen_features'] = eigen_features
         if len(fdata['coords']) == 0:
             fdata['eigen_coords'] = []
-            fdata['eigen_pka'] = [round(x[0], 2)
+            fdata['eigen_pka'] = [round(x[0], 4)
                                   for x in fdata['eigen_pka'].tolist()]
             fdata['dclust_coords'] = {}
             fdata['dclustI_count'] = 0
@@ -164,7 +164,7 @@ def dist(a, b):
     for x, y in zip(a, b):
         if (abs(x) > 1e-6):
             res += ((x - y)**2 * 1.0) / (1.0*x)
-    return round(res, 2)
+    return round(res, 4)
 
 
 """
@@ -297,6 +297,7 @@ def addClusterCmp(data):
     dists = {}
     neighbours = {}
     for key in neigh:
+        if len(feat) == 0: continue
         neigh[key].fit(feat)
         dists[key], neighbours[key] = neigh[key].kneighbors()
     for index, (cascadeIndex, cid) in enumerate(tag):
@@ -310,6 +311,9 @@ def addClusterCmp(data):
             cascade['clust_cmp'][cid] = {}
             cascade['clust_cmp_size'][cid] = {}
         for key in neigh:
+            if key not in dists:
+              cascade['clust_cmp'][cid][key] = []
+              cascade['clust_cmp_size'][cid][key] = []
             cascade['clust_cmp'][cid][key] = [(x, tag[y][0], tag[y][1]) for x, y in zip(
                 dists[key][index][:topsize], neighbours[key][index][:topsize])]
             curLen = len(cascade['clusters'][cid])
@@ -403,13 +407,14 @@ def clusterClasses(data):
     feat, tag = clusterClassData(data)
     classesData = []
     show_dim = []
+    if len(feat) == 0: return classesData
     try:
         supervisedLabels, show_dim = supervisedClustersClassification(feat)
         classesData.append({'name': 'supervised (kNN)', 'data': classesDataToSave(
             supervisedLabels, show_dim, tag)})
     except:
-        print("Error in supervised classification")
         print(sys.exc_info()[0])
+        print("Continuing with non-fatal error in supervised classification")
         rndSeed = 7
         show_dim = TSNE(n_components=2, metric=quad,
                         random_state=rndSeed).fit_transform(feat).tolist()
@@ -418,7 +423,7 @@ def clusterClasses(data):
         classesData.append({'name': 'unsupervised (UMAP + HDBSCAN)',
                             'data': classesDataToSave(unsupervisedLabels, show_dim, tag)})
     except:
-        print("Error in unsupervised classification")
+        print("Continuing with non-fatal error in supervised classification")
         print(sys.exc_info()[0])
     return classesData
 
