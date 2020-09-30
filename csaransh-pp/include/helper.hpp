@@ -91,13 +91,18 @@ struct Config {
 
 using Coords = std::array<double, 3>;
 
-static inline double calcDist(csaransh::Coords a, csaransh::Coords b) {
+static inline double calcDistSqr(Coords a, Coords b) {
   double dist = 0.0;
   for (auto i : {0, 1, 2}) {
     dist += (a[i] - b[i]) * (a[i] - b[i]);
   }
-  return std::sqrt(dist);
+  return dist;
 }
+
+static inline double calcDist(csaransh::Coords a, csaransh::Coords b) {
+  return std::sqrt(calcDistSqr(a, b));
+}
+
 
 // write standard array as comma separated values
 template <class T, size_t n>

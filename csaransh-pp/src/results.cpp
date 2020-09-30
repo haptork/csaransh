@@ -16,29 +16,18 @@ csaransh::DefectVecT csaransh::groupDefects(const csaransh::DefectVecT &defects,
                                             const double &latticeConst) {
   // std::cout << "Grouping defects " << defects.size() << '\n' << std::flush;
   using UF = csaransh::UnionFind<2, csaransh::DefectT>;
-  auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-6;
-  auto nn2 = latticeConst + 1e-6; // std::sqrt(3) * info.latticeConst + 0.01;
-  auto nn4 = nn * 2;
-  auto pred = [nn2, nn4](const csaransh::DefectT &a,
+  const auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-6;
+  const auto nn2 = latticeConst + 1e-6; // std::sqrt(3) * info.latticeConst + 0.01;
+  const auto nn4 = nn * 2;
+  const auto nn2sqr = nn2 * nn2;
+  const auto nn4sqr = nn4 * nn4;
+  auto pred = [nn2sqr, nn4sqr](const csaransh::DefectT &a,
                          const csaransh::DefectT &b) {
     using namespace DefectTWrap;
-    if (isVacancy(a) && isVacancy(b)) {
-      if (isSurviving(a) && isSurviving(b))
-        return calcDist(coords(a), coords(b)) < nn4; // both surviving
-      return false;
-    } else if (isInterstitial(a) && isInterstitial(b)) { // both interstitials
-      if (!isSurviving(a) && isSurviving(b))
-        return calcDist(coords(a), coords(b)) < nn2; // exactly one surviving
-      return calcDist(coords(a), coords(b)) < nn2;   // both surviving
-    } else if (isInterstitial(a) !=
-               isInterstitial(b)) { // one interstitial and one vacancy
-      // if (!get<3>(a) || !get<3>(b))
-      if ((isVacancy(a) && !isSurviving(a)) ||
-          (isVacancy(b) && !isSurviving(b))) // if vacancy is not surviving
-        return calcDist(coords(a), coords(b)) < nn2;
-      return false;
-    }
-    return false;
+    if (isVacancy(a) && isVacancy(b) && isSurviving(a) && isSurviving(b)) { // both vacancies and surviving
+      return calcDistSqr(coords(a), coords(b)) < nn4sqr;
+    } 
+    return calcDistSqr(coords(a), coords(b)) < nn2sqr;
   };
   UF uf;
   for (const auto &it : defects) {
