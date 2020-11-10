@@ -288,6 +288,7 @@ def getDefaultConfig(*logModes):
 
     """
     config = {
+        "version": 0.4,
         "csaranshLib": "./_build/libcsaransh-pp_shared.so",
         "onlyDefects": False,
         "isFindDistribAroundPKA": True,

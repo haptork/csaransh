@@ -188,7 +188,8 @@ void csaransh::infoToKeyValue(std::ostream &outfile,
 
 void csaransh::configToKeyValue(std::ostream &outfile,
                                 const csaransh::Config &c) {
-  outfile << "\"onlyDefects\": \"" << c.onlyDefects << "\",\n"
+  outfile << "\"version\": \"" << "0.4" << "\",\n"
+          << "\"onlyDefects\": \"" << c.onlyDefects << "\",\n"
           << "\"isFindDistribution\": \"" << c.isFindDistribAroundPKA << "\",\n"
           << "\"isFindClusterFeatures\": \"" << c.isFindClusterFeatures << "\",\n"
           << "\"isIgnoreBoundaryDefects\": \"" << c.isIgnoreBoundaryDefects << "\",\n"
