@@ -96,15 +96,22 @@ csaransh::getCoordLammps(const std::string &line,
                                  [](int ch) { return std::isspace(ch); });
     }
   }
-  for (auto i = 0; i < 3; ++i) {
+  for (auto i = 0; i < 10; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
     second =
         std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
-    if (first >= second)
+    if (first >= second) {
+      if (i >= 2) return std::make_pair(csaransh::lineStatus::coords, c);
       return std::make_pair(csaransh::lineStatus::garbage, c);
+    }
     try {
-      c[i] = std::stod(std::string{first, second});
+      auto curVal = std::stod(std::string{first, second});
+      if (i > 2) {
+        c[0] = c[1]; c[1] = c[2]; c[2] = curVal; 
+      } else {
+        c[i] = curVal;
+      }
     } catch (const std::invalid_argument &) {
       return std::make_pair(csaransh::lineStatus::garbage, c);
     } catch (const std::out_of_range &) {

@@ -104,7 +104,10 @@ csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v,
       if (i == j || calcDist(v[i], v[j]) > nn4) continue;
       for (size_t k = j + 1; k < v.size(); ++k) {
         if (i == k || v2[j] != v2[k] || calcDist(v[i], v[k]) > nn4) continue;
-        auto bin = calcAngle(v[i], v[j], v[k]) / angleBinSize;
+        auto ang = calcAngle(v[i], v[j], v[k]);
+        if (ang > 90.0) ang = 180 - ang;
+        if (v2[j]) ang += 90;
+        auto bin = ang / angleBinSize;
         if (bin >= angleHist.size()) bin = angleHist.size() - 1;
         ++angleHist[bin];
         ++total;

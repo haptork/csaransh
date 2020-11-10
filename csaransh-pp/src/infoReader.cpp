@@ -124,7 +124,7 @@ csaransh::extractInfoLammps(std::string fpath, std::string ftag) {
       } else if (cmd == "temp") {
         mainInfo.temperature = std::stod(val);
       } else if (cmd == "es") {
-        mainInfo.temperature = (val == "true");
+        extraInfo.es = (val == "true");
       } else if (cmd == "offsetToUse") {
         if (val == "0") mainInfo.originType = 0;
         if (val == "1") mainInfo.originType = 1;
