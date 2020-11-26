@@ -20,6 +20,7 @@ namespace csaransh {
 enum class readStatus : bool { fail, success };
 
 enum class XyzFileType : int {
+  generic,
   cascadesDbLikeCols,
   parcasWithStdHeader,
   lammpsWithStdHeader,
@@ -35,7 +36,17 @@ enum class ErrorStatus : int {
   xyzFileReadError,
   unknownSimulator,
   unknownError,
-  noError
+  noError,
+  vacOverflow,
+  siaOverflow,
+  defectOverflow,
+  threshOverflow,
+  siaVacDiffOverflow
+};
+
+enum class xyzFileStatus : bool {
+  reading,
+  eof,
 };
 
 std::string errToStr(ErrorStatus err);
@@ -49,7 +60,8 @@ struct InputInfo {
   double originZ;
   int originType{0}; // 0->only given, 1-> only estimated, 2-> both
   double temperature{0.0};
-  XyzFileType xyzFileType{};
+  int xyzColumnStart{-1};
+  XyzFileType xyzFileType{XyzFileType::generic};
   std::string xyzFilePath{""};
   std::string structure;
   // int latConstType{0}; // 0->only given, 1-> only optimized, 2-> both
@@ -75,12 +87,13 @@ struct ExtraInfo {
 };
 
 struct Config {
+  bool allFrames{false};
   bool onlyDefects{false};
   bool isFindDistribAroundPKA{true};
   bool isFindClusterFeatures{true};
   bool filterZeroSizeClusters{false};
-  bool isIgnoreBoundaryDefects{false};
-  bool isAddThresholdInterstitials{true};
+  bool isIgnoreBoundaryDefects{true};
+  bool isAddThresholdDefects{true};
   bool safeRunChecks{true};
   double thresholdFactor{0.345};
   double extraDefectsSafetyFactor{50.0};

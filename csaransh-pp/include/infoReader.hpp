@@ -24,5 +24,7 @@ extractInfoParcas(std::string fname, std::string ftag);
 std::tuple<csaransh::InputInfo, csaransh::ExtraInfo, bool>
 extractInfoLammps(std::string fname, std::string ftag);
 
+std::tuple<csaransh::InputInfo, csaransh::ExtraInfo, bool> infoFromStdIn();
+
 } // namespace csaransh
 #endif

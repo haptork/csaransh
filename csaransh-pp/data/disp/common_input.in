@@ -2,7 +2,7 @@ LAMMPS-DISP
 substrate = Fe
 latticeConstant = 2.85532
 ncell = 52
-recen = 10000
+recen = 10
 vx = 1
 vy = 1
 vz = 1

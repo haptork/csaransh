@@ -36,30 +36,76 @@ auto filterZeroClusters(csaransh::DefectVecT &defects,
       defects.end());
 }
 
-csaransh::resultsT csaransh::process(csaransh::InputInfo &info,
-                                     csaransh::ExtraInfo &extraInfo,
-                                     const csaransh::Config &config) {
-  auto res = csaransh::resultsT{};
-  res.err = csaransh::ErrorStatus::noError;
-  std::tie(res.defects, res.dumbellPairs) =
-      (info.xyzFileType == csaransh::XyzFileType::lammpsDisplacedCompute)
-          ? csaransh::displaced2defects(info.xyzFilePath, info.latticeConst)
-          : csaransh::xyz2defects(info.xyzFilePath, info, extraInfo, config);
-  if (res.defects.empty()) {
-    res.err = csaransh::ErrorStatus::xyzFileDefectsProcessingError;
-    return res;
+std::pair<csaransh::ErrorStatus,int> csaransh::processFileTimeCmd(std::string xyzfileName,
+                                            std::ostream &outfile,
+                                            const csaransh::Config &config, int id) {
+  std::string infileName, tag;
+  std::tie(infileName, tag) = csaransh::getInfileFromXyzfile(xyzfileName);
+  //if (infileName.empty()) return std::make_pair(csaransh::ErrorStatus::inputFileMissing, 0);
+  csaransh::XyzFileType sc {csaransh::XyzFileType::generic};
+  csaransh::InputInfo info;
+  csaransh::ExtraInfo extraInfo;
+  bool isInfo;
+  if (infileName.empty()) {
+    std::tie(info, extraInfo, isInfo) = csaransh::infoFromStdIn();
+    sc = info.xyzFileType;
+  } else {
+    bool status;
+    std::tie(sc, status) = csaransh::getSimulationCode(infileName);
+    if (!status) return std::make_pair(csaransh::ErrorStatus::unknownSimulator, 0);
+    std::tie(info, extraInfo, isInfo) =
+      (sc == csaransh::XyzFileType::parcasWithStdHeader)
+          ? csaransh::extractInfoParcas(infileName, tag)
+          : csaransh::extractInfoLammps(infileName, tag);
   }
-  res.defects =
-      csaransh::groupDefects(std::move(res.defects), info.latticeConst);
+  if (!isInfo) return std::make_pair(csaransh::ErrorStatus::InputFileincomplete, 0);
+  info.xyzFileType = sc;
+  info.xyzFilePath = xyzfileName;
+  csaransh::frameStatus fs = csaransh::frameStatus::prelude;
+  std::ifstream xyzfile{info.xyzFilePath};
+  if (xyzfile.bad() || !xyzfile.is_open()) return std::make_pair(csaransh::ErrorStatus::xyzFileReadError, 0);
+  auto success = 0;
+  auto frameCount = 0;
+  while (true) {
+    extraInfo.simulationTime = success + 1;
+    extraInfo.id = std::to_string(id + success + 1);
+    auto res = csaransh::processTimeFile(info, extraInfo, config, xyzfile, fs, outfile);
+    frameCount++;
+    if (res.second != csaransh::ErrorStatus::noError) {
+      if (config.allFrames) std::cerr << "\nError: " << errToStr(res.second) << " in frame " << frameCount << " of file " << xyzfileName << '\n' << std::flush;
+      else std::cerr << "\nError: " << errToStr(res.second) << " of file " << xyzfileName << '\n' << std::flush;
+      Logger::inst().log_info("Error processing" + std::to_string(frameCount) +" frame in file \"" + xyzfileName + "\"");
+    } else {
+      ++success;
+      if (config.allFrames) {
+        if (success >= 2) std::cout << "\r" << success << " steps processed successfully." << std::flush;
+        Logger::inst().log_info("Finished processing" + std::to_string(success) +" frame in file \"" + xyzfileName + "\"");
+      }
+    }
+    if (res.first == csaransh::xyzFileStatus::eof) break;
+  }
+  xyzfile.close();
+  if (success > 0) return std::make_pair(csaransh::ErrorStatus::noError, success);
+  return std::make_pair(csaransh::ErrorStatus::unknownError, 0);
+}
+
+std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus> 
+                          csaransh::processTimeFile(csaransh::InputInfo &info,
+                                     csaransh::ExtraInfo &extraInfo,
+                                     const csaransh::Config &config, std::istream &infile, csaransh::frameStatus &fs, std::ostream &outfile) {
+  auto res = csaransh::resultsT{};
+  //res.err = csaransh::ErrorStatus::noError;
+  csaransh::xyzFileStatus fl;
+  std::tie(fl, res.err, res.defects, res.coDefects) = 
+      (info.xyzFileType == csaransh::XyzFileType::lammpsDisplacedCompute)
+          ? csaransh::displaced2defectsTime(info, extraInfo, config, infile, fs)
+          : csaransh::xyz2defectsTime(info, extraInfo, config, infile, fs);
+  if (res.err != csaransh::ErrorStatus::noError) return std::make_pair(fl, res.err);
+  res.defects = csaransh::groupDefects(std::move(res.defects), info.latticeConst);
   auto clusterSizeMap = csaransh::clusterSizes(res.defects);
   filterZeroClusters(res.defects, clusterSizeMap,
                      config.filterZeroSizeClusters);
   csaransh::ignoreSmallClusters(res.defects, clusterSizeMap, 2, 4);
-  if (config.onlyDefects) {
-    std::tie(res.nDefects, res.inClusterFractionI, res.inClusterFractionV) =
-        csaransh::getNDefectsAndClusterFractions(res.defects);
-    return res;
-  }
   res.clusters = csaransh::clusterMapping(res.defects);
   res.clustersIV = csaransh::clusterIVType(res.clusters, clusterSizeMap);
   if (config.isFindClusterFeatures)
@@ -71,37 +117,11 @@ csaransh::resultsT csaransh::process(csaransh::InputInfo &info,
   std::tie(res.maxClusterSizeI, res.maxClusterSizeV) =
       csaransh::getMaxClusterSizes(clusterSizeMap, res.clusters);
   res.nClusters = res.clusters.size();
-  if (!config.isFindDistribAroundPKA) return res;
-  res.dists = csaransh::getDistanceDistribution(res.defects, extraInfo);
-  res.angles = csaransh::getAngularDistribution(res.defects, extraInfo);
-  return res;
-}
-
-csaransh::ErrorStatus csaransh::processFile(std::string xyzfile,
-                                            std::ostream &outfile,
-                                            const Config &config, std::string id) {
-  std::string infile, tag;
-  // std::cout << '\n' << xyzfile << '\n' << std::flush;
-  std::tie(infile, tag) = csaransh::getInfileFromXyzfile(xyzfile);
-  if (infile.empty()) return csaransh::ErrorStatus::inputFileMissing;
-  csaransh::XyzFileType sc;
-  bool status;
-  std::tie(sc, status) = getSimulationCode(infile);
-  if (!status) return csaransh::ErrorStatus::unknownSimulator;
-  csaransh::InputInfo info;
-  csaransh::ExtraInfo extraInfo;
-  bool isInfo;
-  std::tie(info, extraInfo, isInfo) =
-      (sc == csaransh::XyzFileType::parcasWithStdHeader)
-          ? csaransh::extractInfoParcas(infile, tag)
-          : csaransh::extractInfoLammps(infile, tag);
-  if (!isInfo) return csaransh::ErrorStatus::InputFileincomplete;
-  extraInfo.id = id;
-  info.xyzFileType = sc;
-  info.xyzFilePath = xyzfile;
-  auto res = csaransh::process(info, extraInfo, config);
   if (res.err == csaransh::ErrorStatus::noError) {
+    if (extraInfo.id != "1") {
+      outfile << "\n,";
+    }
     csaransh::printJson(outfile, info, extraInfo, res);
   }
-  return res.err;
+  return std::make_pair(fl, res.err);
 }

@@ -59,24 +59,16 @@ void printFeats(const std::unordered_map<int, csaransh::featT> &feats,
   }
 }
 
-const auto
-printDumbbellPairs(const std::vector<std::array<int, 2>> &dumbbellPairs,
-                   std::ostream &outfile) {
-  size_t count = 0;
-  for (const auto &it : dumbbellPairs) {
-    outfile << "[" << it[0] << ", " << it[1] << "]";
-    if (count++ != dumbbellPairs.size() - 1) outfile << ", ";
-  }
-}
-
 auto strSimulationCode(csaransh::XyzFileType code) {
-  return (code == csaransh::XyzFileType::parcasWithStdHeader)
-             ? "parcasWithStdHeader"
+  return (code == csaransh::XyzFileType::cascadesDbLikeCols)
+             ? "cascadesDbLikeCols"
              : (code == csaransh::XyzFileType::lammpsWithStdHeader)
                    ? "lammpsWithStdHeader"
-                   : (code == csaransh::XyzFileType::cascadesDbLikeCols)
-                         ? "cascadesDbLikeCols"
-                         : "lammpsDisp";
+                   : (code == csaransh::XyzFileType::parcasWithStdHeader)
+                      ? "parcasWithStdHeader"
+                      : (code == csaransh::XyzFileType::lammpsDisplacedCompute)
+                        ? "lammpsDisp"
+                        : "generic-XYZ";
 }
 
 std::string errorStr(csaransh::ErrorStatus err) {
@@ -135,24 +127,8 @@ void csaransh::resToKeyValue(std::ostream &outfile,
   printFeats(res.feats, outfile);
   outfile << "}";
   outfile << ",\n";
-  outfile << "\"distancesI\": [";
-  csaransh::writeVector(res.dists[0], outfile);
-  outfile << "]";
-  outfile << ",\n";
-  outfile << "\"distancesV\": [";
-  csaransh::writeVector(res.dists[1], outfile);
-  outfile << "]";
-  outfile << ",\n";
-  outfile << "\"anglesI\": [";
-  csaransh::writeVector(res.angles[0], outfile);
-  outfile << "]";
-  outfile << ",\n";
-  outfile << "\"anglesV\": [";
-  csaransh::writeVector(res.angles[1], outfile);
-  outfile << "]";
-  outfile << ",\n";
-  outfile << "\"dumbbellPairs\": [";
-  printDumbbellPairs(res.dumbellPairs, outfile);
+  outfile << "\"coDefects\": [";
+  csaransh::writeVector(res.coDefects, outfile);
   outfile << "]\n";
 }
 
@@ -193,8 +169,8 @@ void csaransh::configToKeyValue(std::ostream &outfile,
           << "\"isFindDistribution\": \"" << c.isFindDistribAroundPKA << "\",\n"
           << "\"isFindClusterFeatures\": \"" << c.isFindClusterFeatures << "\",\n"
           << "\"isIgnoreBoundaryDefects\": \"" << c.isIgnoreBoundaryDefects << "\",\n"
-          << "\"isAddThresholdInterstitials\": \""
-          << c.isAddThresholdInterstitials << "\",\n"
+          << "\"isAddThresholdDefects\": \""
+          << c.isAddThresholdDefects << "\",\n"
           << "\"filterZeroSizeClusters\":" << c.filterZeroSizeClusters << ",\n"
           << "\"thresholdFactor\":" << c.thresholdFactor << ",\n"
           << "\"logMode\":" << c.logMode << ",\n"

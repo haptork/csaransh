@@ -21,28 +21,28 @@ auto getConfig(int argc, char *argv[]) {
   auto help = false;
   std::string name;
   auto cli =
-      (option("-sd")
-           .set(config.onlyDefects)
-           .doc("Switch: Compute only the defect coordinates"),
-       option("-sp")
-           .set(config.isFindDistribAroundPKA, false)
-           .doc("Switch: Do not add distribution around PKA"),
+      (option("-st")
+           .set(config.allFrames, true)
+           .doc("Switch: Process all the time-steps in a file. (default is last frame only)"),
+      option("-sm")
+           .set(config.onlyDefects, true)
+           .doc("Switch: Compute minimum info: only the defect coordinates"),
        option("-sf")
            .set(config.isFindClusterFeatures, false)
            .doc("Switch: Do not add cluster features for patthern matching & "
                 "classification."),
        option("-sb")
-           .set(config.isIgnoreBoundaryDefects, true)
-           .doc("Switch: Ignore boundary defects. Useful if defects can appear "
+           .set(config.isIgnoreBoundaryDefects, false)
+           .doc("Switch: Do not ignore boundary defects. Useful if defects can appear "
                 "at boundary due to PBC if origin / offset is not given "
                 "properly in MD simulations."),
        option("-sz")
            .set(config.filterZeroSizeClusters, true)
            .doc("Switch: Ignore clusters that appear due to purely threshold "
                 "based interstitial-vacancy pairs and can annihilate totally."),
-       option("-st")
-           .set(config.isAddThresholdInterstitials, false)
-           .doc("Switch: Do not add threshold baded interstitials"),
+       option("-sd")
+           .set(config.isAddThresholdDefects, false)
+           .doc("Switch: Do not add threshold based displaced atom-lattice site pairs."),
        option("-sc")
            .set(config.safeRunChecks, false)
            .doc("Switch: Do not check and ignore files with anomalous number "
@@ -86,10 +86,11 @@ auto getConfig(int argc, char *argv[]) {
     return std::make_tuple(config, files, true);
   }
   std::cout << clipp::usage_lines(cli, "Csaransh") << '\n';
-  if (files.empty())
+  if (files.empty()) {
     std::cout << "No input xyz file provided as cmd argument.\n";
-  else
+  } else {
     std::cout << "xyz files as other cmd argument.\n";
+  }
   std::cout << clipp::documentation(cli) << '\n';
   return std::make_tuple(config, files, false);
 }
@@ -125,15 +126,16 @@ int main(int argc, char *argv[]) {
     std::cout << "\rCurrently processing file " << curIndex + 1 << std::flush;
     Logger::inst().log_info("Started processing file \"" + file + "\"");
     csaransh::ErrorStatus ret;
-    ret = csaransh::processFile(file, outfile, config, std::to_string(success));
+    int curSuccess = 0;
+    std::tie(ret, curSuccess) = processFileTimeCmd(file, outfile, config, success);
     if (csaransh::ErrorStatus::noError != ret) {
       std::cerr << "\nError in processing file " << file << '\n';
       std::cerr << errToStr(ret) << '\n';
       Logger::inst().log_error("Error in processing file \"" + file + "\" " +
                                errToStr(ret));
     } else {
-      Logger::inst().log_info("Finished processing file \"" + file + "\"");
-      ++success;
+      if (config.allFrames) Logger::inst().log_info("Finished processing" + std::to_string(curSuccess) +" frames in file \"" + file + "\"");
+      success += curSuccess;
       if (curIndex != files.size() - 1) outfile << ",";
       outfile << "\n";
     }
@@ -142,8 +144,9 @@ int main(int argc, char *argv[]) {
   outfile << "]}"
           << "\n";
   outfile.close();
-  Logger::inst().log_info("Output file written " + outpath);
-  std::cout << '\r' << success << " out of " << curIndex
+  std::cout << '\r' << curIndex << " out of " << curIndex
             << " processed successfully.\n";
+  std::cout << "Output file written " + outpath << '\n';
+  Logger::inst().log_info("Output file written " + outpath);
   return 0;
 }

@@ -7,8 +7,11 @@
 #define XYZ2DEFECTS_CSARANSH_HPP
 
 #include <string>
+#include <tuple>
 
+#include <AddOffset.hpp>
 #include <helper.hpp>
+#include <xyzReader.hpp>
 #include <results.hpp>
 
 namespace csaransh {
@@ -18,21 +21,19 @@ namespace csaransh {
 // Currently only works for bcc
 // TODO: extend for fcc
 
+// exposed for testing
 Coords getInitialMax(const Coords &origin, const Coords &maxes);
 
-std::pair<csaransh::DefectVecT, std::vector<std::array<int, 2>>>
-xyz2defects(const std::string &fname, InputInfo &info, ExtraInfo &extraInfo,
-            const csaransh::Config &config);
+DefectRes xyz2defectsTime(InputInfo &mainInfo, ExtraInfo &extraInfo,
+                      const Config &config, std::istream &infile, frameStatus &fs);
 
-std::pair<csaransh::DefectVecT, std::vector<std::array<int, 2>>>
-displaced2defects(const std::string &fname, double lc);
+DefectRes displaced2defectsTime(InputInfo &mainInfo, ExtraInfo &extraInfo,
+                      const Config &config, std::istream &infile, frameStatus &fs);
 
-std::pair<csaransh::DefectVecT, std::vector<std::array<int, 2>>>
-atoms2defects(std::vector<std::tuple<Coords, double, Coords>> atoms,
-              InputInfo &info, ExtraInfo &extraInfo, const csaransh::Config &config);
+DefectRes atoms2defects(std::pair<xyzFileStatus, std::vector<offsetCoords>> atoms,
+              InputInfo &info, ExtraInfo &extraInfo, const Config &config);
 
-std::pair<csaransh::DefectVecT, std::vector<std::array<int, 2>>>
-    displacedAtoms2defects(std::vector<std::array<csaransh::Coords, 2>> d,
+DefectRes displacedAtoms2defects(std::pair<xyzFileStatus, std::array<std::vector<Coords>, 2>> d,
                            double lc);
 } // namespace csaransh
 

@@ -9,16 +9,20 @@
 
 #include <string>
 
+#include <xyzReader.hpp>
 #include <cluster2features.hpp>
 #include <helper.hpp>
 #include <results.hpp>
 
 namespace csaransh {
 
-csaransh::ErrorStatus processFile(std::string xyzfile, std::ostream &outfile,
-                                  const Config &config, std::string id);
+std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus> processTimeFile(csaransh::InputInfo &info,
+                                     csaransh::ExtraInfo &extraInfo,
+                                     const csaransh::Config &config, std::istream &infile, csaransh::frameStatus &fs, std::ostream &outfile);
 
-csaransh::resultsT process(csaransh::InputInfo &i, csaransh::ExtraInfo &ei,
-                           const Config &config);
-} // namespace csaransh
+std::pair<csaransh::ErrorStatus,int> processFileTimeCmd(std::string xyzfileName,
+                                            std::ostream &outfile,
+                                            const Config &config, int id);
+ 
+}
 #endif

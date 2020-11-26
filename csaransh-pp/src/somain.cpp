@@ -20,6 +20,7 @@ struct InfoPyInput {
   double originZ;
   int originType;
   double temperature;
+  int xyzColumnStart;
   const char *xyzFileType;
   const char *xyzFilePath;
   const char *structure;
@@ -45,12 +46,13 @@ struct InfoPyExtraInput {
 };
 
 struct PyConfig {
+  bool allFrames{false};
   bool onlyDefects{false};
   bool isFindDistribAroundPKA{true};
   bool isFindClusterFeatures{true};
   bool filterZeroSizeClusters{false};
   bool isIgnoreBoundaryDefects{false};
-  bool isAddThresholdInterstitials{true};
+  bool isAddThresholdDefects{true};
   bool safeRunChecks{true};
   double thresholdFactor{0.345};
   double extraDefectsSafetyFactor{50.0};
@@ -61,12 +63,13 @@ struct PyConfig {
 
 auto pyConfigToCppConfig(const PyConfig &pyConfig) {
   auto config = csaransh::Config{};
+  config.allFrames = pyConfig.allFrames;
   config.onlyDefects = pyConfig.onlyDefects;
   config.isFindClusterFeatures = pyConfig.isFindClusterFeatures;
   config.isFindDistribAroundPKA = pyConfig.isFindDistribAroundPKA;
   config.filterZeroSizeClusters = pyConfig.filterZeroSizeClusters;
   config.isIgnoreBoundaryDefects = pyConfig.isIgnoreBoundaryDefects;
-  config.isAddThresholdInterstitials = pyConfig.isAddThresholdInterstitials;
+  config.isAddThresholdDefects = pyConfig.isAddThresholdDefects;
   config.safeRunChecks = pyConfig.safeRunChecks;
   config.thresholdFactor = pyConfig.thresholdFactor;
   config.extraDefectsSafetyFactor = pyConfig.extraDefectsSafetyFactor;
@@ -87,6 +90,7 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   input.originZ = pyinput.originZ;
   input.originType = pyinput.originType;
   input.temperature = pyinput.temperature;
+  input.xyzColumnStart = pyinput.xyzColumnStart;
   input.xyzFilePath = std::string{pyinput.xyzFilePath};
   input.structure = std::string{pyinput.structure};
   std::string simCodeStr = std::string{pyinput.xyzFileType};
@@ -125,7 +129,7 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   return std::make_tuple(true, input, extra);
 }
 
-extern "C" char *pyProcessFile(InfoPyInput pyInfo, InfoPyExtraInput pyExtraInfo,
+extern "C" int pyProcessFileTime(InfoPyInput pyInfo, InfoPyExtraInput pyExtraInfo,
                                PyConfig pyConfig) {
   using csaransh::Logger;
   auto config = pyConfigToCppConfig(pyConfig);
@@ -133,29 +137,55 @@ extern "C" char *pyProcessFile(InfoPyInput pyInfo, InfoPyExtraInput pyExtraInfo,
   auto extraInfo = csaransh::ExtraInfo{};
   auto isSuccess = false;
   std::tie(isSuccess, info, extraInfo) = pyInfoToCppInfo(pyInfo, pyExtraInfo);
-  Logger::inst().mode(config.logMode);
-  Logger::inst().file(config.logFilePath);
-  csaransh::resultsT res;
+  auto res = csaransh::resultsT{};
   if (!isSuccess) {
     res.err = csaransh::ErrorStatus::unknownSimulator;
-  } else {
-    Logger::inst().log_info("Started Processing file \"" + info.xyzFilePath +
-                            " (" + extraInfo.infile + ") " + "\"");
-    res = csaransh::process(info, extraInfo, config);
-    Logger::inst().log_info("Finished Processing");
+    return 1;
   }
-  std::stringstream outfile;
-  outfile << "{";
-  csaransh::infoToKeyValue(outfile, info, extraInfo);
-  outfile << ",";
-  resToKeyValue(outfile, res);
-  outfile << "}\n";
-  std::string str = outfile.str();
-  char *writable = (char *)malloc(
-      sizeof(char) * (str.size() + 1)); // new char[str.size() + 1];
-  std::copy(str.begin(), str.end(), writable);
-  writable[str.size()] = '\0';
-  return writable;
+  Logger::inst().mode(config.logMode);
+  Logger::inst().file(config.logFilePath);
+  std::ifstream infile{info.xyzFilePath};
+  if (infile.bad() || !infile.is_open()) return 1;
+  const std::string outpath{config.outputJSONFilePath};
+  std::ofstream outfile{outpath};
+  if (!outfile.is_open()) {
+    std::cerr << "The output path " + outpath + " is not accessible.\n";
+    return 1;
+  }
+  outfile << "{\"meta\": {\n";
+  csaransh::configToKeyValue(outfile, config);
+  outfile << "}\n, \"data\": [\n";
+  Logger::inst().log_info("Started writing to output file \"" + outpath + "\"");
+  Logger::inst().log_info("Started Processing file \"" + info.xyzFilePath +
+                          " (" + extraInfo.infile + ") " + "\"");
+  csaransh::frameStatus fs = csaransh::frameStatus::prelude;
+  auto success = 0;
+  int curIndex = 0;
+  auto initId = extraInfo.id;
+  while (true) {
+    extraInfo.simulationTime = success + 1;
+    if (config.allFrames) extraInfo.id = initId + "_" + std::to_string(success);
+    auto ret = csaransh::processTimeFile(info, extraInfo, config, infile, fs, outfile);
+    if (ret.second != csaransh::ErrorStatus::noError) {
+      std::cerr << "\nError in processing file at " << curIndex << '\n';
+      std::cerr << errToStr(ret.second) << '\n';
+      Logger::inst().log_error("Error in processing file at \"" + std::to_string(curIndex) + "\" " + errToStr(ret.second));
+    } else {
+      ++success;
+    }
+    if (ret.first == csaransh::xyzFileStatus::eof) {
+      Logger::inst().log_info("Finished processing file at \"" + std::to_string(curIndex) + "\"");
+      break;
+    }
+    curIndex++;
+  }
+  infile.close();
+  Logger::inst().log_info("Finished Processing");
+  outfile << "]}"
+          << "\n";
+  outfile.close();
+  Logger::inst().log_info("Output file written " + outpath);
+  return success;
 }
 
 extern "C" char *pyProcessFileWoInfo(char *xyzfile, PyConfig pyConfig) {
@@ -166,7 +196,7 @@ extern "C" char *pyProcessFileWoInfo(char *xyzfile, PyConfig pyConfig) {
   Logger::inst().file(config.logFilePath);
   Logger::inst().log_info("Started Processing file \"" + xyzfileStr + "\"");
   std::stringstream outfile;
-  auto res = csaransh::processFile(xyzfileStr, outfile, config, std::string{});
+  auto res = csaransh::processFileTimeCmd(xyzfileStr, outfile, config, 0);
   Logger::inst().log_info("Finished Processing");
   std::string str = outfile.str();
   char *writable = (char *)malloc(

@@ -86,9 +86,9 @@ csaransh::extractInfoLammps(std::string fpath, std::string ftag) {
       } else if (cmd == "latticeConstant") {
         mainInfo.latticeConst = std::stod(val);
       } else if (cmd == "ncell") {
-        mainInfo.ncell = std::stod(val);
+        mainInfo.ncell = std::stoi(val);
       } else if (cmd == "recen") {
-        extraInfo.energy = (std::stod(val)) / 1000.0;
+        extraInfo.energy = std::stod(val);
       } else if (cmd == "xrec") {
         extraInfo.xrec = std::stod(val);
         xyzrec++;
@@ -124,7 +124,7 @@ csaransh::extractInfoLammps(std::string fpath, std::string ftag) {
       } else if (cmd == "temp") {
         mainInfo.temperature = std::stod(val);
       } else if (cmd == "es") {
-        extraInfo.es = (val == "true");
+        extraInfo.es = (val == "true" || val == "yes");
       } else if (cmd == "offsetToUse") {
         if (val == "0") mainInfo.originType = 0;
         if (val == "1") mainInfo.originType = 1;
@@ -133,6 +133,8 @@ csaransh::extractInfoLammps(std::string fpath, std::string ftag) {
         extraInfo.author = val;
       } else if (cmd == "potentialUsed") {
         extraInfo.potentialUsed = val;
+      } else if (cmd == "x-column") {
+        mainInfo.xyzColumnStart = std::stoi(val);
       }
       /*
             } else if (cmd == "latConstToUse") {
@@ -143,7 +145,7 @@ csaransh::extractInfoLammps(std::string fpath, std::string ftag) {
     }
   }
   infile.close();
-  if (isOrigin < 3) mainInfo.originType = 1;
+  if (isOrigin == 3) mainInfo.originType = 1;
   extraInfo.isPkaGiven = (xyzrec >= 3) ? true : false;
   if (mainInfo.latticeConst < 0.0) {
     return std::make_tuple(mainInfo, extraInfo, false);
@@ -156,6 +158,127 @@ csaransh::extractInfoLammps(std::string fpath, std::string ftag) {
       (careAboutAngles) ? std::atan(velocity[2] / velocity[0]) : 0.0;
   return std::make_tuple(mainInfo, extraInfo, true);
 }
+
+std::string readStr(std::string msg) {
+  std::string buffer;
+  std::cout << msg;
+  std::getline(std::cin, buffer);
+  return buffer;
+}
+
+std::pair<bool, csaransh::Coords> readAr(std::string msg) {
+  auto line = readStr(msg);
+  csaransh::Coords res;
+  if (line.empty()) return std::make_pair(false, res);
+  auto first = std::find_if(begin(line), end(line),
+                            [](int ch) { return !std::isspace(ch); });
+  if (first == std::end(line)) return std::make_pair(false, res); // possibly blank line
+  auto second =
+      std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
+  try {
+    res[0] = std::stod(std::string{first, second});
+    res[1] = res[0];
+    res[2] = res[1];
+  } catch (const std::invalid_argument &) {
+    return std::make_pair(false, res);
+  } catch (const std::out_of_range &) {
+    return std::make_pair(false, res);
+  }
+  for (int i = 1; i < 3; ++i) {
+    first = std::find_if(second, end(line),
+                         [](int ch) { return !std::isspace(ch); });
+    second =
+        std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
+    if (first >= second) return std::make_pair(true, res);
+    try {
+      res[i] = std::stod(std::string{first, second});
+    } catch (const std::invalid_argument &) {
+      return std::make_pair(false, res);
+    } catch (const std::out_of_range &) {
+      return std::make_pair(false, res);
+    }
+  }
+  return std::make_pair(true, res);
+}
+
+double readDouble(std::string msg) {
+  auto buffer = readStr(msg);
+  if (buffer.empty()) return 0.0;
+  double res = 0.0;
+  try {
+      res = std::stod(buffer);
+  } catch (const std::invalid_argument &) {
+    std::cout << "Input is not valid number.";
+    buffer.clear();
+  } catch (const std::out_of_range &) {
+    std::cout << "Input is not valid number.";
+    buffer.clear();
+  }
+  return res;
+}
+
+int readInt(std::string msg) {
+  auto buffer = readStr(msg);
+  if (buffer.empty()) return 0;
+  int res = 0;
+  try {
+      res = std::stoi(buffer);
+  } catch (const std::invalid_argument &) {
+    std::cout << "Input is not valid number.";
+    buffer.clear();
+  } catch (const std::out_of_range &) {
+    std::cout << "Input is not valid number.";
+    buffer.clear();
+  }
+  return res;
+}
+
+std::tuple<csaransh::InputInfo, csaransh::ExtraInfo, bool> csaransh::infoFromStdIn() {
+  csaransh::InputInfo mainInfo;
+  csaransh::ExtraInfo extraInfo;
+  std::string buffer;
+  std::cout << "\rInput file missing, please provide inputs here: \n"; 
+  while (buffer.size() == 0 || mainInfo.latticeConst < 0.0) {
+    std::cout << "Lattice constant: ";
+    std::getline(std::cin, buffer);
+    try {
+      mainInfo.latticeConst = std::stod(buffer);
+    } catch (const std::invalid_argument &) {
+      std::cout << "Input is not a valid number.";
+      buffer.clear();
+    } catch (const std::out_of_range &) {
+      std::cout << "Input is not a valid number.";
+      buffer.clear();
+    }
+  }
+  std::cout << "Optional parameters (Press return / enter to continue with default): \n";
+  auto origin = readAr("offset used for simulation: ");
+  mainInfo.originType = origin.first ? 0 : 1;
+  if (origin.first) {
+    mainInfo.originX = origin.second[0];
+    mainInfo.originY = origin.second[1];
+    mainInfo.originZ = origin.second[2];
+  }
+  extraInfo.substrate = readStr("substrate symbol (e.g.: W/Fe): ");
+  extraInfo.energy = readDouble("PKA energy (in keV): ");
+  mainInfo.temperature = readDouble("Temperature (K): ");
+  extraInfo.author = readStr("Author name: ");
+  extraInfo.potentialUsed = readStr("Potential used: ");
+  extraInfo.es = readStr("Is electronic stopping used (y/n): ") == "y" ? true : false;
+  auto xyzFormat = readInt("xyz file formate (1-generic-xyz (default), 2-lammps, 3-parcas, 4-cascadesDb 5-displaced)");
+  std::vector<csaransh::XyzFileType> codes{
+    csaransh::XyzFileType::generic,
+    csaransh::XyzFileType::lammpsWithStdHeader,
+    csaransh::XyzFileType::parcasWithStdHeader,
+    csaransh::XyzFileType::cascadesDbLikeCols,
+    csaransh::XyzFileType::lammpsDisplacedCompute
+  };
+  mainInfo.xyzFileType = (xyzFormat < codes.size() && xyzFormat > 0) ? codes[xyzFormat - 1] : codes[0];
+  auto xyzCol = readInt("column number for x-coordinate (subsequent columns will be taken as y & z) (default: auto): ");
+  mainInfo.xyzColumnStart = (xyzFormat > 0) ? xyzCol : -1;
+  return std::make_tuple(mainInfo, extraInfo, true);
+}
+
 
 // extract information from input file
 std::tuple<csaransh::InputInfo, csaransh::ExtraInfo, bool>
@@ -234,13 +357,15 @@ csaransh::getSimulationCode(std::string fname) {
     std::string line;
     auto lineNo = 0;
     constexpr auto maxLinesToLook = 10;
-    std::vector<std::string> keyWords{"CASCADESDBLIKECOLS", "PARCAS",
-                                      "LAMMPS-XYZ", "LAMMPS-DISP"};
+    std::vector<std::string> keyWords{ "CASCADESDBLIKECOLS", "PARCAS",
+                                      "LAMMPS-XYZ", "LAMMPS-DISP", "XYZ",};
     std::vector<csaransh::XyzFileType> codes{
         csaransh::XyzFileType::cascadesDbLikeCols,
         csaransh::XyzFileType::parcasWithStdHeader,
         csaransh::XyzFileType::lammpsWithStdHeader,
-        csaransh::XyzFileType::lammpsDisplacedCompute};
+        csaransh::XyzFileType::lammpsDisplacedCompute,
+        csaransh::XyzFileType::generic,
+        };
     while (std::getline(infile, line) && lineNo++ < maxLinesToLook) {
       for (size_t i = 0; i < keyWords.size(); i++) {
         auto pos = line.find(keyWords[i]);
@@ -248,5 +373,5 @@ csaransh::getSimulationCode(std::string fname) {
       }
     }
   }
-  return std::make_pair(csaransh::XyzFileType{}, false);
+  return std::make_pair(csaransh::XyzFileType::generic, false);
 }

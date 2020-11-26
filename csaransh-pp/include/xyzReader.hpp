@@ -23,10 +23,10 @@ getCoord(const std::string &line, const csaransh::frameStatus &fs,
          const csaransh::InputInfo &info, const csaransh::ExtraInfo &ei);
 
 std::pair<csaransh::lineStatus, csaransh::Coords>
-getCoordLammps(const std::string &line, const csaransh::frameStatus &fs);
+getCoordLammps(const std::string &line, const csaransh::frameStatus &fs, int);
 
 std::pair<csaransh::lineStatus, csaransh::Coords>
-getCoordParcas(const std::string &line, const csaransh::frameStatus &fs);
+getCoordParcas(const std::string &line, const csaransh::frameStatus &fs, int);
 
 std::pair<csaransh::lineStatus, std::array<csaransh::Coords, 2>>
 getCoordDisplaced(const std::string &line);

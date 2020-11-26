@@ -16,11 +16,9 @@ csaransh::DefectVecT csaransh::groupDefects(const csaransh::DefectVecT &defects,
                                             const double &latticeConst) {
   // std::cout << "Grouping defects " << defects.size() << '\n' << std::flush;
   using UF = csaransh::UnionFind<2, csaransh::DefectT>;
-  const auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-6;
-  const auto nn2 = latticeConst + 1e-6; // std::sqrt(3) * info.latticeConst + 0.01;
-  const auto nn4 = nn * 2;
-  const auto nn2sqr = nn2 * nn2;
-  const auto nn4sqr = nn4 * nn4;
+  auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-6;
+  auto nn2sqr = (latticeConst * latticeConst) + 1e-6; // std::sqrt(3) * info.latticeConst + 0.01;
+  auto nn4sqr = (nn * nn) * 4;
   auto pred = [nn2sqr, nn4sqr](const csaransh::DefectT &a,
                          const csaransh::DefectT &b) {
     using namespace DefectTWrap;
