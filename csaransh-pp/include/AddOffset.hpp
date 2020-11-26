@@ -12,11 +12,12 @@
 
 namespace csaransh {
 
+using offsetCoords = std::tuple<std::array<double, 3>, double, std::array<double, 3>>;
+
 class AddOffset {
 public:
   AddOffset(double latConst, std::string lattice, std::array<double, 3> origin);
-  std::tuple<std::array<double, 3>, double, std::array<double, 3>>
-  operator()(const std::array<double, 3> &coords);
+  offsetCoords operator()(const std::array<double, 3> &coords);
 
 private:
   bool _isUnitcell(double x, double y, double z, double l,
