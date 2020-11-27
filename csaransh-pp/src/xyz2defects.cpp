@@ -640,10 +640,15 @@ csaransh::DefectRes csaransh::displacedAtoms2defects(
   using std::vector;
   csaransh::DefectVecT inter, vac, defects;
   auto &atoms = statoms.second;
-  const auto vcr = 0.345 * latticeConst + 1e-4;
-  const auto vcrsqr = vcr * vcr;
-  const auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-4;
-  const auto nnsqr = nn * nn;
+  constexpr auto epsilon = 1e-4;
+  const auto nn = (std::sqrt(3) * latticeConst) / 2 + epsilon;
+  const auto threshDist = 0.345 * latticeConst + 1e-4;
+  const auto threshDistSqr = threshDist * threshDist;
+  const auto recombDist = latticeConst;//latticeConst; //0.345 * latticeConst + 1e-4;
+  const auto recombDistSqr = recombDist * recombDist;
+  const auto vacGroupDist = nn/2;
+  const auto vacGroupDistSqr = vacGroupDist * vacGroupDist;
+  const auto maxSqrDist = (recombDistSqr > vacGroupDistSqr) ? recombDistSqr : vacGroupDistSqr;
   std::vector<int> freeIs;
   const auto sortHelper = [](const std::array<double, 3> &c1, const std::array<double, 3> &c2) {
     return cmpApprox(c1, c2) < 0;
@@ -654,11 +659,13 @@ csaransh::DefectRes csaransh::displacedAtoms2defects(
   };
   atoms[0].erase(unique(atoms[0].begin(), atoms[0].end(), areEq), atoms[0].end());
   std::vector<std::vector<std::pair<double, int>>> vacSias(atoms[0].size());
+  std::vector<std::vector<int>> siaVacsFull(atoms[1].size());
   for (auto is = 0; is < atoms[1].size(); is++) {
-    auto minDist = nnsqr;
+    auto minDist = maxSqrDist;
     auto minDistIndex = -1;
     for (auto iv = 0; iv < atoms[0].size(); iv++) {
       auto disp = calcDistSqr(atoms[1][is], atoms[0][iv]);
+      if (disp < maxSqrDist) siaVacsFull[is].push_back(iv);// = disp;
       if (disp < minDist) {
         minDist = disp;
         minDistIndex = iv;
@@ -670,6 +677,49 @@ csaransh::DefectRes csaransh::displacedAtoms2defects(
       freeIs.push_back(is);
     }
   }
+  for (auto i = 0; i < vacSias.size(); i++) {
+    std::sort(begin(vacSias[i]), end(vacSias[i]));
+  }
+  /*
+  std::cout << "siaFull: \n";
+  for (auto is = 0; is < siaVacsFull.size(); is++) {
+    for (const auto &jt : atoms[1][is]) std::cout << jt << ", ";
+    std::cout << ": \n";
+    for (const auto &kt : siaVacsFull[is]) {
+      auto iv = kt;
+      if (iv < 0) continue;
+      std::cout << "\t";
+      for (const auto &jt : atoms[0][iv]) std::cout << jt << ", ";
+      std::cout << "\n";
+    }
+    std::cout << "---\n";
+  }
+  std::cout << "vacSias before : \n";
+  for (auto iv = 0; iv < vacSias.size(); iv++) {
+    for (const auto &jt : atoms[0][iv]) std::cout << jt << ", ";
+    std::cout << ": \n";
+    for (const auto &kt : vacSias[iv]) {
+      auto is = kt.second;
+      if (is < 0) continue;
+      std::cout << "\t";
+      for (const auto &jt : atoms[1][is]) std::cout << jt << ", ";
+      std::cout << "\n";
+    }
+    std::cout << "---\n";
+  }
+  */
+  for (auto iv = 0; iv < vacSias.size(); iv++) {
+    for (auto j = 1; j < vacSias[iv].size(); j++) {
+      auto is = vacSias[iv][j].second;
+      for (auto vac : siaVacsFull[is]) {
+        if (vac == iv || !vacSias[vac].empty()) continue;
+        auto disp = calcDistSqr(atoms[1][is], atoms[0][vac]);
+        vacSias[vac].push_back(std::make_pair(disp, is));
+        vacSias[iv][j].second = -1;
+      }
+    }
+  }
+ 
   /*
   std::cout << "atoms[0]: \n";
   for (auto it : atoms[0]) {
@@ -687,24 +737,45 @@ csaransh::DefectRes csaransh::displacedAtoms2defects(
     for (auto jt : it) std::cout << jt.first << ", " << jt.second << "; ";
     std::cout << temp++ << "---\n";
   }
+  std::cout << "vacSias after : \n";
+  for (auto iv = 0; iv < vacSias.size(); iv++) {
+    for (const auto &jt : atoms[0][iv]) std::cout << jt << ", ";
+    std::cout << ": \n";
+    for (const auto &kt : vacSias[iv]) {
+      std::cout << "\t";
+      auto is = kt.second;
+      if (is < 0) continue;
+      for (const auto &jt : atoms[1][is]) std::cout << jt << ", ";
+      std::cout << "\n";
+    }
+    std::cout << "---\n";
+  }
   */
   std::vector<int> latticeSiteGroups;
   latticeSiteGroups.reserve(vacSias.size());
   for (auto i = 0; i < vacSias.size(); i++) {
-    if (vacSias[i].size() == 1 && vacSias[i][0].first < vcrsqr) continue;
+    if (vacSias[i].size() == 1 && vacSias[i][0].first < threshDistSqr) continue;
     std::sort(begin(vacSias[i]), end(vacSias[i]));
-    bool isAnnihilated = (!vacSias[i].empty() && vacSias[i][0].first < nnsqr);
+    bool isAnnihilated = (!vacSias[i].empty() && vacSias[i][0].first < recombDistSqr);
     //std::cout << i << ": " << vacSias[i].size() << '\n' << std::flush;
-    defects.emplace_back(atoms[0][i], false, defects.size(), !isAnnihilated);  // vacancy
-    if (!vacSias[i].empty()) defects.emplace_back(atoms[1][vacSias[i][0].second], true, defects.size(), !isAnnihilated); // interstitial
-    for (auto j = 1; j < vacSias[i].size(); j++) {
-      defects.emplace_back(atoms[1][vacSias[i][j].second], true, defects.size(), true); // interstitial
+    defects.emplace_back(atoms[0][i], false, defects.size() + 1, !isAnnihilated);  // vacancy
+    if (!vacSias[i].empty()) defects.emplace_back(atoms[1][vacSias[i][0].second], true, defects.size() + 1, !isAnnihilated); // interstitial
+    auto j = 1;
+    for (; j < vacSias[i].size() && vacSias[i][j].first < vacGroupDistSqr; j++) {
+      auto is = vacSias[i][j].second;
+      if (is < 0) continue;
+      defects.emplace_back(atoms[1][is], true, defects.size() + 1, true); // interstitial
+    }
+    for (;j < vacSias[i].size(); j++) {
+      auto is = vacSias[i][j].second;
+      if (is < 0) continue;
+      freeIs.push_back(is);
     }
     //std::cout << defects.size() << '\n';
     latticeSiteGroups.push_back(defects.size());
   }
   for (auto it : freeIs) {
-    defects.emplace_back(atoms[1][it], true, defects.size(), true); // interstitial
+    defects.emplace_back(atoms[1][it], true, defects.size() + 1, true); // interstitial
   }
   /*
   std::cout << "latticeGroups: \n";
