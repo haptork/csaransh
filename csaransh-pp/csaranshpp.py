@@ -101,6 +101,7 @@ class _InputInfoCpp(Structure):
                 ("originZ", c_double),
                 ("originType", c_int),
                 ("temperature", c_double),
+                ("xyzColumnStart", c_int),
                 ("xyzFileType", c_char_p),
                 ("xyzFilePath", c_char_p),
                 ("structure", c_char_p)
@@ -127,7 +128,8 @@ class _ExtraInfoCpp(Structure):
 
 
 class _ConfigCpp(Structure):
-    _fields_ = [("onlyDefects", c_bool),
+    _fields_ = [("allFrames", c_bool),
+                ("onlyDefects", c_bool),
                 ("isFindDistribAroundPKA", c_bool),
                 ("isFindClusterFeatures", c_bool),
                 ("filterZeroSizeClusters", c_bool),
@@ -236,8 +238,8 @@ def _validateMetaInfo(metaInfo):
 
 
 def _validateInfo(info, extraInfo):
-    validXyzFileTypes = ["CASCADESDBLIKECOLS",
-                         "LAMMPS-XYZ", "LAMMPS-DISP", "PARCAS"]
+    validXyzFileTypes = ["GENERIC", "CASCADESDBLIKECOLS",
+                         "PARCAS", "LAMMPS-XYZ", "LAMMPS-DISP"]
     if info['originType'] < 0 or info['originType'] > 2:
         print("Valid values of origin type are : 0 (use given origin only), 1 (estimated origin), 2 (try both use best of the two)")
         return False
@@ -290,6 +292,7 @@ def getDefaultConfig(*logModes):
     config = {
         "version": 0.4,
         "csaranshLib": "./_build/libcsaransh-pp_shared.so",
+        "allFrames": False,
         "onlyDefects": False,
         "isFindDistribAroundPKA": True,
         "isFindClusterFeatures": True,
@@ -450,6 +453,7 @@ def getDefaultInfos():
         "originZ": 0.0,
         "originType": 1,
         "temperature": 0.0,
+        "xyzColumnStart": -1,
         "xyzFileType": "CASCADESDBLIKECOLS",
         "xyzFilePath": "",
         "structure": "bcc"

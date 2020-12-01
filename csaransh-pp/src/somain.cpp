@@ -97,7 +97,7 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   std::transform(simCodeStr.begin(), simCodeStr.end(), simCodeStr.begin(),
                  [](unsigned char c) { return std::toupper(c); } // correct
   );
-  std::vector<std::string> keyWords{"CASCADESDBLIKECOLS", "PARCAS",
+  std::vector<std::string> keyWords{"GENERIC", "CASCADESDBLIKECOLS", "PARCAS",
                                     "LAMMPS-XYZ", "LAMMPS-DISP"};
   std::vector<csaransh::XyzFileType> codes{
       csaransh::XyzFileType::cascadesDbLikeCols,
