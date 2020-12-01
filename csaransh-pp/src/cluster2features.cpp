@@ -66,12 +66,11 @@ csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v,
     auto adjacencyCount = 0;
     for (size_t j = 0; j < v.size(); ++j) {
       // if (v2[j]) continue;
+      if (i == j) continue;
       auto dist = calcDist(v[i], v[j]);
       if (dist < nn2) adjacencyCount++;
-      if (j > i) {
-        if (dist > nn4 * 2) continue; // ?
-        pairDists.push_back(dist / latConst);
-      }
+      if (dist > nn4 * 2) continue; // ?
+      pairDists.push_back(dist / latConst);
     }
     if (adjacencyCount >= 20) adjacencyCount = 19;
     adjacencyHistnn2[adjacencyCount]++;
@@ -104,10 +103,7 @@ csaransh::featT csaransh::pairHists(const std::vector<std::array<double, 3>> &v,
       if (i == j || calcDist(v[i], v[j]) > nn4) continue;
       for (size_t k = j + 1; k < v.size(); ++k) {
         if (i == k || v2[j] != v2[k] || calcDist(v[i], v[k]) > nn4) continue;
-        auto ang = calcAngle(v[i], v[j], v[k]);
-        if (ang > 90.0) ang = 180 - ang;
-        if (v2[j]) ang += 90;
-        auto bin = ang / angleBinSize;
+        auto bin = calcAngle(v[i], v[j], v[k]) / angleBinSize;
         if (bin >= angleHist.size()) bin = angleHist.size() - 1;
         ++angleHist[bin];
         ++total;

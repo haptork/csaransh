@@ -652,12 +652,21 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
               csaransh::getMaxClusterSizes(clusterSizeMap, clusterIdMap);
           REQUIRE(maxClusterSizeI == 1);
           REQUIRE(maxClusterSizeV == 0);
+          /*
+        for (auto x : defects) {
+          for (auto c : std::get<0>(x)) std::cout << c << ", ";
+          std::cout << std::get<1>(x) << ", " << std::get<2>(x) << ", " << std::get<3>(x);
+          std::cout << std::endl;
+        }
+        */
+
           SECTION("Check cluster features") {
             auto feats = csaransh::clusterFeatures(
                 defects, clusterIdMap, clusterSizeMap, latticeConst, 3);
             REQUIRE(feats.size() == 1);
             const auto &distFeat = std::get<0>(std::begin(feats)->second);
-            // REQUIRE(distFeat[0] == Approx(2.0 / 6.0)); TODO
+            REQUIRE(distFeat[0] + distFeat[distFeat.size() - 1] == 1.0); // TODO
+            REQUIRE(distFeat[0] == Approx(2.0 / 6.0)); // TODO
             // REQUIRE(distFeat[distFeat.size() - 1] == Approx(4.0 / 6.0));
             REQUIRE(std::accumulate(begin(distFeat), end(distFeat), 0.0) ==
                     Approx(1.0));
@@ -666,7 +675,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
             REQUIRE(std::accumulate(begin(angleFeat), end(angleFeat), 0.0) ==
                     Approx(1.0));
             const auto &adjFeat = std::get<2>(std::begin(feats)->second);
-            REQUIRE(adjFeat[3] == Approx(1.0));
+            REQUIRE(adjFeat[2] == Approx(1.0));
             REQUIRE(std::accumulate(begin(adjFeat), end(adjFeat), 0.0) ==
                     Approx(1.0));
           }
@@ -1140,7 +1149,7 @@ SCENARIO("Given xyz coordinates of all the displaced atoms, output only the "
             const auto &angleFeat = std::get<1>(std::begin(feats)->second);
             // No zero or 180 degree angles in a ring
             REQUIRE(angleFeat[0] == Approx(0.0));
-            REQUIRE(angleFeat[angleFeat.size() - 1] == Approx(0.05)); // 0.0
+            REQUIRE(angleFeat[angleFeat.size() - 1] == Approx(0.0)); // 0.0
             // It should kind of rise in between but hard to pin the whole
             // structure down
             REQUIRE(std::accumulate(begin(angleFeat), end(angleFeat), 0.0) ==
