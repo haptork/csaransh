@@ -815,7 +815,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           lastVacancyCoord = ne.cur();
           for (auto &jt : lastVacancyCoord)
             jt *= latticeConst;
-          auto picked = atoms[pickAt / 5];
+          auto picked = atoms[pickAt / 50];
           for (int k = 0; k < 3; ++k) {
             auto diff = std::get<0>(picked)[k] - std::get<2>(picked)[k];
             c[k] = std::get<0>(picked)[k] - diff + (0.0001 * (i - pickAt));
@@ -839,46 +839,53 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
       auto fsAtoms = std::make_pair(csaransh::xyzFileStatus::reading, atoms);
       auto ungroupedDefectsDumbbellPair = atoms2defects(fsAtoms, info, extraInfo, config);
       auto ungroupedDefects = std::get<2>(ungroupedDefectsDumbbellPair);
-      REQUIRE(ungroupedDefects.size() == 200);
+      CHECK(ungroupedDefects.size() == 200);
       int nDefects;
       double inClusterFractionI, inClusterFractionV;
       std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
           csaransh::getNDefectsAndClusterFractions(ungroupedDefects);
       SECTION("Check cluster grouping") {
         auto defects = groupDefects(ungroupedDefects, latticeConst);
+        /*
+        for (auto x : defects) {
+          for (auto c : std::get<0>(x)) std::cout << c << ", ";
+          std::cout << std::get<1>(x) << ", " << std::get<2>(x) << ", " << std::get<3>(x);
+          std::cout << std::endl;
+        }
+        */
         auto clusterSizeMap = clusterSizes(defects);
-        REQUIRE(clusterSizeMap.size() == 2);  // TODO:  check correctness with new cluster predicate
+        REQUIRE(clusterSizeMap.size() == 2);  // TODO:  unimportant! check again
         SECTION("Check ndefects and cluster sizes") {
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
-          REQUIRE(nDefects == 98);
+          REQUIRE(nDefects == 99);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
           ignoreSmallClusters(defects, clusterSizeMap, 4, 2);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
-          REQUIRE(nDefects == 98);
+          REQUIRE(nDefects == 99);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
           auto clusterIdMap = csaransh::clusterMapping(defects);
           REQUIRE(clusterIdMap.size() == 2); // 1 interstitial and 1 vacancy cluster
           auto it = std::begin(clusterIdMap);
           // REQUIRE((it->second.size() == 98 || it->second.size() == 104));
-          CHECK(it->second.size() == 98);
+          CHECK(it->second.size() == 99);
           it++;
-          CHECK(it->second.size() == 102);
+          CHECK(it->second.size() == 101);
           auto clusterIVMap =
               csaransh::clusterIVType(clusterIdMap, clusterSizeMap);
           REQUIRE(clusterIVMap.size() == 2);
           auto jt = std::begin(clusterIVMap);
-          REQUIRE(std::abs(jt->second) == 98); // surviving
+          REQUIRE(std::abs(jt->second) == 99); // surviving
           jt++;
-          REQUIRE(std::abs(jt->second) == 98); // surviving
+          REQUIRE(std::abs(jt->second) == 99); // surviving
           int maxClusterSizeI, maxClusterSizeV;
           std::tie(maxClusterSizeI, maxClusterSizeV) =
               csaransh::getMaxClusterSizes(clusterSizeMap, clusterIdMap);
-          REQUIRE(maxClusterSizeI == 98);
-          REQUIRE(maxClusterSizeV == 98);
+          REQUIRE(maxClusterSizeI == 99);
+          REQUIRE(maxClusterSizeV == 99);
         } // ndefects and cluster sizes
       }   // cluster grouping
     }
