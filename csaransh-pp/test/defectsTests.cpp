@@ -811,7 +811,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           lastVacancyCoord = ne.cur();
           for (auto &jt : lastVacancyCoord)
             jt *= latticeConst;
-          auto picked = atoms[pickAt / 5];
+          auto picked = atoms[pickAt / 50];
           for (int k = 0; k < 3; ++k) {
             auto diff = std::get<0>(picked)[k] - std::get<2>(picked)[k];
             c[k] = std::get<0>(picked)[k] - diff + (0.0001 * (i - pickAt));
@@ -826,6 +826,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
       Config config;
       config.isIgnoreBoundaryDefects = false;
       config.safeRunChecks = false;
+      config.isIgnoreBoundaryDefects = false;
       info.latticeConst = latticeConst;
       info.originX = origin[0];
       info.originY = origin[1];
@@ -833,47 +834,53 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
       ExtraInfo extraInfo;
       auto ungroupedDefectsDumbbellPair = atoms2defects(atoms, info, extraInfo, config);
       auto ungroupedDefects = ungroupedDefectsDumbbellPair.first;
-      REQUIRE(ungroupedDefects.size() == 200);
+      CHECK(ungroupedDefects.size() == 200);
       int nDefects;
       double inClusterFractionI, inClusterFractionV;
       std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
           csaransh::getNDefectsAndClusterFractions(ungroupedDefects);
       SECTION("Check cluster grouping") {
         auto defects = groupDefects(ungroupedDefects, latticeConst);
+        /*
+        for (auto x : defects) {
+          for (auto c : std::get<0>(x)) std::cout << c << ", ";
+          std::cout << std::get<1>(x) << ", " << std::get<2>(x) << ", " << std::get<3>(x);
+          std::cout << std::endl;
+        }
+        */
         auto clusterSizeMap = clusterSizes(defects);
-        REQUIRE(clusterSizeMap.size() == 2);
+        REQUIRE(clusterSizeMap.size() == 2);  // TODO:  unimportant! check again
         SECTION("Check ndefects and cluster sizes") {
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
-          REQUIRE(nDefects == 98);
+          REQUIRE(nDefects == 99);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
           ignoreSmallClusters(defects, clusterSizeMap, 4, 2);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
-          REQUIRE(nDefects == 98);
+          REQUIRE(nDefects == 99);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
           auto clusterIdMap = csaransh::clusterMapping(defects);
-          REQUIRE(clusterIdMap.size() ==
-                  2); // 1 interstitial and 1 vacancy cluster
+          REQUIRE(clusterIdMap.size() == 2); // 1 interstitial and 1 vacancy cluster
           auto it = std::begin(clusterIdMap);
           // REQUIRE((it->second.size() == 98 || it->second.size() == 104));
-          CHECK(it->second.size() == 98);
+          CHECK(it->second.size() == 99);
           it++;
-          CHECK(it->second.size() == 102);
+          CHECK(it->second.size() == 101);
           auto clusterIVMap =
               csaransh::clusterIVType(clusterIdMap, clusterSizeMap);
           REQUIRE(clusterIVMap.size() == 2);
           auto jt = std::begin(clusterIVMap);
-          REQUIRE(std::abs(jt->second) == 98); // surviving
+          REQUIRE(std::abs(jt->second) == 99); // surviving
           jt++;
-          REQUIRE(std::abs(jt->second) == 98); // surviving
+          REQUIRE(std::abs(jt->second) == 99); // surviving
           int maxClusterSizeI, maxClusterSizeV;
           std::tie(maxClusterSizeI, maxClusterSizeV) =
               csaransh::getMaxClusterSizes(clusterSizeMap, clusterIdMap);
-          REQUIRE(maxClusterSizeI == 98);
-          REQUIRE(maxClusterSizeV == 98);
+          REQUIRE(maxClusterSizeI == 99);
+          REQUIRE(maxClusterSizeV == 99);
         } // ndefects and cluster sizes
       }   // cluster grouping
     }
