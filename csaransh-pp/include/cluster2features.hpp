@@ -15,11 +15,15 @@
 
 namespace csaransh {
 // using defectsT = std::vector<std::tuple<Coords, bool, int, bool>>;
+constexpr size_t distBins = 40;
+constexpr size_t angleBins = 36;
+constexpr double angleBinSize = 5.0;
+constexpr double maxAngle = 180.0;
+constexpr size_t adjBins = (size_t)(maxAngle / angleBinSize);
 
-using distFeatT = std::array<double, 40>;
-using angleFeatT = std::array<double, 36>;
-// using angleFeatT = std::array<double, 180>;
-using adjNn2FeatT = std::array<double, 20>;
+using distFeatT = std::array<double, distBins>;
+using angleFeatT = std::array<double, angleBins>;
+using adjNn2FeatT = std::array<double, adjBins>;
 using featT = std::tuple<distFeatT, angleFeatT, adjNn2FeatT>;
 featT pairHists(const std::vector<std::array<double, 3>> &v,
                 const std::vector<bool> &v2, double latConst);

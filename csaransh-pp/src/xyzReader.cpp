@@ -24,7 +24,7 @@ getCoordGeneric(const std::string &line, const csaransh::frameStatus &fs, int co
       return std::make_pair(csaransh::lineStatus::frameBorder, c);
     }
   }
-  const auto maxTry = columnStart > 0 ? 3 : 50;  // if column start is given then three index after that are coordinates else try 10
+  const auto maxTry = columnStart > 0 ? 3 : csaransh::maxColumnsTry;  // if column start is given then three index after that are coordinates else try max
   for (auto i = 0; i < maxTry; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
@@ -47,8 +47,8 @@ getCoordGeneric(const std::string &line, const csaransh::frameStatus &fs, int co
       return std::make_pair(csaransh::lineStatus::frameBorder, c);
     }
   }
-  std::cout << "from c: ";
-  std::cout << c[0] << ", " << c[1] << ", " << c[2] << '\n';
+  //std::cout << "from c: ";
+  //std::cout << c[0] << ", " << c[1] << ", " << c[2] << '\n';
   return std::make_pair(csaransh::lineStatus::coords, c);
 }
 
@@ -153,7 +153,7 @@ csaransh::getCoordLammps(const std::string &line,
       return std::make_pair(csaransh::lineStatus::garbage, c);
     }
   }
-  auto maxTry = columnStart > 0 ? 3 : 10;  // if column start is given then three index after that are coordinates else try 10
+  auto maxTry = columnStart > 0 ? 3 : csaransh::maxColumnsTry;  // if column start is given then three index after that are coordinates else try max
   for (auto i = 0; i < maxTry; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
@@ -217,7 +217,7 @@ csaransh::getCoordParcas(const std::string &line,
     }
     start = 1;
   }
-  auto maxTry = columnStart > 0 ? 3 : 10;  // if column start is given then three index after that are coordinates else try 10
+  auto maxTry = columnStart > 0 ? 3 : csaransh::maxColumnsTry;  // if column start is given then three index after that are coordinates else try max
   for (int i = start; i < maxTry; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });

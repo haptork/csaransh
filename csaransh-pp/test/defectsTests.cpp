@@ -679,6 +679,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
             REQUIRE(std::accumulate(begin(adjFeat), end(adjFeat), 0.0) ==
                     Approx(1.0));
           }
+          /*
           SECTION("Check angle and distance distribution") {
             ExtraInfo info;
             info.xrec = vacancyCoord[0];
@@ -709,6 +710,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
             REQUIRE(angles[0][0] == 0.0);
             REQUIRE(angles[1][0] != 0.0);
           } // End of angle and dist distribution
+          */
         }   // ndefects and cluster sizes
       }     // cluster grouping
     }       // End of Single Dumbbell test

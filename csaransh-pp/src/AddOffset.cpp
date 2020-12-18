@@ -5,11 +5,12 @@
 #include "AddOffset.hpp"
 #include <cmath>
 #include <iostream>
+#include <helper.hpp>
 
 bool csaransh::AddOffset::_isUnitcell(double x, double y, double z, double l,
                                       std::array<double, 3> origin) {
   double pos[3] = {x, y, z};
-  double epsilon = 1e-6;
+  using csaransh::invars::epsilon;
   for (int i = 0; i < 3; i++) {
     if (!(pos[i] >= (origin[i] * l - epsilon) &&
           pos[i] <= (origin[i] * l + l + epsilon)))

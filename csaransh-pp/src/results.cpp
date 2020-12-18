@@ -16,8 +16,8 @@ csaransh::DefectVecT csaransh::groupDefects(const csaransh::DefectVecT &defects,
                                             const double &latticeConst) {
   // std::cout << "Grouping defects " << defects.size() << '\n' << std::flush;
   using UF = csaransh::UnionFind<2, csaransh::DefectT>;
-  auto nn = (std::sqrt(3) * latticeConst) / 2 + 1e-6;
-  auto nn2sqr = (latticeConst * latticeConst) + 1e-6; // std::sqrt(3) * info.latticeConst + 0.01;
+  auto nn = (std::sqrt(3) * latticeConst) / 2 + csaransh::invars::epsilon;
+  auto nn2sqr = (latticeConst * latticeConst) + csaransh::invars::epsilon; // std::sqrt(3) * info.latticeConst + 0.01;
   auto nn4sqr = (nn * nn) * 4;
   auto pred = [nn2sqr, nn4sqr](const csaransh::DefectT &a,
                          const csaransh::DefectT &b) {
@@ -67,8 +67,8 @@ void csaransh::ignoreSmallClusters(csaransh::DefectVecT &defects,
                                    int minSurvived = 2, int minAll = 4) {
   using namespace csaransh::DefectTWrap;
   for (auto &it : defects) {
-    if (abs(clusterSize[clusterId(it)].surviving) < minSurvived &&
-        clusterSize[clusterId(it)].all < minAll) {
+    if (abs(clusterSize[clusterId(it)].surviving) < minSurvived
+        && clusterSize[clusterId(it)].all < minAll) {
       clusterId(it, 0); // setting clusterId of small ones to zero
     }
   }
@@ -158,55 +158,4 @@ csaransh::getMaxClusterSizes(csaransh::ClusterSizeMapT &clusterCounts,
       maxClusterSizeV = sz;
   }
   return std::make_tuple(maxClusterSizeI, std::abs(maxClusterSizeV));
-}
-
-// distance distribution of defects from PKA origin
-std::array<std::vector<double>, 2>
-csaransh::getDistanceDistribution(const csaransh::DefectVecT &defects,
-                                  const csaransh::ExtraInfo &info) {
-  using namespace csaransh::DefectTWrap;
-  std::vector<double> distsI;
-  std::vector<double> distsV;
-  if (!info.isPkaGiven)
-    return std::array<std::vector<double>, 2>{{distsI, distsV}};
-  std::array<double, 3> pka{{info.xrec, info.yrec, info.zrec}};
-  for (const auto &it : defects) {
-    if (!isSurviving(it)) continue;
-    if (isInterstitial(it) == true) {
-      distsI.emplace_back(csaransh::calcDist(pka, coords(it)));
-    } else {
-      distsV.emplace_back(csaransh::calcDist(pka, coords(it)));
-    }
-  }
-  return std::array<std::vector<double>, 2>{{distsI, distsV}};
-}
-
-// angular distribution of defects from PKA origin
-std::array<std::vector<double>, 2>
-csaransh::getAngularDistribution(const csaransh::DefectVecT &defects,
-                                 const csaransh::ExtraInfo &info) {
-  using namespace csaransh::DefectTWrap;
-  std::vector<double> anglesI;
-  std::vector<double> anglesV;
-  if (!info.isPkaGiven)
-    return std::array<std::vector<double>, 2>{{anglesI, anglesV}};
-  std::array<double, 3> pka{{info.xrec, info.yrec, info.zrec}};
-  for (const auto &it : defects) {
-    if (!isSurviving(it)) continue;
-    const auto &c = coords(it);
-    auto dist = csaransh::calcDist(pka, c);
-    auto angle = 0.0;
-    if (dist != 0.0) {
-      angle = acos(((pka[0] - c[0]) * sin(info.rectheta) * cos(info.recphi) +
-                    (pka[1] - c[1]) * sin(info.rectheta) * sin(info.recphi) +
-                    (pka[2] - c[2]) * cos(info.rectheta)) /
-                   dist);
-    }
-    angle = (angle * 180) / 3.14159265;
-    if (isInterstitial(it) == true)
-      anglesI.emplace_back(angle);
-    else
-      anglesV.emplace_back(angle);
-  }
-  return std::array<std::vector<double>, 2>{{anglesI, anglesV}};
 }

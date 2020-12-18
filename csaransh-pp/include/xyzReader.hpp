@@ -14,6 +14,8 @@
 
 namespace csaransh {
 
+constexpr auto maxColumnsTry = 50;
+
 enum class frameStatus : bool { prelude, inFrame };
 
 enum class lineStatus : int { garbage, coords, inFrameCoords, frameBorder };

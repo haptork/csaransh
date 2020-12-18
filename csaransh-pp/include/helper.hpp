@@ -16,6 +16,11 @@
 #include <vector>
 
 namespace csaransh {
+namespace invars {
+  // static constexpr double kB = 8.6173303e-5;
+  static constexpr double epsilon = 1e-6;
+  static const double pi = 4 * std::atan(1);
+} // namespace !invars
 
 enum class readStatus : bool { fail, success };
 

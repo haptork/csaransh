@@ -22,7 +22,14 @@ auto optimizeForOffset(std::vector<csaransh::Coords> &atoms, double minLatConst,
         allOffsets[i] = offset;
       }
     }
-    auto toConsider = allOffsets.size() - 1000;
+    auto atomsToIgnore = csaransh::atomsToIgnore;
+    if (allOffsets.size() > atomsToIgnore * atomsToIgnore * 10) {
+      atomsToIgnore *= 10;
+    } else if (allOffsets.size() < atomsToIgnore * 100) {
+      atomsToIgnore /= 10;
+    }
+    auto toConsider = long(allOffsets.size()) - atomsToIgnore;
+    if (toConsider < csaransh::atomsToIgnore) toConsider = allOffsets.size();
     std::nth_element(
         begin(allOffsets), begin(allOffsets) + toConsider, end(allOffsets),
         [](double a, double b) { return std::fabs(a) < std::fabs(b); });

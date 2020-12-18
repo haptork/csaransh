@@ -104,11 +104,5 @@ std::tuple<int, int>
 getMaxClusterSizes(csaransh::ClusterSizeMapT &clusterCounts,
                    const csaransh::ClusterIdMapT &clusters);
 
-// distances of vacancies and interstitials separately measured from pka origin
-std::array<std::vector<double>, 2>
-getDistanceDistribution(const DefectVecT &defects, const ExtraInfo &info);
-// angles of vacancies and interstitials separately measured from pka origin
-std::array<std::vector<double>, 2>
-getAngularDistribution(const DefectVecT &defects, const ExtraInfo &info);
 } // namespace csaransh
 #endif // CSARANSH_RESULTS_HPP

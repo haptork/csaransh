@@ -12,6 +12,8 @@
 
 namespace csaransh {
 
+constexpr auto atomsToIgnore = 1000LL;
+
 double optimizeForOffset(std::vector<csaransh::Coords> &atoms,
                          double minLatConst, double maxLatConst, double step);
 
