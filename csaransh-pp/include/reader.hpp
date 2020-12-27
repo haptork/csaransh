@@ -18,7 +18,7 @@ namespace csaransh {
 
 std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus> processTimeFile(csaransh::InputInfo &info,
                                      csaransh::ExtraInfo &extraInfo,
-                                     const csaransh::Config &config, std::istream &infile, csaransh::frameStatus &fs, std::ostream &outfile);
+                                     const csaransh::Config &config, std::istream &infile, csaransh::frameStatus &fs, std::ostream &outfile, bool isFirst);
 
 std::pair<csaransh::ErrorStatus,int> processFileTimeCmd(std::string xyzfileName,
                                             std::ostream &outfile,

@@ -243,7 +243,10 @@ getAtomsTime(csaransh::InputInfo &info, csaransh::ExtraInfo &extraInfo,
   res.second.reserve(atoms.size());
   auto origin = csaransh::Coords{{info.originX, info.originY, info.originZ}};
   auto obj = csaransh::AddOffset{info.latticeConst, info.structure, origin};
+  // std::cout << "latInfo: " << info.latticeConst << ", " << info.structure << ", " << origin[0] << '\n';
   std::transform(begin(atoms), end(atoms), std::back_inserter(res.second), obj);
+  // std::cout << "\natoms1: " << atoms[0][0] << " | " << atoms[atoms.size() - 1][0] << '\n';
+  // std::cout << "\natoms res: " << std::get<0>(res.second[0])[0] << " | " << std::get<0>(res.second[res.second.size() - 1])[0] << '\n';
   if (info.boxSize < 0.0) { info.boxSize = info.latticeConst * info.ncell; }
   return res;
 }
@@ -343,6 +346,7 @@ csaransh::DefectRes csaransh::atoms2defects(
   using std::vector;
   auto &atoms = stAtoms.second;
   std::sort(begin(atoms), end(atoms));
+  // std::cout << "\natoms: " << std::get<0>(atoms[0])[0] << " | " << std::get<0>(atoms[atoms.size() - 1])[0] << '\n';
   const auto minmax = std::minmax_element(
       begin(atoms), end(atoms), [](const auto &ao, const auto &bo) {
         const auto &a = std::get<0>(ao);
@@ -353,6 +357,8 @@ csaransh::DefectRes csaransh::atoms2defects(
   auto lastRow = std::get<0>(*(minmax.second));
   auto maxes = lastRow;
   auto maxesInitial = csaransh::getInitialMax(firstRow, maxes);
+  // csaransh::Logger::inst().log_debug("Atoms: " + std::to_string(atoms.size()));
+  // std::cout << "\nfirstRow: " << firstRow[0] << '\n';
   // std::cout << "\nmaxes: " << maxes[0] << ", " << maxes[1] << ", " << maxes[2] << '\n';
   // std::cout << "\nmaxesInitial: " << maxesInitial[0] << ", " << maxesInitial[1] << ", " << maxesInitial[2] << '\n';
   csaransh::NextExpected nextExpected{firstRow, maxes, maxesInitial};
@@ -373,7 +379,7 @@ csaransh::DefectRes csaransh::atoms2defects(
   vector<tuple<Coords, bool>> vacancies;
   std::vector<int> vacSias;
   vector<tuple<Coords, Coords, bool>> freeInterstitials;
-  const auto boundaryThresh = (true && config.isIgnoreBoundaryDefects) ? 0.501 : 0.00;
+  const auto boundaryThresh = (config.isIgnoreBoundaryDefects) ? 0.501 : 0.00;
   auto boundaryPred = [](Coords ar, Coords min, Coords max, double thresh) {
     for (size_t i = 0; i < ar.size(); i++) {
       if (ar[i] - thresh < min[i] || ar[i] + thresh > max[i]) { return true; }
@@ -388,6 +394,7 @@ csaransh::DefectRes csaransh::atoms2defects(
     const auto cmpRes = cmpApprox(ar, nextExpected.cur());
     if (nextExpected.allMax()) break;
     // threshold
+    // std::cout << ar[0] << ", " << config.isAddThresholdDefects << '\n';
     if (config.isAddThresholdDefects && curOffset > thresh) {
       interThresh.emplace_back(curOffset, ar, c);
     }
@@ -406,7 +413,7 @@ csaransh::DefectRes csaransh::atoms2defects(
                           nextExpected.maxCur(), boundaryThresh)) {
           vacSias.emplace_back(interstitials.size());
           vacancies.emplace_back(nextExpected.cur(), true);
-          csaransh::Logger::inst().log_debug("vac: " + strAr(nextExpected.cur()) + " coord: " + strAr(ar)); 
+          //csaransh::Logger::inst().log_debug("vac: " + strAr(nextExpected.cur()) + " coord: " + strAr(ar)); 
           if (config.safeRunChecks &&
               vacancies.size() * extraFactor > atoms.size()) {
             if (!(Logger::inst().mode() & LogMode::info))
@@ -441,7 +448,7 @@ csaransh::DefectRes csaransh::atoms2defects(
             vacSias[vacSias.size() - 1] = interstitials.size();
           } else {
             freeInterstitials.emplace_back(ar, c, true);
-            std::cout << "\n interstitial wo pre: " << c[0] << c[1] << c[2] << std::endl; 
+            // std::cout << "\n interstitial wo pre: " << c[0] << c[1] << c[2] << std::endl; 
           }
         }
       }
@@ -516,8 +523,9 @@ csaransh::DefectRes csaransh::atoms2defects(
       }
     }
   }
-  //std::cout<<"\ninterstitials: " << interstitials.size() << '\n';
-  //std::cout<<"\nvacancies: " << vacancies.size() << '\n';
+  // std::cout<<"\ninterstitials: " << interstitials.size() << '\n';
+  // std::cout<<"\nvacancies: " << vacancies.size() << '\n';
+  // std::cout<<"\ninterThresh: " << interThresh.size() << '\n';
   atoms.clear();
   csaransh::DefectVecT defects;
   defects.reserve(2 * vacancies.size());

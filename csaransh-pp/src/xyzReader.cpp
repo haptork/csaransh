@@ -197,6 +197,7 @@ csaransh::getCoordParcas(const std::string &line,
   if (word == "Frame" || word == "boxsize") {
     return std::make_pair(csaransh::lineStatus::frameBorder, c);
   }
+  if (columnStart == 0) columnStart = 2;
   for (auto i = 2; i < columnStart; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
@@ -217,7 +218,7 @@ csaransh::getCoordParcas(const std::string &line,
     }
     start = 1;
   }
-  auto maxTry = columnStart > 0 ? 3 : csaransh::maxColumnsTry;  // if column start is given then three index after that are coordinates else try max
+  auto maxTry = 3;  // three index after column start
   for (int i = start; i < maxTry; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });

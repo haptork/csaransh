@@ -100,6 +100,7 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   std::vector<std::string> keyWords{"GENERIC", "CASCADESDBLIKECOLS", "PARCAS",
                                     "LAMMPS-XYZ", "LAMMPS-DISP"};
   std::vector<csaransh::XyzFileType> codes{
+      csaransh::XyzFileType::generic,
       csaransh::XyzFileType::cascadesDbLikeCols,
       csaransh::XyzFileType::parcasWithStdHeader,
       csaransh::XyzFileType::lammpsWithStdHeader,
@@ -129,7 +130,7 @@ auto pyInfoToCppInfo(const InfoPyInput &pyinput,
   return std::make_tuple(true, input, extra);
 }
 
-extern "C" int pyProcessFileTime(InfoPyInput pyInfo, InfoPyExtraInput pyExtraInfo,
+extern "C" char *pyProcessFile(InfoPyInput pyInfo, InfoPyExtraInput pyExtraInfo,
                                PyConfig pyConfig) {
   using csaransh::Logger;
   auto config = pyConfigToCppConfig(pyConfig);
@@ -137,55 +138,46 @@ extern "C" int pyProcessFileTime(InfoPyInput pyInfo, InfoPyExtraInput pyExtraInf
   auto extraInfo = csaransh::ExtraInfo{};
   auto isSuccess = false;
   std::tie(isSuccess, info, extraInfo) = pyInfoToCppInfo(pyInfo, pyExtraInfo);
-  auto res = csaransh::resultsT{};
-  if (!isSuccess) {
-    res.err = csaransh::ErrorStatus::unknownSimulator;
-    return 1;
-  }
   Logger::inst().mode(config.logMode);
   Logger::inst().file(config.logFilePath);
-  std::ifstream infile{info.xyzFilePath};
-  if (infile.bad() || !infile.is_open()) return 1;
-  const std::string outpath{config.outputJSONFilePath};
-  std::ofstream outfile{outpath};
-  if (!outfile.is_open()) {
-    std::cerr << "The output path " + outpath + " is not accessible.\n";
-    return 1;
-  }
-  outfile << "{\"meta\": {\n";
-  csaransh::configToKeyValue(outfile, config);
-  outfile << "}\n, \"data\": [\n";
-  Logger::inst().log_info("Started writing to output file \"" + outpath + "\"");
-  Logger::inst().log_info("Started Processing file \"" + info.xyzFilePath +
-                          " (" + extraInfo.infile + ") " + "\"");
-  csaransh::frameStatus fs = csaransh::frameStatus::prelude;
+  std::stringstream outfile;
+  auto res = csaransh::resultsT{};
   auto success = 0;
-  int curIndex = 0;
-  auto initId = extraInfo.id;
-  while (true) {
-    extraInfo.simulationTime = success + 1;
-    if (config.allFrames) extraInfo.id = initId + "_" + std::to_string(success);
-    auto ret = csaransh::processTimeFile(info, extraInfo, config, infile, fs, outfile);
-    if (ret.second != csaransh::ErrorStatus::noError) {
-      std::cerr << "\nError in processing file at " << curIndex << '\n';
-      std::cerr << errToStr(ret.second) << '\n';
-      Logger::inst().log_error("Error in processing file at \"" + std::to_string(curIndex) + "\" " + errToStr(ret.second));
-    } else {
-      ++success;
+  if (!isSuccess) {
+    res.err = csaransh::ErrorStatus::unknownSimulator;
+  } else {
+    Logger::inst().log_info("Started Processing file \"" + info.xyzFilePath +
+                            " (" + extraInfo.infile + ") " + "\"");
+    csaransh::frameStatus fs = csaransh::frameStatus::prelude;
+    std::ifstream xyzfile{info.xyzFilePath};
+    if (xyzfile.bad() || !xyzfile.is_open()) {
+      res.err = csaransh::ErrorStatus::xyzFileReadError;
     }
-    if (ret.first == csaransh::xyzFileStatus::eof) {
-      Logger::inst().log_info("Finished processing file at \"" + std::to_string(curIndex) + "\"");
-      break;
+    auto frameCount = 0;
+    auto initId = extraInfo.id;
+    auto origSimTime = extraInfo.simulationTime;
+    while (true) {
+      if (config.allFrames && origSimTime == 0) extraInfo.simulationTime = success + 1;
+      if (config.allFrames) extraInfo.id = initId + "_" + std::to_string(success + 1);
+      auto res = csaransh::processTimeFile(info, extraInfo, config, xyzfile, fs, outfile, success == 0);
+      frameCount++;
+      if (res.second != csaransh::ErrorStatus::noError) {
+        Logger::inst().log_info("Error processing" + std::to_string(frameCount) +" frame in file \"" + info.xyzFilePath + "\"");
+      } else {
+        ++success;
+        if (config.allFrames) Logger::inst().log_info("Finished processing" + std::to_string(success) +" frame in file \"" + info.xyzFilePath + "\"");
+      }
+      if (res.first == csaransh::xyzFileStatus::eof) break;
     }
-    curIndex++;
+    xyzfile.close();
+    Logger::inst().log_info("Finished Processing");
   }
-  infile.close();
-  Logger::inst().log_info("Finished Processing");
-  outfile << "]}"
-          << "\n";
-  outfile.close();
-  Logger::inst().log_info("Output file written " + outpath);
-  return success;
+  if (success == 0) csaransh::printJson(outfile, info, extraInfo, res);
+  std::string str = outfile.str();
+  char *writable = (char *)malloc(sizeof(char) * (str.size() + 1));
+  std::copy(str.begin(), str.end(), writable);
+  writable[str.size()] = '\0';
+  return writable;
 }
 
 extern "C" char *pyProcessFileWoInfo(char *xyzfile, PyConfig pyConfig) {

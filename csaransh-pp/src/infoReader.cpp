@@ -265,7 +265,7 @@ std::tuple<csaransh::InputInfo, csaransh::ExtraInfo, bool> csaransh::infoFromStd
   extraInfo.author = readStr("Author name: ");
   extraInfo.potentialUsed = readStr("Potential used: ");
   extraInfo.es = readStr("Is electronic stopping used (y/n): ") == "y" ? true : false;
-  auto xyzFormat = readInt("xyz file formate (1-generic-xyz (default), 2-lammps, 3-parcas, 4-cascadesDb 5-displaced)");
+  auto xyzFormat = readInt("xyz file formate (1-generic-xyz (default), 2-lammps, 3-parcas, 4-cascadesDb 5-displaced): ");
   std::vector<csaransh::XyzFileType> codes{
     csaransh::XyzFileType::generic,
     csaransh::XyzFileType::lammpsWithStdHeader,

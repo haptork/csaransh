@@ -69,7 +69,7 @@ std::pair<csaransh::ErrorStatus,int> csaransh::processFileTimeCmd(std::string xy
   while (true) {
     extraInfo.simulationTime = success + 1;
     extraInfo.id = std::to_string(id + success + 1);
-    auto res = csaransh::processTimeFile(info, extraInfo, config, xyzfile, fs, outfile);
+    auto res = csaransh::processTimeFile(info, extraInfo, config, xyzfile, fs, outfile, success == 0);
     frameCount++;
     if (res.second != csaransh::ErrorStatus::noError) {
       if (config.allFrames) std::cerr << "\nError: " << errToStr(res.second) << " in frame " << frameCount << " of file " << xyzfileName << '\n' << std::flush;
@@ -92,7 +92,7 @@ std::pair<csaransh::ErrorStatus,int> csaransh::processFileTimeCmd(std::string xy
 std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus> 
                           csaransh::processTimeFile(csaransh::InputInfo &info,
                                      csaransh::ExtraInfo &extraInfo,
-                                     const csaransh::Config &config, std::istream &infile, csaransh::frameStatus &fs, std::ostream &outfile) {
+                                     const csaransh::Config &config, std::istream &infile, csaransh::frameStatus &fs, std::ostream &outfile, bool isFirst) {
   auto res = csaransh::resultsT{};
   //res.err = csaransh::ErrorStatus::noError;
   csaransh::xyzFileStatus fl;
@@ -118,9 +118,7 @@ std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus>
       csaransh::getMaxClusterSizes(clusterSizeMap, res.clusters);
   res.nClusters = res.clusters.size();
   if (res.err == csaransh::ErrorStatus::noError) {
-    if (extraInfo.id != "1") {
-      outfile << "\n,";
-    }
+    if (!isFirst) outfile << "\n,";
     csaransh::printJson(outfile, info, extraInfo, res);
   }
   return std::make_pair(fl, res.err);

@@ -68,7 +68,7 @@ struct InputInfo {
   int xyzColumnStart{-1};
   XyzFileType xyzFileType{XyzFileType::generic};
   std::string xyzFilePath{""};
-  std::string structure;
+  std::string structure{"bcc"};
   // int latConstType{0}; // 0->only given, 1-> only optimized, 2-> both
 };
 
