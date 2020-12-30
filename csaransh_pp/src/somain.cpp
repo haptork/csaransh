@@ -188,7 +188,10 @@ extern "C" char *pyProcessFileWoInfo(char *xyzfile, PyConfig pyConfig) {
   Logger::inst().file(config.logFilePath);
   Logger::inst().log_info("Started Processing file \"" + xyzfileStr + "\"");
   std::stringstream outfile;
-  auto res = csaransh::processFileTimeCmd(xyzfileStr, outfile, config, 0);
+  csaransh::InputInfo info;
+  csaransh::ExtraInfo extraInfo;
+  bool isInfo;
+  auto res = csaransh::processFileTimeCmd(xyzfileStr, outfile, config, 0, info, extraInfo, isInfo);
   Logger::inst().log_info("Finished Processing");
   std::string str = outfile.str();
   char *writable = (char *)malloc(

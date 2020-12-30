@@ -11,6 +11,7 @@
 #include <logger.hpp>
 #include <printJson.hpp>
 #include <reader.hpp>
+#include <infoReader.hpp>
 
 auto getConfig(int argc, char *argv[]) {
   using clipp::option;
@@ -122,12 +123,19 @@ int main(int argc, char *argv[]) {
   Logger::inst().log_info("Started writing to output file \"" + outpath + "\"");
   auto success = 0;
   int curIndex = 0;
+  csaransh::InputInfo info;
+  csaransh::ExtraInfo extraInfo;
+  bool isInfo;
   for (const auto &file : files) {
     std::cout << "\rCurrently processing file " << curIndex + 1 << std::flush;
     Logger::inst().log_info("Started processing file \"" + file + "\"");
     csaransh::ErrorStatus ret;
     int curSuccess = 0;
-    std::tie(ret, curSuccess) = processFileTimeCmd(file, outfile, config, success);
+    std::tie(ret, curSuccess) = processFileTimeCmd(file, outfile, config, success, info, extraInfo, isInfo);
+    if (csaransh::ErrorStatus::inputFileMissing == ret) {
+      std::tie(info, extraInfo, isInfo) = csaransh::infoFromStdIn();
+      std::tie(ret, curSuccess) = processFileTimeCmd(file, outfile, config, success, info, extraInfo, isInfo);
+    }
     if (csaransh::ErrorStatus::noError != ret) {
       std::cerr << "\nError in processing file " << file << '\n';
       std::cerr << errToStr(ret) << '\n';

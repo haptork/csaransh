@@ -38,7 +38,7 @@ auto filterZeroClusters(csaransh::DefectVecT &defects,
 
 std::pair<csaransh::ErrorStatus,int> csaransh::processFileTimeCmd(std::string xyzfileName,
                                             std::ostream &outfile,
-                                            const csaransh::Config &config, int id) {
+                                            const csaransh::Config &config, int id, const csaransh::InputInfo &defaultInfo, const csaransh::ExtraInfo &defaultExtraInfo, bool isDefaultInfo) {
   std::string infileName, tag;
   std::tie(infileName, tag) = csaransh::getInfileFromXyzfile(xyzfileName);
   //if (infileName.empty()) return std::make_pair(csaransh::ErrorStatus::inputFileMissing, 0);
@@ -47,7 +47,10 @@ std::pair<csaransh::ErrorStatus,int> csaransh::processFileTimeCmd(std::string xy
   csaransh::ExtraInfo extraInfo;
   bool isInfo;
   if (infileName.empty()) {
-    std::tie(info, extraInfo, isInfo) = csaransh::infoFromStdIn();
+    if (!isDefaultInfo) return std::make_pair(csaransh::ErrorStatus::inputFileMissing, 0);
+    info = defaultInfo;
+    extraInfo = defaultExtraInfo;
+    isInfo = isDefaultInfo;
     sc = info.xyzFileType;
   } else {
     bool status;
@@ -57,6 +60,7 @@ std::pair<csaransh::ErrorStatus,int> csaransh::processFileTimeCmd(std::string xy
       (sc == csaransh::XyzFileType::parcasWithStdHeader)
           ? csaransh::extractInfoParcas(infileName, tag)
           : csaransh::extractInfoLammps(infileName, tag);
+    if (isDefaultInfo) Logger::inst().log_info("Found input file " + infileName);
   }
   if (!isInfo) return std::make_pair(csaransh::ErrorStatus::InputFileincomplete, 0);
   info.xyzFileType = sc;

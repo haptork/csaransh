@@ -21,11 +21,6 @@ from scipy.sparse import csr_matrix, lil_matrix
 from .lineClusterFeatures import addLineFeat ,getLinesDataOnly, getAllAttrs, getAllHistAttrs, addLinesData, lineFeatsForCluster
 # In[1098]:
 
-
-
-
-
-
 def classesDataToSave(cluster_labels, show_dim, tag):
     class_points = {}
     class_tags = {}

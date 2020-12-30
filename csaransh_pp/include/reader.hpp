@@ -22,7 +22,7 @@ std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus> processTimeFile(csaran
 
 std::pair<csaransh::ErrorStatus,int> processFileTimeCmd(std::string xyzfileName,
                                             std::ostream &outfile,
-                                            const Config &config, int id);
+                                            const Config &config, int id, const csaransh::InputInfo&, const csaransh::ExtraInfo&, bool);
  
 }
 #endif
