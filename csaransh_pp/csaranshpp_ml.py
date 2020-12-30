@@ -16,6 +16,9 @@ import numba
 import umap
 import hdbscan
 
+from pysrc.lineClusterFeatures import linesForCascade
+from pysrc.lineClassify import addFullComponentInfo
+
 """
 Fits and applies PCA transformation to the given points.
 Applies same transformation to other points given as second argument list.
@@ -425,6 +428,16 @@ def clusterClasses(data):
     except:
         print("Continuing with non-fatal error in supervised classification")
         print(sys.exc_info()[0])
+    compLabels = []
+    for tcas, tcid in tag:
+        if data[tcas]['clusterSizes'][tcid] < 2: 
+          if data[tcas]['clusterSizes'][tcid] < 0: compLabels.append("v")
+          else: compLabels.append("?")
+          continue
+        addFullComponentInfo(data[tcas], tcid)
+        compLabels.append(data[tcas]['clusterClasses']['comp'][tcid])
+    classesData.append({'name': 'line-comp',
+                            'data': classesDataToSave(unsupervisedLabels, show_dim, tag)})
     return classesData
 
 
@@ -470,6 +483,8 @@ def analyse(cascades, isAddClusterComparison=True, isAddClassification=True):
     sys.stdout.flush()
     return cascades
 
+def getBasicLines(cascade, cid):
+    return linesForCascade(cascade, cid)
 
 def analyseAndClassify(cascades, isAddClusterComparison=True, isAddClassification=True):
     print("Adding coordinates in eigen dimensions and convex hulls for cascades...")
