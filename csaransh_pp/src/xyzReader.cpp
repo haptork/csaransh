@@ -76,6 +76,7 @@ getCoordCdb(const std::string &line, const csaransh::frameStatus &fs,
       return std::make_pair(lineStatus::frameBorder, c);
     }
   }
+  if (columnStart == 1) columnStart = 2;
   for (int i = 1; i < columnStart; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
@@ -84,11 +85,6 @@ getCoordCdb(const std::string &line, const csaransh::frameStatus &fs,
     if (first >= second) return std::make_pair(lineStatus::garbage, c);
   }
   for (int i = 0; i < 3; ++i) {
-    first = std::find_if(second, end(line),
-                         [](int ch) { return !std::isspace(ch); });
-    second =
-        std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
-    if (first >= second) return std::make_pair(lineStatus::garbage, c);
     try {
       c[i] = std::stod(std::string{first, second});
     } catch (const std::invalid_argument &) {
@@ -96,6 +92,12 @@ getCoordCdb(const std::string &line, const csaransh::frameStatus &fs,
     } catch (const std::out_of_range &) {
       return std::make_pair(lineStatus::garbage, c);
     }
+    first = std::find_if(second, end(line),
+                         [](int ch) { return !std::isspace(ch); });
+    second =
+        std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
+    if (first >= second) return std::make_pair(lineStatus::garbage, c);
+
   }
   return std::make_pair(lineStatus::inFrameCoords, c);
 }
@@ -155,14 +157,6 @@ csaransh::getCoordLammps(const std::string &line,
   }
   auto maxTry = columnStart > 0 ? 3 : csaransh::maxColumnsTry;  // if column start is given then three index after that are coordinates else try max
   for (auto i = 0; i < maxTry; ++i) {
-    first = std::find_if(second, end(line),
-                         [](int ch) { return !std::isspace(ch); });
-    second =
-        std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
-    if (first >= second) {
-      if (i > 2) return std::make_pair(csaransh::lineStatus::coords, c);
-      return std::make_pair(csaransh::lineStatus::garbage, c);
-    }
     try {
       auto curVal = std::stod(std::string{first, second});
       if (i > 2) {
@@ -175,6 +169,15 @@ csaransh::getCoordLammps(const std::string &line,
     } catch (const std::out_of_range &) {
       return std::make_pair(csaransh::lineStatus::garbage, c);
     }
+    first = std::find_if(second, end(line),
+                         [](int ch) { return !std::isspace(ch); });
+    second =
+        std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
+    if (first >= second) {
+      if (i >= 2) return std::make_pair(csaransh::lineStatus::coords, c);
+      return std::make_pair(csaransh::lineStatus::garbage, c);
+    }
+
   }
   return std::make_pair(csaransh::lineStatus::coords, c);
 }
