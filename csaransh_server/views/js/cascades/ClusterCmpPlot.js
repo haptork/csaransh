@@ -8,6 +8,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import { ScatterCmpPlot } from "../cascades/3d-plots.js";
+import { ScatterLinePlot } from "../cascades/3d-plots.js";
 import ViewIcon from '@material-ui/icons/BubbleChart';
 
 import InputLabel from '@material-ui/core/InputLabel';
@@ -25,6 +26,84 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
 import { getData, uniqueKey } from "../utils";
+
+const getClusterLineCoord = (row, cid) => {
+  let lines = [];
+  let linesT = [];
+  let pointsI = [[], [], [], []];
+  let pointsV = [[], [], [], []];
+  cid = "" + cid;
+  if (cid.length == 0) cid = getInitialSelection(row);
+  //console.log(row.features[cid]['lines'])
+  if (cid) {
+    //let iCount = 0
+    for (const x of row.features[cid]['lines']['linesT']) {
+      //console.log(cid);
+      let c = [[],[],[],[], [-1.0, -1.0]];
+      c[4] = x['orient']
+      for (const y of x['main']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c[0].push(curCoord[0]);
+        c[1].push(curCoord[1]);
+        c[2].push(curCoord[2]);
+        //c[3].push(y);
+        c[3].push(''+x['orient']);
+      }
+      /*
+      if (iCount < row.features[cid]['lines']['cLinesT'].length)
+        c[4] = row.features[cid]['lines']['cLinesT'][iCount++];
+      */
+      linesT.push(c);
+    }
+    for (const x of row.features[cid]['lines']['lines']) {
+      let c = [[],[],[],[], [-1.0, -1.0]];
+      let c2 = [[],[],[],[], [-1.0, -1.0]];
+      c[4] = x['orient']
+      c2[4] = x['orient']
+      for (const y of x['main']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c[0].push(curCoord[0]);
+        c[1].push(curCoord[1]);
+        c[2].push(curCoord[2]);
+        c[3].push('' + x['orient']);
+      }
+      for (const y of x['sub']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']]);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c2[0].push(curCoord[0]);
+        c2[1].push(curCoord[1]);
+        c2[2].push(curCoord[2]);
+        c2[3].push(''+x['orient']);
+      }
+      lines.push({main:c, sub:c2});
+    }
+    for (const x of row.features[cid]['lines']['pointsI']) {
+      // const curCoord = row.eigen_features[cid]['coords'][x]
+      const curCoord = row.coords[row.clusters[cid][x]]
+      pointsI[0].push(curCoord[0]);
+      pointsI[1].push(curCoord[1]);
+      pointsI[2].push(curCoord[2]);
+      pointsI[3].push(x);
+    }
+    for (const x of row.features[cid]['lines']['pointsV']) {
+      // const curCoord = row.eigen_features[cid]['coords'][x]
+      const curCoord = row.coords[row.clusters[cid][x]]
+      pointsV[0].push(curCoord[0]);
+      pointsV[1].push(curCoord[1]);
+      pointsV[2].push(curCoord[2]);
+      pointsV[3].push(x);
+    }
+  }
+  return {lines, linesT, pointsI, pointsV};
+};
 
 const getClusterCoord = (row, cid) => {
   let c = [[],[],[]];
@@ -53,8 +132,10 @@ const getClusterTypeAndClass = (row, cid) => {
   cid = "" + cid;
   if (cid.length == 0) cid = getInitialSelection(row);
   if (cid) {
-    return [(row.clusterSizes[cid] > 0) ? "majority interstitials" : "majority vacancies", 
-            (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty(cid) && row.clusterClasses[cid] !== -1 && row.clusterClasses[cid] !== "noise") ? "; class-" + row.clusterClasses[cid] : ""];
+    const typeInfo = (row.clusterSizes[cid] > 0) ? "majority interstitials" : "majority vacancies";
+    const classInfo = (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty(cid) && row.clusterClasses[cid] !== -1 && row.clusterClasses[cid] !== "noise") ? "; class-" + row.clusterClasses[cid] : "";
+    const componentClassInfo = (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty("comp") && row.clusterClasses.comp.hasOwnProperty(cid) && row.clusterClasses.comp[cid] !== -1 && row.clusterClasses.comp[cid] !== "noise") ? "; component class-" + row.clusterClasses.comp[cid] : "";
+    return [typeInfo, classInfo + ' ' + componentClassInfo];
   }
   return [-1, -1];
 };
@@ -102,11 +183,12 @@ const getCmpCids = (row, cid, data, mode, isSize, shortName) => {
   if (isSize) {
     scores = row.clust_cmp_size[cid][mode];
   }
-  scores = scores.filter(x => x.length >= 3);
+  scores = scores.filter(x => x.length >= 3 && x[1] < data.length);
   return scores.map(x => {
     const name = "cid " + x[2] + ' of ' + shortName(data[x[1]]);
     const iorv = (data[x[1]].clusterSizes[x[2]] > 0) ? "; inter." : "; vac.";
     const clabel = (data[x[1]].hasOwnProperty("clusterClasses") && data[x[1]].clusterClasses.hasOwnProperty(x[2]) && data[x[1]].clusterClasses[x[2]] !== -1 && data[x[1]].clusterClasses[x[2]] !== "noise") ? ("; class-" + data[x[1]].clusterClasses[x[2]]) : ""; 
+    // TODO: add component class
     const info = "diff: " + (x[0]).toFixed(2) + " eigen-var: " + 
            data[x[1]].eigen_features[x[2]]["var"][0] + ", " + data[x[1]].eigen_features[x[2]]["var"][1] +
            iorv + clabel;
@@ -126,9 +208,10 @@ export class Cluster2CmpPlot extends React.Component {
 
   render() {
     const {cid, row} = this.props;
-    const coords = getClusterCoord(row, cid);
+    const coords = getClusterLineCoord(row, cid);
+    //console.log(coords);
     return (
-        <ScatterCmpPlot coords={coords} colorIndex={parseInt(cid)} />
+        <ScatterLinePlot coords={coords} colorIndex={parseInt(cid)} />
     );
   }
 }
@@ -177,8 +260,108 @@ export class ClusterCmpPlot extends React.Component {
       curShow : val,
     });
   }
-
+/*
   render() {
+    return (
+      <div>whatever</div>
+    )
+  }
+  */
+ render() {
+    const {classes, row, cid, data, allCids} = this.props;
+    const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize, this.props.shortName);
+    const cmpCoords = getCmpCoord(row, cid, data, this.state.curMode, this.state.isSize, this.state.curShow);
+    const mainVariance = getClusterVar(row, cid);
+    const typeAndClass = getClusterTypeAndClass(row, cid);
+    return (
+    <Card chart>
+      <CardHeader color="primary">
+      Cluster Comparison
+      </CardHeader>
+      <CardBody>
+        <Grid container>
+        <GridItem xs={12} sm={12} md={6}>
+        <Paper>
+        <Cluster2CmpPlot row={row} cid={cid}/>
+        <Typography  variant="caption" style={{textAlign:"center"}}>eigen dim. var:{mainVariance}; {typeAndClass[0]}{typeAndClass[1]}</Typography>
+        <Grid container justify="center">
+        <GridItem xs={12} sm={12} md={12} >
+        <FormGroup column>
+         <FormControl>
+          <InputLabel htmlFor="cid-select">Cluster Id</InputLabel>
+          <Select
+            value={cid}
+            onChange={(event) => { this.props.handleClusterCmp(event.target.value); }}
+            inputProps={{
+              name: 'cluster-selection',
+              id: 'cid-select',
+            }}
+          >
+          {allCids.map((o, i) => <MenuItem key={i} value={o.value}>{o.label}</MenuItem>)}
+          </Select>
+          </FormControl>
+         <FormControl>
+          <InputLabel htmlFor="cluster-mode">Similarity By</InputLabel>
+          <Select
+            value={this.state.curMode}
+            onChange={(event) => { this.handleMode(event.target.value); }}
+            inputProps={{
+              name: 'cluster-mode',
+              id: 'cluster-mode',
+            }}
+          >
+          {this.allModes.map((o, i) => <MenuItem key={i} value={o.value}>{o.label}</MenuItem>)}
+          </Select>
+          </FormControl>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={this.state.isSize}
+              onChange={(event) => { this.handleIsSize(event.target.checked); }}
+              value="isSize"
+              color="primary"
+            />
+          }
+          label="Match only clusters with similar number of defects"
+        />
+        </FormGroup>
+        </GridItem>
+        </Grid>
+        </Paper>
+        </GridItem>
+       <GridItem xs={12} sm={12} md={6}>
+        <ScatterCmpPlot coords={cmpCoords} colorIndex={parseInt(cid)}/>
+        <Stepper alternativeLabel nonLinear activeStep={this.state.curShow}>
+          {cmpCids.map((label, index) => {
+            const buttonProps = {};
+            buttonProps.optional = <Typography variant="caption">{label.info}</Typography>;
+            return (
+              <Step key={index} completed={false}>
+                <StepButton
+                  onClick={() => this.handleShow(index)}
+                  completed={false}
+                  {...buttonProps}
+                >
+                  {label.name}
+                </StepButton>
+              </Step>
+            );
+          })}
+        </Stepper>
+        </GridItem>
+        </Grid>
+      </CardBody>
+      <CardFooter chart>
+        <div className={classes.stats}>
+          <ViewIcon/> For the selected cluster of the current cascade, shows the top similar clusters from the whole database. Plots are in eigen basis, eigen var hints at dimensionality.
+        </div>
+      </CardFooter>
+   </Card>
+   );
+ }
+
+}
+/*
     const {classes, row, cid, data, allCids} = this.props;
     const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize, this.props.shortName);
     const cmpCoords = getCmpCoord(row, cid, data, this.state.curMode, this.state.isSize, this.state.curShow);
@@ -269,5 +452,5 @@ export class ClusterCmpPlot extends React.Component {
       </CardFooter>
    </Card>
     );
-  }
-}
+
+    */

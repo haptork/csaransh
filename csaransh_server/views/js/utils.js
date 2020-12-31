@@ -20,10 +20,10 @@ export const getAllCol = () => {
   const res = [
     { value: 'substrate', label: 'Material', isShow: true, filterType: "select", type:"input", parseFn: ac.noParse},
     { value: 'energy', label: 'Energy (keV)', isShow: true, filterType: "select", type:"input"},
-    { value: 'temperature', label: 'Temperature', isShow: true, filterType: "select", type:"input"},
+    { value: 'temperature', label: 'Temperature', isShow: false, filterType: "select", type:"input"},
     { value: 'simulationTime', label: 'Simulation Time', isShow: false, filterType: "range", type: "input"},
     { value: 'author', label: 'Author', isShow: false, filterType: "select", type: "input", parseFn: ac.noParse},
-    { value: 'potentialUsed', label: 'Potential Used', isShow: false, filterType: "select", type: "input" , parseFn: ac.noParse},
+    { value: 'potentialUsed', label: 'Potential Used', isShow: true, filterType: "select", type: "input" , parseFn: ac.noParse},
     { value: 'es', label: 'Electronic Stopping', isShow: false, filterType: "select", type: "input" , parseFn: ac.noParse},
     { value: 'xyzFilePath', label: 'Xyz file path', isShow: false, filterType: "text" , type: "input", parseFn: ac.noParse},
     { value: 'xyzFileName', label: 'Xyz file name', isShow: false, filterType: "text" , type: "input", accessor: ac.accessorDefault("xyzFilePath"), parseFn: ac.parseFileName},
@@ -33,12 +33,12 @@ export const getAllCol = () => {
     { value: 'rectheta', label: 'PKA angle - theta', isShow: false, filterType: "range" , type: "input", parseFn: ac.roundOff},
     { value: 'recphi', label: 'PKA angle - phi', isShow: false, filterType: "range" , type: "input", parseFn: ac.roundOff},
     { value: 'n_defects', label: 'Defects Count', isShow: true },
-    { value: 'max_cluster_size', label: 'Max cluster size', isShow: true },
-    { value: 'in_cluster', label: '% defects in cluster', isShow: true },
-    { value: 'n_clusters', label: 'Clusters Count', isShow: true },
+    { value: 'max_cluster_size', label: 'Max cluster size', isShow: false },
+    { value: 'in_cluster', label: '% defects in cluster', isShow: false },
+    { value: 'n_clusters', label: 'Clusters Count', isShow: false },
     { value: 'hull_vol', label: 'Volume of cascade hull', isShow: false},
-    { value: 'twod', label: 'Planarity', isShow: true, parseFn: parseInt, "accessor": ac.accessorTwod },
-    { value: 'subc', label: 'Subcascades', isShow: true, parseFn: parseInt, "accessor": ac.accessorSubc },
+    { value: 'twod', label: 'Planarity', isShow: false, parseFn: parseInt, "accessor": ac.accessorTwod },
+    { value: 'subc', label: 'Subcascades', isShow: false, parseFn: parseInt, "accessor": ac.accessorSubc },
     { value: 'dclust_sec_impact', label: 'Impact fo 2nd big subcascade', isShow: false },
     { value: 'max_cluster_size_I', label: 'Interstitial max cluster size', isShow: false },
     { value: 'max_cluster_size_V', label: 'Vacancy max cluster size', isShow: false },
@@ -197,6 +197,47 @@ const colors = [
   '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236', '#166a8f', '#00a950', '#58595b', '#8549ba',
 ];
 
+const reds = ['#fbbaba',	'#ff9191',	'#f97a7a',	'#ff6a6a'];
+const greens = ['#94ce98', '#61af66', '#388e3e', '#1b7021', '#064e0a'];
+const oranges = ["#ff9a00", "#fff400", "#ffdb00", "#ffc100", "#ff8100"];
+const slate = ["#515a5e", "#60666d", "#41484d", "#5e5e65", "#3a3d45"];
+
 export const getColor = i => colors[(i) % colors.length];
+
+export const getPairColor = x => {
+  if (x == undefined) return slate[0];
+  if (x[0] == 0) return greens[(x[1]) % (greens.length)];
+  if (x[0] == 1) return reds[(x[1]) % (reds.length)];
+  if (x[0] == 2 || x[0] == 3) return oranges[(x[1]) % (oranges.length)];
+  return slate[(x[1]) % (slate.length)];
+}
+
+const componentToHex = c => {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+const rgbToHex = (r, g, b) => {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+/*
+export const getPairColorOrient = x => {
+  if (x == undefined) return slate[0];
+  const r = Math.round(255 * x[0]);
+  const g = Math.round(255 * x[1]);
+  const hexCode = rgbToHex(r , g, 100);
+  //console.log("" + r + ", " + g + ", " + hexCode);
+  return hexCode;
+}
+*/
+export const getPairColorOrient = x => {
+  if (x == undefined) return slate[0];
+  const i = Math.round(200 * x[0]);
+  const j = Math.round(200 * x[1]);
+  //const hexCode = rgbToHex(120, j, 50 + i);
+  const hexCode = rgbToHex(120, i, (255 - j));
+  //console.log(" " + i + ", " + j + ", " + hexCode);
+  return hexCode;
+}
 
 export const getColorGrad = (i, max) => "#" + Palette("tol-dv", max)[(i - 1)];

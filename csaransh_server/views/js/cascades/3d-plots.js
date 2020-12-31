@@ -1,6 +1,120 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import { getColor } from "../utils";
+import { getColor, getPairColor, getPairColorOrient } from "../utils";
+
+const getMinMaxFromAr = (mn, mx, ar) => {
+  for (let i = 0; i < 3; i++) {
+    mn[i] = Math.min(mn[i], ...ar[i]);
+    mx[i] = Math.max(mx[i], ...ar[i]);
+  }
+  return mn, mx;
+}
+
+const cookDataLineCmp = (c) => {
+  let data = [];
+  let i = 0;
+  let mn = [10000000000.0, 10000000000.0, 10000000000.0]; // TODO: float max
+  let mx = [-10000000000.0, -10000000000.0, -10000000000.0];
+  if (c['pointsV'][0].length > 0) {
+    mn, mx = getMinMaxFromAr(mn, mx, c['pointsV']);
+  }
+  if (c['pointsI'][0].length > 0) {
+    mn, mx = getMinMaxFromAr(mn, mx, c['pointsI']);
+  }
+  for (const x of c['lines']) {
+    mn, mx = getMinMaxFromAr(mn, mx, x.main);
+    data.push({
+        x: x.main[0],
+        y: x.main[1],
+        z: x.main[2],
+        mode: 'lines+markers',
+        type: 'scatter3d',
+        line: {
+          width: 6,
+          color: getPairColorOrient(x.main[4])
+        },
+        marker: {
+          color: getPairColorOrient(x.main[4]),//'rgb(23, 190, 207)',
+          size: 5
+        },
+        text: x.main[3],
+        name: "line-" + i
+    });
+    if (x.sub[0].length > 0) {
+      data.push({
+          x: x.sub[0],
+          y: x.sub[1],
+          z: x.sub[2],
+          mode: 'lines+markers',
+          type: 'scatter3d',
+          line: {
+            width: 3,
+            color: getPairColorOrient(x.sub[4])
+          },
+          marker: {
+            color: getPairColorOrient(x.sub[4]),//'rgb(23, 190, 207)',
+            size: 3,
+            opacity: 0.6
+          },
+          text: x.sub[3],
+          name: "sub-" + i
+      });
+    }
+    i++;
+  }
+  for (const x of c['linesT']) {
+    mn, mx = getMinMaxFromAr(mn, mx, x);
+    data.push({
+        x: x[0],
+        y: x[1],
+        z: x[2],
+        mode: 'lines+markers',
+        type: 'scatter3d',
+        line: {
+          width: 4,
+          color: getPairColorOrient(x[4])
+        },
+        marker: {
+          color: getPairColorOrient(x[4]),//'rgb(23, 190, 207)',
+          size: 3.5,
+          opacity: 0.8
+        },
+        text: x[3],
+        name: "tline-" + i
+    });
+  }
+  data.push({
+      x: c['pointsI'][0],
+      y: c['pointsI'][1],
+      z: c['pointsI'][2],
+      mode: 'markers',
+      type: 'scatter3d',
+      marker: {
+        color: 'rgb(170, 200, 150)',
+        size: 4.5
+      },
+      text: c.pointsI[3],
+      name: "Non-line Is"
+  });
+  data.push({
+      x: c['pointsV'][0],
+      y: c['pointsV'][1],
+      z: c['pointsV'][2],
+      mode: 'markers',
+      type: 'scatter3d',
+      marker: {
+        color: 'rgb(130, 150, 170)',
+        size: 3.5
+      },
+      text: c.pointsV[3],
+      name: "Non-line Vs"
+  });
+  const maxDiff = Math.max(Math.abs(mx[0] - mn[0]), Math.abs(mx[1] - mn[1]), Math.abs(mx[2] - mn[2]));
+  mx[0] = mn[0] + maxDiff;
+  mx[1] = mn[1] + maxDiff;
+  mx[2] = mn[2] + maxDiff;
+  return [data, mn, mx];
+}
 
 const cookDataCmp = (c, cmpColorIndex) => {
   var data = [{
@@ -16,6 +130,7 @@ const cookDataCmp = (c, cmpColorIndex) => {
     }];
   return data;
 }
+
     const layoutCmp = (mn, mx) => {
       return {
         autosize: true,
@@ -45,22 +160,74 @@ const cookDataCmp = (c, cmpColorIndex) => {
             xaxis: {
                 type: 'linear',
                 zeroline: false,
-                range: [mn, mx]
+                range: [mn[0], mx[0]],
+                  title: 'x (A)',
+                  titlefont: {
+                    family: 'Arial, sans-serif',
+                    size: 14,
+                    color: 'grey'
+                  },
+                  tickfont: {
+                    family: 'Old Standard TT, serif',
+                    size: 14,
+                    color: 'black'
+                  },
+                  dtick: Math.ceil((mx[0] - mn[0]) / 5)
+                  /*
+                  ticklen: 4,
+                  tickwidth: 4,
+                  tickcolor: '#eaa'
+                  */
             },
             yaxis: {
                 type: 'linear',
                 zeroline: false,
-                range: [mn, mx]
+                range: [mn[1], mx[1]],
+                  title: 'y (A)',
+                  titlefont: {
+                    family: 'Arial, sans-serif',
+                    size: 14,
+                    color: 'grey'
+                  },
+                  tickfont: {
+                    family: 'Old Standard TT, serif',
+                    size: 14,
+                    color: 'black'
+                  },
+                  dtick: Math.ceil((mx[1] - mn[1]) / 5)
             },
             zaxis: {
                 type: 'linear',
                 zeroline: false,
-                range: [mn, mx]
+                range: [mn[2], mx[2]],
+                  title: 'z (A)',
+                  titlefont: {
+                    family: 'Arial, sans-serif',
+                    size: 14,
+                    color: 'grey'
+                  },
+                  tickfont: {
+                    family: 'Old Standard TT, serif',
+                    size: 14,
+                    color: 'black'
+                  },
+                  dtick: Math.ceil((mx[2] - mn[2]) / 5)
             }
         },
         margin: { l: 30, r: 10, b: 40, t: 30, pad: 1 },
       };
     };
+
+export const ScatterLinePlot = props => {
+  //let mn = Math.min(...props.coords[0], ...props.coords[1], ...props.coords[2]);
+  //let mx = Math.max(...props.coords[0], ...props.coords[1], ...props.coords[2]);
+  const [data, mn, mx] = cookDataLineCmp(props.coords);
+  return (<Plot data={data} layout={ layoutCmp(mn, mx) }
+  style={{height: "320px", width: "100%"}}
+  onClick={props.clickHandler}
+  useResizeHandler
+/>);
+}
 
 export const ScatterCmpPlot = props => {
   let mn = Math.min(...props.coords[0], ...props.coords[1], ...props.coords[2]);

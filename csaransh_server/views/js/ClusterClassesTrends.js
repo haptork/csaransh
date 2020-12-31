@@ -24,9 +24,14 @@ const getTags = () => {
   let picked = "";
   for (const key in clusterClasses) {
     if (picked.lenth == 0) picked = key;
+    if (key.startsWith('line')) {
+      picked = key;
+    }
+    /*
     if (key.startsWith('supervised')) {
       picked = key;
     }
+    */
   }
   if ((picked.length) == 0) return {};
   return clusterClasses[picked].tags;
@@ -127,8 +132,10 @@ const ClusterClassesEnergyBar1 = props => {
   }
   for (const classLabel in props.tags) {
     const y = labels.indexOf(classLabel);
+    if (y == -1) continue;
     for (const cluster of props.tags[classLabel]) {
-      const groupingLabel = groupByKey(props.data[cluster[0]], groupingLabels);
+      if (!(props.ids.has(props.allData[cluster[0]].id))) continue;
+      const groupingLabel = groupByKey(props.data[props.indexMap.get(cluster[0])], groupingLabels);
       const x = allEnergies.indexOf(groupingLabel);
       vals[x][y]++;
     }
@@ -192,6 +199,9 @@ const ClusterClassesEnergyBar2 = props => {
   for (const classLabel in props.tags) {
     let y = labels.indexOf(classLabel);
     for (const cluster of props.tags[classLabel]) {
+      // console.log(cluster[0]); 
+      // console.log(props.data.length); 
+      // console.log(props.indexMap.get(cluster[0])); 
       const groupingLabel = groupByKey(props.data[cluster[0]], groupingLabels);
       const x = allEnergies.indexOf(groupingLabel);
       vals[y][x]++;
@@ -305,6 +315,12 @@ const ClusterClassesEnergyLine = props => {
   let labels = Object.keys(props.tags);
   const groupingLabels = props.groupingLabels;
   labels.sort();
+  if (labels[0] == '-1') {
+      labels.splice(0, 1)
+  }
+  // console.log('label')
+  // console.log(labels);
+  // console.log(groupingLabels);
   let totalCascades = {};
   for (const row of props.data) {
     const groupingLabel = groupByKey(row, groupingLabels);
@@ -312,7 +328,7 @@ const ClusterClassesEnergyLine = props => {
     totalCascades[groupingLabel]++;
   }
   let families = [];
-  let lastLabel = 0;
+  let lastLabel = -2;
   for (const x of labels) {
     const curLabel = parseInt(x[0]);
     if (curLabel != lastLabel) {
@@ -335,11 +351,19 @@ const ClusterClassesEnergyLine = props => {
   }
   for (const classLabel in props.tags) {
     const y = labels.indexOf(classLabel);
+    if (y == -1) continue;
     const curFamily = parseInt(classLabel[0]);
     const familyIndex = labels.indexOf(curFamily);
-    //console.log(familyIndex);
+    /*
+    console.log(classLabel);
+    console.log(y);
+    console.log(curFamily);
+    console.log(labels);
+    console.log(familyIndex);
+    */
     for (const cluster of props.tags[classLabel]) {
-      const groupingLabel = groupByKey(props.data[cluster[0]], groupingLabels);
+      if (!(props.ids.has(props.allData[cluster[0]].id))) continue;
+      const groupingLabel = groupByKey(props.data[props.indexMap.get(cluster[0])], groupingLabels);
       const x = allEnergies.indexOf(groupingLabel);
       vals[y][x]++;
       vals[familyIndex][x]++;
@@ -351,7 +375,6 @@ const ClusterClassesEnergyLine = props => {
       vals[ilabel][ienergy] /= (totalCascades[energy]*1.0);
     }
   }
-
   const menuItems = [];
   for (const familyLabel of families) {
     let visibility = [];
@@ -419,13 +442,21 @@ export class ClusterClassesTrends extends React.Component {
       { value: 'temperature', label: 'Temperature' },
       { value: 'potentialUsed', label: 'Potential' },
       { value: 'es', label: 'Electronic stopping' },
-      { value: 'author', label: 'Author' }
-      //{ value: 'tags', label: 'Tags' },
+      { value: 'author', label: 'Author' },
+      { value: 'tags', label: 'Tags' }
     ];
     this.defaultGroupingLabels = this.options.slice(0, 1);
     this.state = {
       groupingLabels: this.defaultGroupingLabels
     };
+    this.allIds = new Map(this.props.allData.map((element, index) => {
+      return [element.id, index];
+    }));
+    /*
+    this.props.allData.forEach(element, index => {
+      this.allIds.set(element.id, index);
+    });
+    */
   }
 
   handleChange = groupingLabels => {
@@ -443,6 +474,14 @@ export class ClusterClassesTrends extends React.Component {
     const { classes } = this.props;
     const tags = this.tags;
     const data = this.props.data;
+    const ids = new Set(this.props.data.map(val => val.id));
+    const indexMap = new Map(data.map((element, index) => {
+      return [this.allIds.get(element.id), index];
+    }));
+    //console.log("allIds"); 
+    //console.log(this.allIds); 
+    //console.log("ids"); 
+    //console.log(indexMap); 
     return (
       <Grid container justify="center">
        <GridItem xs={12} sm={12} md={12}>
@@ -462,11 +501,11 @@ export class ClusterClassesTrends extends React.Component {
 
          <Grid container justify="center">
          <GridItem xs={12} sm={12} md={8}>
-              <ClusterClassesEnergyBar1 tags={tags} data={data} groupingLabels={groupingLabels}/>
+              <ClusterClassesEnergyBar1 tags={tags} data={data} ids={ids} indexMap={indexMap} allData={this.props.allData} groupingLabels={groupingLabels}/>
          </GridItem>
          <GridItem xs={12} sm={12} md={4}>
             <Paper>
-            <ClusterClassesEnergyLine tags={tags} data={data} groupingLabels={groupingLabels}/>
+            <ClusterClassesEnergyLine tags={tags} data={data} ids={ids} indexMap={indexMap} allData={this.props.allData} groupingLabels={groupingLabels}/>
             </Paper>
           </GridItem>
           </Grid>

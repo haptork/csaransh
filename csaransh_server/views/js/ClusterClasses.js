@@ -6,7 +6,7 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-import { ScatterCmpPlot, ClassesPlot } from "./cascades/3d-plots.js";
+import { ScatterLinePlot, ScatterCmpPlot, ClassesPlot } from "./cascades/3d-plots.js";
 import ClassesIcon from '@material-ui/icons/Category';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -31,20 +31,107 @@ const getName = (curMode, classIndex, index, data, shortName) => {
   //return row.substrate + " @ " + row.energy + "keV; cluster-id: " + cid + "; file: " +  row.infile;
 };
 
+const getClusterLineCoord = (row, cid) => {
+  let lines = [];
+  let linesT = [];
+  let pointsI = [[], [], [], []];
+  let pointsV = [[], [], [], []];
+  cid = "" + cid;
+  if (cid.length == 0) cid = getInitialSelection(row);
+  //console.log(row.features[cid]['lines'])
+  if (cid) {
+    //let iCount = 0
+    for (const x of row.features[cid]['lines']['linesT']) {
+      //console.log(cid);
+      let c = [[],[],[],[], [-1.0, -1.0]];
+      c[4] = x['orient']
+      for (const y of x['main']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c[0].push(curCoord[0]);
+        c[1].push(curCoord[1]);
+        c[2].push(curCoord[2]);
+        //c[3].push(y);
+        c[3].push(''+x['orient']);
+      }
+      /*
+      if (iCount < row.features[cid]['lines']['cLinesT'].length)
+        c[4] = row.features[cid]['lines']['cLinesT'][iCount++];
+        */
+      linesT.push(c);
+    }
+    for (const x of row.features[cid]['lines']['lines']) {
+      let c = [[],[],[],[], [-1.0, -1.0]];
+      let c2 = [[],[],[],[], [-1.0, -1.0]];
+      c[4] = x['orient']
+      c2[4] = x['orient']
+      for (const y of x['main']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c[0].push(curCoord[0]);
+        c[1].push(curCoord[1]);
+        c[2].push(curCoord[2]);
+        //c[3].push(y);
+        c[3].push(''+x['orient']);
+      }
+      for (const y of x['sub']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']]);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c2[0].push(curCoord[0]);
+        c2[1].push(curCoord[1]);
+        c2[2].push(curCoord[2]);
+        //c2[3].push(y);
+        c2[3].push(''+x['orient']);
+      }
+      lines.push({main:c, sub:c2});
+    }
+    for (const x of row.features[cid]['lines']['pointsI']) {
+      // const curCoord = row.eigen_features[cid]['coords'][x]
+      const curCoord = row.coords[row.clusters[cid][x]]
+      pointsI[0].push(curCoord[0]);
+      pointsI[1].push(curCoord[1]);
+      pointsI[2].push(curCoord[2]);
+      pointsI[3].push(x);
+    }
+    for (const x of row.features[cid]['lines']['pointsV']) {
+      // const curCoord = row.eigen_features[cid]['coords'][x]
+      const curCoord = row.coords[row.clusters[cid][x]]
+      pointsV[0].push(curCoord[0]);
+      pointsV[1].push(curCoord[1]);
+      pointsV[2].push(curCoord[2]);
+      pointsV[3].push(x);
+    }
+  }
+  return {lines, linesT, pointsI, pointsV};
+};
+
 const getClusterCoords = (curMode, classIndex, index, data) => {
   const d = getData(curMode);
-  let c = [[],[],[]];
+  //let c = [[],[],[]];
   if (!d.tags.hasOwnProperty(classIndex) || index >= d.tags[classIndex].length) {
-    return c;  
+    let lines = [];
+    let linesT = [];
+    let pointsI = [[], [], [], []];
+    let pointsV = [[], [], [], []];
+    return {lines, linesT, pointsI, pointsV};
   }
   let row = data[d.tags[classIndex][index][0]];
   let cid = d.tags[classIndex][index][1];
+  return getClusterLineCoord(row, cid);
+  /*
   for (const x of row.eigen_features[cid].coords) {
     c[0].push(x[0]);
     c[1].push(x[1]);
     c[2].push(x[2]);
   }
   return c;
+  */
 };
 
 export class ClusterClassesPlot extends React.Component {
@@ -126,7 +213,7 @@ export class ClusterClassesPlot extends React.Component {
           </Paper>
           </GridItem>
           <GridItem xs={12} sm={12} md={6}>
-          <ScatterCmpPlot coords={this.state.clusterCoords} colorIndex={this.state.curIndex}/>
+          <ScatterLinePlot coords={this.state.clusterCoords} colorIndex={this.state.curIndex}/>
           <Typography  variant="caption" style={{textAlign:"center"}}>{this.state.nm}</Typography>
           </GridItem>
         </Grid>

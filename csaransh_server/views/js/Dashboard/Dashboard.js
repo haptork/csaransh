@@ -269,7 +269,7 @@ class DashboardSimple extends React.Component {
           </Paper>
           </GridItem>
           <GridItem xs={12} sm={12} md={12}>
-            <ClusterClassesTrends classes={classes} data={this.data}/>
+            <ClusterClassesTrends classes={classes} allData={this.data} data={this.state.curRows}/>
           </GridItem>
         </Grid>
         </ExpansionPanelDetails>
