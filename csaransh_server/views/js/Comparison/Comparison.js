@@ -10,9 +10,6 @@ import CardFooter from "components/Card/CardFooter.js";
 import ViewIcon from '@material-ui/icons/BubbleChart';
 
 import CompareIcon from '@material-ui/icons/InsertChart';
-import CustomTabs from "components/CustomTabs/CustomTabs.js";
-import AngleIcon from "@material-ui/icons/CallSplit";
-import DistIcon from "@material-ui/icons/LinearScale";
 
 import TableView from "./TableView.js";
 
@@ -22,12 +19,6 @@ import {
   ClusterSizePlot,
   lookDefectsSizeDistrib
 } from "./ClusterSizePlot";
-
-import {
-  DefectDistancePlot,
-  addDefectDistance,
-  addDefectAngles,
-} from "../cascades/DefectDistancePlot";
 
 class ComparisonTable extends React.Component {
   constructor(props) {
@@ -59,7 +50,7 @@ class ComparisonTable extends React.Component {
     const { row } = this.props;
     this.setRow(row);
     return (
-          <GridItem xs={12} sm={12} md={6}>
+          <GridItem xs={12} sm={6} md={6}>
             <TableView 
               row={this.row} 
               lock={this.state.lock} 
@@ -83,7 +74,7 @@ export class ClusterSizeCmpItem extends React.Component {
   render() {
     const {classes, data, elems} = this.props;
     return (
-      <GridItem xs={12} sm={6} md={5}>
+      <GridItem xs={12} sm={6} md={6}>
         <Card chart>
           <CardHeader color="info">
             <ClusterSizePlot data={data} height={320} />
@@ -107,70 +98,6 @@ export class ClusterSizeCmpItem extends React.Component {
   }
 }
  
-export class DistAngleCmpItem extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  shouldComponentUpdate(nextProps, nextState){
-    return !this.props.compareRowsHas;
-  }
-
-  render() {
-    const {classes, defectAngles, defectDistances} = this.props;
-    return (
-          <GridItem xs={12} sm={6} md={7}>
-       <CustomTabs
-              title={"Distribution around PKA"}
-              headerColor="info"
-              tabs={[
-                {
-                  tabName: "Angles",
-                  tabIcon: AngleIcon,
-                  tabContent: (
-
-<DefectDistancePlot
-                  data={defectAngles}
-                  title={""}
-                  xlabel={"Degree"}
-                  height={"325px"}
-                />
-                  ),
-                  footerContent: (
-                    <div className={classes.stats}>
-                      <ViewIcon/> Angular distribution of defects around PKA direction - only if PKA angles are given in input while post-processing
-                    </div>
-                  )
-
-                },
-                {
-                  tabName: "Distances",
-                  tabIcon: DistIcon,
-                  tabContent: (
-
-<DefectDistancePlot
-                  data={defectDistances}
-                  title={""}
-                  xlabel={"Angstroms"}
-                  height={"325px"}
-                />
-                  ),
-                  footerContent: (
-                    <div className={classes.stats}>
-                      <ViewIcon/> Distribtion of defects distances from PKA position - only if PKA position is given in input while post-processing
-                    </div>
-                  )
-
-                }
-              ]}
-            />
-          </GridItem>
- 
-    );
-  }
-}
- 
-
 export class Comparison extends React.Component {
   constructor(props) {
     super(props);
@@ -199,8 +126,6 @@ export class Comparison extends React.Component {
         this.compareRows.delete(this.compareRows.values().next().value);
       }
       this.defectSizeDistribConfig = lookDefectsSizeDistrib(this.defectSizeDistribConfig, row, this.limit);
-      this.defectDistances = addDefectDistance(this.defectDistances, row, this.limit);
-      this.defectAngles = addDefectAngles(this.defectAngles, row, this.limit);
       let elemsSet = new Set();
       //console.log(this.defectSizeDistribConfig.labels);
       for (const i in this.defectSizeDistribConfig.labels) {
@@ -215,8 +140,6 @@ export class Comparison extends React.Component {
     return (
         <Grid container>
           <ClusterSizeCmpItem elems={this.clusterElems} data={this.defectSizeDistribConfig} compareRowsHas={compareRowsHas} classes={classes} />
-          <DistAngleCmpItem defectAngles={this.defectAngles} defectDistances={this.defectDistances} compareRowsHas={compareRowsHas} classes={classes} />
-          <ComparisonTable row={row} defaultLock={true}/> 
           <ComparisonTable row={row} defaultLock={false} /> 
         </Grid>
     );

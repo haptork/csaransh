@@ -3,7 +3,6 @@ import { getColor } from "../utils";
 import { NDefectsPlot } from  "./nDefectsPlot";
 import { SplomPlot } from "./SplomPlot";
 import { CorrelationPlot } from "./correlationPlot";
-import { DefectDistancePlot, calcStatDistsAngles } from "../cascades/DefectDistancePlot";
 import StatsIcon from '@material-ui/icons/MultilineChart';
 
 import Grid from "@material-ui/core/Grid";
