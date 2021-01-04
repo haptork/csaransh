@@ -274,13 +274,14 @@ class DashboardSimple extends React.Component {
         </Grid>
         </ExpansionPanelDetails>
         </ExpansionPanel>
+
        <ExpansionPanel>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           <div className={classes.column}>
             <Typography className={classes.heading}>View and Compare Cascade Info</Typography>
           </div>
           <div className={classes.column}>
-            <Typography className={classes.secondaryHeading}>Plots, Distributions, Info to compare, copy, download</Typography>
+            <Typography className={classes.secondaryHeading}>Plots, Distributions, Info to view, copy, download</Typography>
           </div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.details}>
