@@ -1,6 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import { getColor, getPairColor, getPairColorOrient } from "../utils";
+import { getColor, getClassData, getPairColorOrient, uniqueKey } from "../utils";
 
 const getMinMaxFromAr = (mn, mx, ar) => {
   for (let i = 0; i < 3; i++) {
@@ -218,26 +218,178 @@ const cookDataCmp = (c, cmpColorIndex) => {
       };
     };
 
-export const ScatterLinePlot = props => {
-  //let mn = Math.min(...props.coords[0], ...props.coords[1], ...props.coords[2]);
-  //let mx = Math.max(...props.coords[0], ...props.coords[1], ...props.coords[2]);
-  const [data, mn, mx] = cookDataLineCmp(props.coords);
-  return (<Plot data={data} layout={ layoutCmp(mn, mx) }
-  style={{height: "320px", width: "100%"}}
-  onClick={props.clickHandler}
-  useResizeHandler
-/>);
+const getClusterLineCoord = (row, cid) => {
+  let lines = [];
+  let linesT = [];
+  let pointsI = [[], [], [], []];
+  let pointsV = [[], [], [], []];
+  cid = "" + cid;
+  if (cid.length == 0) cid = getInitialSelection(row);
+  //console.log(row.features[cid]['lines'])
+  if (cid) {
+    //let iCount = 0
+    for (const x of row.features[cid]['lines']['linesT']) {
+      //console.log(cid);
+      let c = [[],[],[],[], [-1.0, -1.0]];
+      c[4] = x['orient']
+      for (const y of x['main']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c[0].push(curCoord[0]);
+        c[1].push(curCoord[1]);
+        c[2].push(curCoord[2]);
+        //c[3].push(y);
+        c[3].push(''+x['orient']);
+      }
+      /*
+      if (iCount < row.features[cid]['lines']['cLinesT'].length)
+        c[4] = row.features[cid]['lines']['cLinesT'][iCount++];
+        */
+      linesT.push(c);
+    }
+    for (const x of row.features[cid]['lines']['lines']) {
+      let c = [[],[],[],[], [-1.0, -1.0]];
+      let c2 = [[],[],[],[], [-1.0, -1.0]];
+      c[4] = x['orient']
+      c2[4] = x['orient']
+      for (const y of x['main']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c[0].push(curCoord[0]);
+        c[1].push(curCoord[1]);
+        c[2].push(curCoord[2]);
+        //c[3].push(y);
+        c[3].push(''+x['orient']);
+      }
+      for (const y of x['sub']) {
+        //console.log(y);
+        //console.log(row.eigen_features[cid]['coords']]);
+        // const curCoord = row.eigen_features[cid]['coords'][y]
+        const curCoord = row.coords[row.clusters[cid][y]]
+        c2[0].push(curCoord[0]);
+        c2[1].push(curCoord[1]);
+        c2[2].push(curCoord[2]);
+        //c2[3].push(y);
+        c2[3].push(''+x['orient']);
+      }
+      lines.push({main:c, sub:c2});
+    }
+    for (const x of row.features[cid]['lines']['pointsI']) {
+      // const curCoord = row.eigen_features[cid]['coords'][x]
+      const curCoord = row.coords[row.clusters[cid][x]]
+      pointsI[0].push(curCoord[0]);
+      pointsI[1].push(curCoord[1]);
+      pointsI[2].push(curCoord[2]);
+      pointsI[3].push(x);
+    }
+    for (const x of row.features[cid]['lines']['pointsV']) {
+      // const curCoord = row.eigen_features[cid]['coords'][x]
+      const curCoord = row.coords[row.clusters[cid][x]]
+      pointsV[0].push(curCoord[0]);
+      pointsV[1].push(curCoord[1]);
+      pointsV[2].push(curCoord[2]);
+      pointsV[3].push(x);
+    }
+  }
+  return {lines, linesT, pointsI, pointsV};
+};
+
+const getCoordType = (row, cid) => {
+  cid = "" + cid;
+  if (cid.length == 0 || row == undefined || !row.eigen_features.hasOwnProperty(cid)) return -1;
+  if (row.hasOwnProperty('features') &&
+      row.features.hasOwnProperty(cid) &&
+      row.features[cid].hasOwnProperty('lines')) return 1;
+  return 0;
+};
+
+
+const getCoordTypeClass = (curMode, classIndex, index, data) => {
+  const d = getClassData(curMode);
+  if (!d.tags.hasOwnProperty(classIndex) || index >= d.tags[classIndex].length) return -1; 
+  let row = data[d.tags[classIndex][index][0]];
+  let cid = d.tags[classIndex][index][1];
+  return getCoordType(row, cid);
+};
+
+const getClusterCoord = (row, cid) => {
+  let c = [[],[],[]];
+  if (cid.length == 0 || row == undefined || !row.eigen_features.hasOwnProperty(cid)) return c;
+  for (const x of row.eigen_features[cid].coords) {
+    c[0].push(x[0]);
+    c[1].push(x[1]);
+    c[2].push(x[2]);
+  }
+  return c;
+};
+
+const getClusterCoords = (curMode, classIndex, index, data, coordType) => {
+  if (coordType == -1) return [[],[],[]];
+  const d = getClassData(curMode);
+  let row = data[d.tags[classIndex][index][0]];
+  let cid = d.tags[classIndex][index][1];
+  if (coordType == 1) return getClusterLineCoord(row, cid);
+  return getClusterCoord(row, cid);
+};
+
+export class Cluster2CmpPlot extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (!this.props.rows) return true;
+    return uniqueKey(this.props.row) != uniqueKey(nextProps.row)
+           || this.props.cid != nextProps.cid;
+  }
+
+  render() {
+    const {cid, row} = this.props;
+    const coordType = getCoordType(row, cid);
+    let coords = [];
+    if (coordType == 1) coords = getClusterLineCoord(row, cid);
+    else coords = getClusterCoord(row, cid);
+    let mn = 0.0, mx = 0.0;
+    let plotData = [];
+    if (coordType == 1) {
+      [plotData, mn, mx] = cookDataLineCmp(coords);
+    } else {
+      mn = Math.min(...coords[0], ...coords[1], ...coords[2]);
+      mx = Math.max(...coords[0], ...coords[1], ...coords[2]);
+      const colorIndex = parseInt(cid);
+      plotData = cookDataCmp(coords, colorIndex);
+    }
+    return (<Plot data={plotData} layout={ layoutCmp(mn, mx) }
+    style={{height: "320px", width: "100%"}}
+    useResizeHandler
+    />);
+  }
 }
 
-export const ScatterCmpPlot = props => {
-  let mn = Math.min(...props.coords[0], ...props.coords[1], ...props.coords[2]);
-  let mx = Math.max(...props.coords[0], ...props.coords[1], ...props.coords[2]);
-  return (<Plot data={cookDataCmp(props.coords, props.colorIndex)} layout={ layoutCmp(mn, mx) }
+export const ClusterClassPlot = props => {
+  const {curMode, classIndex, curIndex, data} = props;
+  const coordType = getCoordTypeClass(curMode, classIndex, curIndex, data);
+  // console.log("coordType final: ", coordType);
+  const coords = getClusterCoords(curMode, classIndex, curIndex, data, coordType);
+  let mn = 0.0, mx = 0.0, plotData = [];
+  if (coordType == 1) {
+    [plotData, mn, mx] = cookDataLineCmp(coords);
+  } else {
+    mn = Math.min(...coords[0], ...coords[1], ...coords[2]);
+    mx = Math.max(...coords[0], ...coords[1], ...coords[2]);
+    const colorIndex = parseInt(curIndex);
+    plotData = cookDataCmp(coords, colorIndex);
+  }
+  return (<Plot data={plotData} layout={ layoutCmp(mn, mx) }
   style={{height: "320px", width: "100%"}}
-  onClick={props.clickHandler}
   useResizeHandler
-/>);
+  />);
 }
+// onClick={props.clickHandler}
 
 const cookData = (row) => {
   let data = [];

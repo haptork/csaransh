@@ -71,21 +71,15 @@ export const getAllCol = () => {
   return res;
 };
 
-export function getData() {
-  return window.cascades.data;
-}
+export const getData = () => window.cascades.data;
 
-export function uniqueKey(row) {
-  return row.id + row.xyzFilePath;
-}
+export const getClassData = (curMode) => window.cluster_classes[curMode];
 
-export function uniqueName(row) {
-  return row.id + "-" + row.substrate + "-" + row.energy;
-}
+export const uniqueKey = (row) => row.id + row.xyzFilePath;
 
-export function groupByKey(row) {
-  return row.substrate + "-" + row.energy;
-}
+export const uniqueName = (row) => row.id + "-" + row.substrate + "-" + row.energy;
+
+export const groupByKey = (row) => row.substrate + "-" + row.energy;
 
 export const exportToJson = (objectData) => {
   let filename = "export.json";

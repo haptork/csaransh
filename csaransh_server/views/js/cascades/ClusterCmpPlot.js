@@ -7,8 +7,8 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-import { ScatterCmpPlot } from "../cascades/3d-plots.js";
-import { ScatterLinePlot } from "../cascades/3d-plots.js";
+//import { ScatterCmpPlot } from "../cascades/3d-plots.js";
+import { Cluster2CmpPlot } from "../cascades/3d-plots.js";
 import ViewIcon from '@material-ui/icons/BubbleChart';
 
 import InputLabel from '@material-ui/core/InputLabel';
@@ -25,103 +25,7 @@ import StepButton from '@material-ui/core/StepButton';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
-import { getData, uniqueKey } from "../utils";
-
-const getClusterLineCoord = (row, cid) => {
-  let lines = [];
-  let linesT = [];
-  let pointsI = [[], [], [], []];
-  let pointsV = [[], [], [], []];
-  cid = "" + cid;
-  if (cid.length == 0) cid = getInitialSelection(row);
-  //console.log(row.features[cid]['lines'])
-  if (cid) {
-    //let iCount = 0
-    for (const x of row.features[cid]['lines']['linesT']) {
-      //console.log(cid);
-      let c = [[],[],[],[], [-1.0, -1.0]];
-      c[4] = x['orient']
-      for (const y of x['main']) {
-        //console.log(y);
-        //console.log(row.eigen_features[cid]['coords']);
-        // const curCoord = row.eigen_features[cid]['coords'][y]
-        const curCoord = row.coords[row.clusters[cid][y]]
-        c[0].push(curCoord[0]);
-        c[1].push(curCoord[1]);
-        c[2].push(curCoord[2]);
-        //c[3].push(y);
-        c[3].push(''+x['orient']);
-      }
-      /*
-      if (iCount < row.features[cid]['lines']['cLinesT'].length)
-        c[4] = row.features[cid]['lines']['cLinesT'][iCount++];
-      */
-      linesT.push(c);
-    }
-    for (const x of row.features[cid]['lines']['lines']) {
-      let c = [[],[],[],[], [-1.0, -1.0]];
-      let c2 = [[],[],[],[], [-1.0, -1.0]];
-      c[4] = x['orient']
-      c2[4] = x['orient']
-      for (const y of x['main']) {
-        //console.log(y);
-        //console.log(row.eigen_features[cid]['coords']);
-        // const curCoord = row.eigen_features[cid]['coords'][y]
-        const curCoord = row.coords[row.clusters[cid][y]]
-        c[0].push(curCoord[0]);
-        c[1].push(curCoord[1]);
-        c[2].push(curCoord[2]);
-        c[3].push('' + x['orient']);
-      }
-      for (const y of x['sub']) {
-        //console.log(y);
-        //console.log(row.eigen_features[cid]['coords']]);
-        // const curCoord = row.eigen_features[cid]['coords'][y]
-        const curCoord = row.coords[row.clusters[cid][y]]
-        c2[0].push(curCoord[0]);
-        c2[1].push(curCoord[1]);
-        c2[2].push(curCoord[2]);
-        c2[3].push(''+x['orient']);
-      }
-      lines.push({main:c, sub:c2});
-    }
-    for (const x of row.features[cid]['lines']['pointsI']) {
-      // const curCoord = row.eigen_features[cid]['coords'][x]
-      const curCoord = row.coords[row.clusters[cid][x]]
-      pointsI[0].push(curCoord[0]);
-      pointsI[1].push(curCoord[1]);
-      pointsI[2].push(curCoord[2]);
-      pointsI[3].push(x);
-    }
-    for (const x of row.features[cid]['lines']['pointsV']) {
-      // const curCoord = row.eigen_features[cid]['coords'][x]
-      const curCoord = row.coords[row.clusters[cid][x]]
-      pointsV[0].push(curCoord[0]);
-      pointsV[1].push(curCoord[1]);
-      pointsV[2].push(curCoord[2]);
-      pointsV[3].push(x);
-    }
-  }
-  return {lines, linesT, pointsI, pointsV};
-};
-
-const getClusterCoord = (row, cid) => {
-  let c = [[],[],[]];
-  cid = "" + cid;
-  if (cid.length == 0) cid = getInitialSelection(row);
-  if (cid) {
-    for (const x of row.eigen_features[cid].coords) {
-      c[0].push(x[0]);
-      c[1].push(x[1]);
-      c[2].push(x[2]);
-    }
-  }
-  return c;
-};
-
 const getClusterVar = (row, cid) => {
-  cid = "" + cid;
-  if (cid.length == 0) cid = getInitialSelection(row);
   if (cid) {
     return row.eigen_features[cid].var[0] + ", " + row.eigen_features[cid].var[1];
   }
@@ -129,8 +33,6 @@ const getClusterVar = (row, cid) => {
 };
 
 const getClusterTypeAndClass = (row, cid) => {
-  cid = "" + cid;
-  if (cid.length == 0) cid = getInitialSelection(row);
   if (cid) {
     const typeInfo = (row.clusterSizes[cid] > 0) ? "majority interstitials" : "majority vacancies";
     const classInfo = (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty(cid) && row.clusterClasses[cid] !== -1 && row.clusterClasses[cid] !== "noise") ? "; class-" + row.clusterClasses[cid] : "";
@@ -150,7 +52,6 @@ export const getCids = (row) => {
   //const curSelection = (cids.length > 0) ? cids[0] : "";
 };
 
-
 export const getInitialSelection = (row) => {
   const cids = getCids(row);
   if (cids.length > 0) return cids[0].value;
@@ -158,18 +59,18 @@ export const getInitialSelection = (row) => {
 };
 
 const getCmpCoord = (row, cid, data, mode, isSize, val) => {
-  if (cid == '') return getClusterCoord(row, cid);
+  if (cid == '') return [row, cid];
   if (!(row.clust_cmp_size.hasOwnProperty(cid))) {
     const cids = getCids(row);
     if (cids.length > 0) cid = cids[0].value;
-    else return [];
+    else return [row, cid];
   }
   let x = row.clust_cmp[cid][mode];
   //let count = row.clust_cmp_size[cid][mode]
   if (isSize) x = row.clust_cmp_size[cid][mode];
-  if (val >= x.length || x[val].length < 3) return getClusterCoord(row, '');
+  if (val >= x.length || x[val].length < 3) return [row, ''];
   const fid = parseInt(x[val][1]);
-  return getClusterCoord(data[fid], x[val][2]);
+  return [data[fid], x[val][2]];
 };
 
 const getCmpCids = (row, cid, data, mode, isSize, shortName) => {
@@ -195,26 +96,6 @@ const getCmpCids = (row, cid, data, mode, isSize, shortName) => {
     return {"name": name, "info": info};
   });
 };
-
-export class Cluster2CmpPlot extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return uniqueKey(this.props.row) != uniqueKey(nextProps.row)
-           || this.props.cid != nextProps.cid;
-  }
-
-  render() {
-    const {cid, row} = this.props;
-    const coords = getClusterLineCoord(row, cid);
-    //console.log(coords);
-    return (
-        <ScatterLinePlot coords={coords} colorIndex={parseInt(cid)} />
-    );
-  }
-}
 
 export class ClusterCmpPlot extends React.Component {
   constructor(props) {
@@ -269,10 +150,12 @@ export class ClusterCmpPlot extends React.Component {
   */
  render() {
     const {classes, row, cid, data, allCids} = this.props;
-    const cmpCids = getCmpCids(row, cid, data, this.state.curMode, this.state.isSize, this.props.shortName);
-    const cmpCoords = getCmpCoord(row, cid, data, this.state.curMode, this.state.isSize, this.state.curShow);
-    const mainVariance = getClusterVar(row, cid);
-    const typeAndClass = getClusterTypeAndClass(row, cid);
+    let cid2 = "" + cid;
+    if (cid2.length == 0) cid2 = getInitialSelection(row);
+    const cmpCids = getCmpCids(row, cid2, data, this.state.curMode, this.state.isSize, this.props.shortName);
+    const cmpCoords = getCmpCoord(row, cid2, data, this.state.curMode, this.state.isSize, this.state.curShow);
+    const mainVariance = getClusterVar(row, cid2);
+    const typeAndClass = getClusterTypeAndClass(row, cid2);
     return (
     <Card chart>
       <CardHeader color="primary">
@@ -282,7 +165,7 @@ export class ClusterCmpPlot extends React.Component {
         <Grid container>
         <GridItem xs={12} sm={12} md={6}>
         <Paper>
-        <Cluster2CmpPlot row={row} cid={cid}/>
+        <Cluster2CmpPlot row={row} cid={cid2}/>
         <Typography  variant="caption" style={{textAlign:"center"}}>eigen dim. var:{mainVariance}; {typeAndClass[0]}{typeAndClass[1]}</Typography>
         <Grid container justify="center">
         <GridItem xs={12} sm={12} md={12} >
@@ -330,7 +213,7 @@ export class ClusterCmpPlot extends React.Component {
         </Paper>
         </GridItem>
        <GridItem xs={12} sm={12} md={6}>
-        <ScatterCmpPlot coords={cmpCoords} colorIndex={parseInt(cid)}/>
+        <Cluster2CmpPlot row={cmpCoords[0]} cid={cmpCoords[1]}/>
         <Stepper alternativeLabel nonLinear activeStep={this.state.curShow}>
           {cmpCids.map((label, index) => {
             const buttonProps = {};
