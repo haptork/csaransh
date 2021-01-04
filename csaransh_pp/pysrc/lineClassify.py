@@ -770,13 +770,13 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
             if cmpLine2['forceAlign']['err'][0]: cmpLine2Aligned = cmpLine2['forceAlign']
             lineAng = line['eq'].angle_to(otherLine['eq'])    
             lineAngAligned = cmpLine1Aligned['eq'].angle_to(cmpLine2Aligned['eq'])    
-            res['adjacencyAng'][curI][curJ] = lineAng
-            res['adjacencyAngAligned'][curI][curJ] = lineAngAligned
-            res['adjacencyAng'][curJ][curI] = lineAng
-            res['adjacencyAngAligned'][curJ][curI] = lineAngAligned
+            res['adjacencyAng'][curI,curJ] = lineAng
+            res['adjacencyAngAligned'][curI,curJ] = lineAngAligned
+            res['adjacencyAng'][curJ,curI] = lineAng
+            res['adjacencyAngAligned'][curJ,curI] = lineAngAligned
             if (cmpLine1['forceAlign']['type1'] == cmpLine2['forceAlign']['type1']) or (not(cmpLine1['forceAlign']['err'][0] and cmpLine2['forceAlign']['err'][0]) and cmpLine1['forceAlign']['type1'] == cmpLine2['forceAlign']['type1'] and cmpLine1['forceAlign']['type1'][-1] != 0):
-                res['adjacencyLineType'][curI][curJ] = True
-                res['adjacencyLineType'][curJ][curI] = True
+                res['adjacencyLineType'][curI,curJ] = True
+                res['adjacencyLineType'][curJ,curI] = True
             lineDistParOnly = cmpLine1Aligned['eq'].distance_to(cmpLine2Aligned['eq'])   
             if areTriplets:
                 p1 = Point(cascade['coords'][cascade['clusters'][cid][line['points'][1]]][:3])
@@ -834,9 +834,9 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
                 curJ += 1
                 continue
             if lineDist < distTol: 
-                res['adjacencyDist'][curI][curJ] = lineDist
-            res['adjacencyDistPar'][curI][curJ] = lineDistPar
-            res['adjacencyDistParOnly'][curI][curJ] = lineDistParOnly             
+                res['adjacencyDist'][curI,curJ] = lineDist
+            res['adjacencyDistPar'][curI,curJ] = lineDistPar
+            res['adjacencyDistParOnly'][curI,curJ] = lineDistParOnly             
             curJ += 1
         curI += 1
     return res

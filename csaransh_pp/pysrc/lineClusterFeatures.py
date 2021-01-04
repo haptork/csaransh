@@ -14,8 +14,6 @@ use_degrees()
 angular_unit = 180.0/math.pi
 debug = False
 import numpy as np
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import minimum_spanning_tree
 from sklearn.neighbors import NearestNeighbors
 from collections import Counter
 
