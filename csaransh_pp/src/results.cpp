@@ -63,12 +63,13 @@ csaransh::clusterIVType(const csaransh::ClusterIdMapT &a,
 
 // ignore dumbbells or similar defects group from cluster list
 void csaransh::ignoreSmallClusters(csaransh::DefectVecT &defects,
-                                   csaransh::ClusterSizeMapT &clusterSize,
-                                   int minSurvived = 2, int minAll = 4) {
+                                   csaransh::ClusterSizeMapT &clusterSize) {
   using namespace csaransh::DefectTWrap;
+  using csaransh::invars::minClusterPoints;
+  using csaransh::invars::minClusterSize;
   for (auto &it : defects) {
-    if (abs(clusterSize[clusterId(it)].surviving) < minSurvived
-        && clusterSize[clusterId(it)].all < minAll) {
+    if (abs(clusterSize[clusterId(it)].surviving) < minClusterSize
+        && clusterSize[clusterId(it)].all < minClusterPoints) {
       clusterId(it, 0); // setting clusterId of small ones to zero
     }
   }
@@ -126,11 +127,13 @@ csaransh::ClusterFeatMapT
 csaransh::clusterFeatures(const csaransh::DefectVecT &defects,
                           const csaransh::ClusterIdMapT &clusters,
                           csaransh::ClusterSizeMapT &clusterCounts,
-                          double latticeConst, int leastClusterSize) {
+                          double latticeConst) {
   using namespace csaransh::DefectTWrap;
   csaransh::ClusterFeatMapT clusterFeats;
+  using csaransh::invars::minClusterPoints;
+  using csaransh::invars::minClusterSize;
   for (const auto &it : clusters) {
-    if (clusterCounts[it.first].all < leastClusterSize) continue;
+    if (abs(clusterCounts[it.first].surviving) < minClusterSize && clusterCounts[it.first].all < minClusterPoints) continue;
     std::vector<csaransh::Coords> clusterCoords;
     std::vector<bool> isI;
     for (const auto &jt : it.second) {

@@ -75,8 +75,7 @@ ClusterSizeMapT clusterSizes(const DefectVecT &defects);
 
 // change clusterId to zero for defects that belong to clusters having lesser
 // defects than the input given criterion
-void ignoreSmallClusters(DefectVecT &defects, ClusterSizeMapT &,
-                         int minSurvived, int minAll);
+void ignoreSmallClusters(DefectVecT &defects, ClusterSizeMapT &);
 
 // for each cluster a list of coord indices of defects that belong to it
 ClusterIdMapT clusterMapping(const DefectVecT &defects);
@@ -96,7 +95,7 @@ using ClusterFeatMapT = std::unordered_map<int, featT>;
 ClusterFeatMapT clusterFeatures(const csaransh::DefectVecT &defects,
                                 const csaransh::ClusterIdMapT &clusters,
                                 csaransh::ClusterSizeMapT &clusterCounts,
-                                double latticeConst, int leastClusterSize = 4);
+                                double latticeConst);
 
 // maximum of surviving defects among all of clusters
 // (interstitial and vacancy cluster separately)

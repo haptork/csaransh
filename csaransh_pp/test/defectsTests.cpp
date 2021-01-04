@@ -633,7 +633,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           REQUIRE(nDefects == 1);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
-          ignoreSmallClusters(defects, clusterSizeMap, 2, 2);
+          ignoreSmallClusters(defects, clusterSizeMap);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
           REQUIRE(nDefects == 1);
@@ -662,7 +662,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
 
           SECTION("Check cluster features") {
             auto feats = csaransh::clusterFeatures(
-                defects, clusterIdMap, clusterSizeMap, latticeConst, 3);
+                defects, clusterIdMap, clusterSizeMap, latticeConst);
             REQUIRE(feats.size() == 1);
             const auto &distFeat = std::get<0>(std::begin(feats)->second);
             REQUIRE(distFeat[0] + distFeat[distFeat.size() - 1] == 1.0); // TODO
@@ -780,7 +780,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           REQUIRE(nDefects == 4);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
-          ignoreSmallClusters(defects, clusterSizeMap, 4, 2);
+          ignoreSmallClusters(defects, clusterSizeMap);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
           REQUIRE(nDefects == 4);
@@ -872,7 +872,7 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           REQUIRE(nDefects == 99);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
-          ignoreSmallClusters(defects, clusterSizeMap, 4, 2);
+          ignoreSmallClusters(defects, clusterSizeMap);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
           REQUIRE(nDefects == 99);
@@ -1122,7 +1122,7 @@ SCENARIO("Given xyz coordinates of all the displaced atoms, output only the "
           REQUIRE(nDefects == 3);
           REQUIRE(inClusterFractionI == Approx(100.0));
           REQUIRE(inClusterFractionV == Approx(100.0));
-          ignoreSmallClusters(defects, clusterSizeMap, 4, 2);
+          ignoreSmallClusters(defects, clusterSizeMap);
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
           REQUIRE(inClusterFractionI == Approx(100.0));
@@ -1142,7 +1142,7 @@ SCENARIO("Given xyz coordinates of all the displaced atoms, output only the "
           REQUIRE(maxClusterSizeV == 0);
           SECTION("Check cluster features") {
             auto feats = csaransh::clusterFeatures(
-                defects, clusterIdMap, clusterSizeMap, latticeConst, 3);
+                defects, clusterIdMap, clusterSizeMap, latticeConst);
             REQUIRE(feats.size() == 1);
             const auto &distFeat = std::get<0>(std::begin(feats)->second);
             REQUIRE(distFeat[0] == Approx(0.0));

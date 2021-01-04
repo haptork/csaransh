@@ -109,7 +109,7 @@ std::pair<csaransh::xyzFileStatus, csaransh::ErrorStatus>
   auto clusterSizeMap = csaransh::clusterSizes(res.defects);
   filterZeroClusters(res.defects, clusterSizeMap,
                      config.filterZeroSizeClusters);
-  csaransh::ignoreSmallClusters(res.defects, clusterSizeMap, 2, 4);
+  csaransh::ignoreSmallClusters(res.defects, clusterSizeMap);
   res.clusters = csaransh::clusterMapping(res.defects);
   res.clustersIV = csaransh::clusterIVType(res.clusters, clusterSizeMap);
   if (config.isFindClusterFeatures)
