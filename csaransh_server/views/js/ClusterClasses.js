@@ -113,7 +113,7 @@ export class ClusterClassesPlot extends React.Component {
       </CardBody>
       <CardFooter chart>
         <div className={this.props.classes.stats}>
-          <ClassesIcon/> Shows defect morphology classification. Different classes are shown with different colors. Click on a point on left to view the cluster on right. Click on legend to toggle a class and double click on legend label to only make that class points appear. The image below shows typical morphologies. For more info on methods check: <a href="https://arxiv.org/abs/2009.14147">Graph Approach</a> and <a href="https://www.sciencedirect.com/science/article/pii/S0927025619306639">unsupervised defect classification</a>.
+          <ClassesIcon/> Shows defect morphology classification. Different classes are shown with different colors. Click on a point on left to view the cluster on right. Click on legend to toggle a class and double click on legend label to only make that class points appear. The image below shows typical morphologies. <span>Papers on methods: <a href="https://arxiv.org/abs/2009.14147">Graph</a>, <a href="https://www.sciencedirect.com/science/article/pii/S0927025619306639">unsupervised</a></span>.
         </div>
       </CardFooter>
    </Card>

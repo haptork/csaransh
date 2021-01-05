@@ -436,7 +436,7 @@ def clusterClasses(data):
           continue
         addFullComponentInfo(data[tcas], tcid)
         compLabels.append(data[tcas]['clusterClasses']['comp'][tcid])
-    classesData[0] = {'name': 'line-comp',
+    classesData[0] = {'name': 'line-graph-components',
                             'data': classesDataToSave(compLabels, show_dim, tag)}
     return classesData
 
