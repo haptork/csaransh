@@ -728,7 +728,7 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
         }
     else:
     """
-    res = {'nPoints': np.zeros(totalLines),
+    res = {'nPoints': np.zeros(totalLines, dtype=np.int8),
            'nMain': 0,
            'nfreeIs': len(freeIs),
            'adjacencyDist': lil_matrix((totalLines, totalLines), dtype=np.float32),
@@ -742,7 +742,7 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
     for i, line in enumerate(clusterLines):
         if 'parent' in line or 'del' in line: continue
         #for angIndex, angleI in enumerate(line['angles']): res['lineAngles'][angIndex].append(angleI)
-        res['nPoints'][i] = len(line['mainPoints'])
+        res['nPoints'][curI] = len(line['mainPoints'])
         if line['subLine']: res['nPoints'][-1] += len(line['subLine']['points'])
         if 'isVac' in line:  
             res['nMain'] += 1
