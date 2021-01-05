@@ -12,7 +12,6 @@ use_degrees()
 angular_unit = 180.0/math.pi
 debug = False
 import numpy as np
-from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 from sklearn.neighbors import NearestNeighbors
 from collections import Counter
@@ -117,9 +116,9 @@ def filterRingGroupsByTriads(attrs, curIndices, latticeConst):
     tol = 0.3
     tolPar = 0.5 * latticeConst
     for r_idx in curIndices:
-        distRow = matrix1[r_idx, :]
-        angleRow = matrix2[r_idx, :]
-        distPar = matrix3[r_idx, :]
+        distRow = matrix1[r_idx, :].toarray()
+        angleRow = matrix2[r_idx, :].toarray()
+        distPar = matrix3[r_idx, :].toarray()
         distMask = mask & (distPar < tolPar) & (((distRow < (nn1 + tol)) & (distRow > (nn1 - tol)))
                            | ((distRow < (nn3 + tol)) & (distRow > (nn3 - tol))))
         angleMask = distMask & ((angleRow > 50))
@@ -143,10 +142,10 @@ def findRandomLabels(attrs, randomIndices, latticeConst):
     nn3 = latticeConst * 1.414213
     tol = 0.3
     for r_idx in randomIndices:
-        distRow = matrix1[r_idx, :]
-        angleRow = matrix2[r_idx, :]
+        distRow = matrix1[r_idx, :].toarray()
+        angleRow = matrix2[r_idx, :].toarray()
         distMask = mask & (distRow > -0.1)
-        distRow2 = matrix3[r_idx, :]
+        distRow2 = matrix3[r_idx, :].toarray()
         distMask2 = mask & (distRow2 < math.ceil(nn2)) & (distRow2 > -0.1) & (angleRow <= angleTol)
         resultMat[r_idx, :] = distMask | distMask2
     graph = csr_matrix(resultMat)
@@ -172,7 +171,7 @@ def findRandomLabels(attrs, randomIndices, latticeConst):
         nonParCount = 0
         allMask = resultMat | resultMat.T
         for i in curIndices:
-            angleRow = matrix2[i, :]
+            angleRow = matrix2[i, :].toarray()
             countPar = np.count_nonzero((angleRow < 26) & allMask[i, :])
             countNonPar = np.count_nonzero((angleRow >= 26) & allMask[i, :])
             if countNonPar == 0 and countPar > countNonPar: # or >=
@@ -252,19 +251,19 @@ def checkDiInterstitialRing(curAttrs, ri, latticeConst, countPar):
     if countPar[ri[0]] > 0 or countPar[ri[1]] > 0: return False
     if curAttrs['nPoints'][ri[0]] > 3 and curAttrs['nPoints'][ri[1]] > 3: return False
     if curAttrs['nPoints'][ri[0]] > 5 or curAttrs['nPoints'][ri[1]] > 5: return False
-    isIt = abs(curAttrs['adjacencyDist'][ri[0]][ri[1]] - nn1) < 0.01 or abs(curAttrs['adjacencyDist'][ri[0]][ri[1]] - nn3) < 0.01 
+    isIt = abs(curAttrs['adjacencyDist'][ri[0],ri[1]] - nn1) < 0.01 or abs(curAttrs['adjacencyDist'][ri[0],ri[1]] - nn3) < 0.01 
     angleTol = 60
     tolPar = nn1
-    return isIt and curAttrs['adjacencyAng'][ri[0]][ri[1]] > angleTol and curAttrs['adjacencyDistParOnly'][ri[0]][ri[1]] < tolPar
+    return isIt and curAttrs['adjacencyAng'][ri[0],ri[1]] > angleTol and curAttrs['adjacencyDistParOnly'][ri[0],ri[1]] < tolPar
 
 def getParallelGroups(attrs, latticeConst):
     matrix1 = attrs['adjacencyDistPar']
     matrix2 = attrs['adjacencyAngAligned']
     matrix3 = attrs['adjacencyLineType']
     matrix4 = attrs['adjacencyDist']
-    resultMat  = np.full(matrix1.shape, False)
-    resultMat2  = np.full(matrix1.shape, False)
-    resultMat3  = np.full(matrix1.shape, False)
+    resultMat  = np.full(matrix1.shape, False, dtype=bool)
+    resultMat2  = np.full(matrix1.shape, False, dtype=bool)
+    resultMat3  = np.full(matrix1.shape, False, dtype=bool)
     angleTol = 26#18
     angleBlocking = 45#18
     nn1 = math.ceil(latticeConst * 0.8660254)
@@ -272,22 +271,30 @@ def getParallelGroups(attrs, latticeConst):
     nn3 = math.ceil(latticeConst * 1.414213)
     if attrs['nMain'] < 2: return resultMat, 0, np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
     for r_idx in range(resultMat.shape[0]):
-        angRow = matrix2[r_idx, :]
-        distRow = matrix1[r_idx, :]
-        angleMask = (angRow <= angleTol) & (distRow > -0.1) & (matrix3[r_idx, :])
+        angRow = matrix2[r_idx, :].toarray()
+        distRow = matrix1[r_idx, :].toarray()
+        angleMask = (angRow <= angleTol) & (distRow > -0.1) & (matrix3[r_idx, :]).toarray()
+        #angleMask = (angRow <= angleTol).minimum(distRow > -0.1).minimum(matrix3[r_idx, :])
         angleMaskedDist = distRow[angleMask]
         if angleMaskedDist.shape[0] >= 1:
             minimum = math.ceil(max(min(angleMaskedDist), nn2) + 0.001)
             resultMat[r_idx, :] = (angleMask) & (distRow <= minimum)
-        distRow2 = matrix4[r_idx, :]
+            #resultMat[r_idx, :] = (angleMask).minimum(distRow <= minimum)
+        distRow2 = matrix4[r_idx, :].toarray()
         #resultMat4[r_idx, :] =(distRow2 <= nn1) & (distRow2 > -0.1) & (angRow < angleTolStrict)
         resultMat2[r_idx, :] =(distRow2 <= nn3) & (distRow2 > -0.1) & (angRow > angleTol)
         resultMat3[r_idx, :] = resultMat2[r_idx, :] & (angRow > angleBlocking)
+        #resultMat2[r_idx, :] =(distRow2 <= nn3).minimum(distRow2 > -0.1).minimum(angRow > angleTol)
+        #resultMat3[r_idx, :] = resultMat2[r_idx, :].minimum(angRow > angleBlocking)
     graph = csr_matrix(resultMat)
+    graph = resultMat
     n_components, labels = connected_components(csgraph=graph, directed=False, return_labels=True)
     resultMatAll = resultMat | resultMat.T
     resultMat2 = resultMat2 | resultMat2.T
     resultMat3 = resultMat3 | resultMat3.T
+    #resultMatAll = resultMat.maximum(resultMat.T)
+    #resultMat2 = resultMat2.maximum(resultMat2.T)
+    #resultMat3 = resultMat3.maximum(resultMat3.T)
     #resultMat4 = resultMat4 | resultMat4.T
     countPar = np.zeros(resultMat.shape[0])
     countNonPar = np.zeros(resultMat.shape[0])
@@ -306,8 +313,8 @@ def filterRingGroups1(attrs, probLabelNames, labels, latticeConst):
     matrix3 = attrs['adjacencyDistPar']
     mask = np.isin(labels, list(probLabelNames))
     strayIndices = np.arange(len(labels))[mask]
-    resultMat = np.full(matrix1.shape, False)
-    resultMat2 = np.full(matrix1.shape, False)
+    resultMat = np.full(matrix1.shape, False, dtype=bool)
+    resultMat2 = np.full(matrix1.shape, False, dtype=bool)
     nn1 = latticeConst * 0.8660254
     nn3 = latticeConst * 1.414213
     tol = 0.3
@@ -319,9 +326,9 @@ def filterRingGroups1(attrs, probLabelNames, labels, latticeConst):
     grouping = np.zeros(len(labels), dtype=int)
     groupingPar = np.zeros(len(labels), dtype=int)
     for r_idx in range(len(labels)):#strayIndices:
-        distRow = matrix1[r_idx, :]
-        angleRow = matrix2[r_idx, :]
-        distRow2 = matrix3[r_idx, :]
+        distRow = matrix1[r_idx, :].toarray()
+        angleRow = matrix2[r_idx, :].toarray()
+        distRow2 = matrix3[r_idx, :].toarray()
         #distParOnly = matrix4[r_idx, :]
         # TODO: instead of masking might include neighs for better results
         distMask = (((distRow < (nn1 + tol)) & (distRow > (nn1 - tol)))
@@ -706,8 +713,9 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
     for i, line in enumerate(clusterLines):
         if 'parent' in line or 'del' in line: continue
         totalLines += 1
+    """
     res = {}
-    if totalLines < 12:
+    if totalLines < 1:
         res = {'nPoints': np.zeros(totalLines),
                'nMain': 0,
                'nfreeIs': len(freeIs),
@@ -719,16 +727,17 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
                'adjacencyLineType': np.zeros((totalLines, totalLines), dtype=bool)
         }
     else:
-        res = {'nPoints': np.zeros(totalLines),
-               'nMain': 0,
-               'nfreeIs': len(freeIs),
-               'adjacencyDist': lil_matrix((totalLines, totalLines), dtype=np.float32),
-               'adjacencyDistParOnly': lil_matrix((totalLines, totalLines), dtype=np.float32), 
-               'adjacencyDistPar': lil_matrix((totalLines, totalLines), dtype=np.float32),
-               'adjacencyAng': lil_matrix((totalLines, totalLines), dtype=np.int8),
-               'adjacencyAngAligned': lil_matrix((totalLines, totalLines), dtype=np.int8),
-               'adjacencyLineType': lil_matrix((totalLines, totalLines), dtype=bool)
-        }
+    """
+    res = {'nPoints': np.zeros(totalLines),
+           'nMain': 0,
+           'nfreeIs': len(freeIs),
+           'adjacencyDist': lil_matrix((totalLines, totalLines), dtype=np.float32),
+           'adjacencyDistParOnly': lil_matrix((totalLines, totalLines), dtype=np.float32), 
+           'adjacencyDistPar': lil_matrix((totalLines, totalLines), dtype=np.float32),
+           'adjacencyAng': lil_matrix((totalLines, totalLines), dtype=np.int8),
+           'adjacencyAngAligned': lil_matrix((totalLines, totalLines), dtype=np.int8),
+           'adjacencyLineType': lil_matrix((totalLines, totalLines), dtype=bool)
+    }
     curI = 0
     for i, line in enumerate(clusterLines):
         if 'parent' in line or 'del' in line: continue
