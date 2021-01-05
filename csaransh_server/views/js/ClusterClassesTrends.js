@@ -452,6 +452,9 @@ export class ClusterClassesTrends extends React.Component {
     this.allIds = new Map(this.props.allData.map((element, index) => {
       return [element.id, index];
     }));
+    if (this.allIds.length != this.props.allData.length) {
+      console.log("Error because of non-unique ids.");
+    }
     /*
     this.props.allData.forEach(element, index => {
       this.allIds.set(element.id, index);
