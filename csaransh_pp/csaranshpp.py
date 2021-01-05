@@ -368,7 +368,7 @@ def processXyzFileGivenInfo(info, extraInfo, config):
     return True, resStr
 
 
-def processXyzFilesInDirGivenInfo(xyzDir, info, extraInfo, config, idStartIndex=0, onlyProcessTop = 0, prefix=[], suffix=["xyz"], excludePrefix=["init", "."], excludeSuffix=[]):
+def processXyzFilesInDirGivenInfo(xyzDir, info, extraInfoOrig, config, idStartIndex=0, onlyProcessTop = 0, prefix=[], suffix=["xyz"], excludePrefix=["init", "."], excludeSuffix=[]):
     """processes cascades from a directory given info objects
 
     Returns
@@ -382,7 +382,7 @@ def processXyzFilesInDirGivenInfo(xyzDir, info, extraInfo, config, idStartIndex=
     -----------
     xyzDir: directory path where all the input files and xyz files are
     info: info obtained from getDefaultInfos and modified (xyzFilePath, infile can be left as default)
-    extraInfo: info obtained from getDefaultInfos (and possibly modified)
+    extraInfoOrig: info obtained from getDefaultInfos (and possibly modified)
     config : configuration obtained from getDefaultConfig (and possibly modified)
     idStartIndex (optional): if appending to list that already has cascades then set as cascades 
                              in the list, this is to ensure id is unique for each cascade in a list,
@@ -401,7 +401,9 @@ def processXyzFilesInDirGivenInfo(xyzDir, info, extraInfo, config, idStartIndex=
         xyzDir, prefix, suffix, excludePrefix, excludeSuffix)
     print(str(len(xyzFiles)) + " xyz files")
     res = []
+    extraInfo = extraInfoOrig.copy()
     preId = str(extraInfo['id']) + '-' if len(extraInfo['id']) > 0  else ""
+    print(preId)
     for i, xyzFile in enumerate(xyzFiles):
         print("processing " + str(i + 1) + ": " + xyzFile)
         extraInfo['id'] = preId + str(idStartIndex + i + 1)

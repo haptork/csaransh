@@ -408,7 +408,7 @@ def classesDataToSave(cluster_labels, show_dim, tag):
 
 def clusterClasses(data):
     feat, tag = clusterClassData(data)
-    classesData = []
+    classesData = [{}] # first item reserved for line-comp
     show_dim = []
     if len(feat) == 0: return classesData
     try:
@@ -431,13 +431,13 @@ def clusterClasses(data):
     compLabels = []
     for tcas, tcid in tag:
         if data[tcas]['clusterSizes'][tcid] < 2: 
-          if data[tcas]['clusterSizes'][tcid] < 0: compLabels.append("v")
-          else: compLabels.append("?")
+          if data[tcas]['clusterSizes'][tcid] < 0: compLabels.append("0-v")
+          else: compLabels.append("0-?")
           continue
         addFullComponentInfo(data[tcas], tcid)
         compLabels.append(data[tcas]['clusterClasses']['comp'][tcid])
-    classesData.append({'name': 'line-comp',
-                            'data': classesDataToSave(unsupervisedLabels, show_dim, tag)})
+    classesData[0] = {'name': 'line-comp',
+                            'data': classesDataToSave(compLabels, show_dim, tag)}
     return classesData
 
 
@@ -468,11 +468,19 @@ def addHull(data):
             pass
             #cascade['hull_neigh'] = hull.neighbors.tolist()
 
+def checkIds(cascades):
+    uniqueIdCount = len(set([cascade['id'] for cascade in cascades]))
+    if uniqueIdCount == len(cascades): return
+    print("Duplicate Ids found. Resetting all ids...")
+    for i in range(len(cascades)):
+        cascades[i]['id'] = i + 1
+
 # top level user functions
 # -------------------------
 
 
 def analyse(cascades, isAddClusterComparison=True, isAddClassification=True):
+    checkIds(cascades)
     print("Adding coordinates in eigen dimensions and convex hulls for cascades...")
     addEigenAndSubcascades(cascades)
     addHull(cascades)
@@ -487,6 +495,7 @@ def getBasicLines(cascade, cid):
     return linesForCascade(cascade, cid)
 
 def analyseAndClassify(cascades, isAddClusterComparison=True, isAddClassification=True):
+    checkIds(cascades)
     print("Adding coordinates in eigen dimensions and convex hulls for cascades...")
     addEigenAndSubcascades(cascades)
     addHull(cascades)
@@ -495,7 +504,7 @@ def analyseAndClassify(cascades, isAddClusterComparison=True, isAddClassificatio
     addClusterCmp(cascades)
     print('finished.')
     sys.stdout.flush()
-    print("Classification...")
+    print("Defect morphology identification & classification...")
     res = ([], [])
     classifications = clusterClasses(cascades)
     if (len(classifications) > 0):
