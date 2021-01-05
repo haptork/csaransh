@@ -156,30 +156,28 @@ csaransh::getCoordLammps(const std::string &line,
     }
   }
   auto maxTry = columnStart > 0 ? 3 : csaransh::maxColumnsTry;  // if column start is given then three index after that are coordinates else try max
-  for (auto i = 0; i < maxTry; ++i) {
+  auto curColumn = 0;
+  for (auto i = 0; i < maxTry && first < second; ++i) {
     try {
       auto curVal = std::stod(std::string{first, second});
-      if (i > 2) {
+      if (curColumn > 2) {
         c[0] = c[1]; c[1] = c[2]; c[2] = curVal; 
       } else {
-        c[i] = curVal;
+        c[curColumn] = curVal;
       }
+      curColumn++;
     } catch (const std::invalid_argument &) {
-      return std::make_pair(csaransh::lineStatus::garbage, c);
+      curColumn = 0;
     } catch (const std::out_of_range &) {
-      return std::make_pair(csaransh::lineStatus::garbage, c);
+      curColumn = 0;
     }
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
     second =
         std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
-    if (first >= second) {
-      if (i >= 2) return std::make_pair(csaransh::lineStatus::coords, c);
-      return std::make_pair(csaransh::lineStatus::garbage, c);
-    }
-
   }
-  return std::make_pair(csaransh::lineStatus::coords, c);
+  if (curColumn > 2) return std::make_pair(csaransh::lineStatus::coords, c);
+  return std::make_pair(csaransh::lineStatus::garbage, c);
 }
 
 std::pair<csaransh::lineStatus, csaransh::Coords>

@@ -474,24 +474,31 @@ TEST_CASE("Read atom coordinates from a line from lammps xyz file",
     csaransh::lineStatus ls;
     // coords
     std::tie(ls, c) = csaransh::getCoordLammps("Fe   -76.770403   +7.2e2   .7",
-                                               csaransh::frameStatus::inFrame, 0);
+                                               csaransh::frameStatus::inFrame, 2);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{-76.770403, 720, 0.7}});
     std::tie(ls, c) =
         csaransh::getCoordLammps("54   +76.770403   -7.2e2   0.700 ITEM:",
-                                 csaransh::frameStatus::inFrame, 1);
+                                 csaransh::frameStatus::inFrame, 2);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{76.770403, -720, 0.7}});
     std::tie(ls, c) = csaransh::getCoordLammps(
-        "  what 0.000000 +7.2e2 3f whatever  ", csaransh::frameStatus::inFrame, 1);
+        "  what if 0.000000 +7.2e2 3f whatever  ", csaransh::frameStatus::inFrame, 3);
     CHECK(ls == csaransh::lineStatus::coords);
     CHECK(c == Coords{{0.0, 720, 3.0}});
+    std::tie(ls, c) = csaransh::getCoordLammps(
+        "no  what if 0.000000 +7.2e2 3f 2.0 ", csaransh::frameStatus::inFrame, 0);
+    CHECK(ls == csaransh::lineStatus::coords);
+    CHECK(c == Coords{{720, 3.0, 2.0}});
     // garbage
+    std::tie(ls, c) = csaransh::getCoordLammps(
+        "no  what if 0.000000 +7.2e2 3f 2.0 whatever  ", csaransh::frameStatus::inFrame, 0);
+    CHECK(ls == csaransh::lineStatus::garbage);
     std::tie(ls, c) =
         csaransh::getCoordLammps("garbage", csaransh::frameStatus::inFrame, 0);
     CHECK(ls == csaransh::lineStatus::garbage);
     std::tie(ls, c) = csaransh::getCoordLammps("-76.770403   +7.2e2   .7",
-                                               csaransh::frameStatus::inFrame, 0);
+                                               csaransh::frameStatus::inFrame, 2);
     CHECK(ls == csaransh::lineStatus::garbage);
     std::tie(ls, c) =
         csaransh::getCoordLammps("what 34 2.5", csaransh::frameStatus::inFrame, 0);
@@ -637,20 +644,17 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           std::tie(nDefects, inClusterFractionI, inClusterFractionV) =
               csaransh::getNDefectsAndClusterFractions(defects);
           REQUIRE(nDefects == 1);
-          REQUIRE(inClusterFractionI == Approx(100.0));
+          REQUIRE(inClusterFractionI == Approx(0.0));
           REQUIRE(inClusterFractionV == Approx(0.0)); // changed
           auto clusterIdMap = csaransh::clusterMapping(defects);
-          REQUIRE(clusterIdMap.size() == 1); // 1 dumbbell
-          REQUIRE(std::begin(clusterIdMap)->second.size() ==
-                  3); // 3 defects in dumbbell
+          REQUIRE(clusterIdMap.size() == 0); // 1 dumbbell
           auto clusterIVMap =
               csaransh::clusterIVType(clusterIdMap, clusterSizeMap);
-          REQUIRE(clusterIVMap.size() == 1);
-          REQUIRE(std::begin(clusterIVMap)->second == 1); // surviving
+          REQUIRE(clusterIVMap.size() == 0);
           int maxClusterSizeI, maxClusterSizeV;
           std::tie(maxClusterSizeI, maxClusterSizeV) =
               csaransh::getMaxClusterSizes(clusterSizeMap, clusterIdMap);
-          REQUIRE(maxClusterSizeI == 1);
+          REQUIRE(maxClusterSizeI == 0);
           REQUIRE(maxClusterSizeV == 0);
           /*
         for (auto x : defects) {
@@ -663,7 +667,8 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
           SECTION("Check cluster features") {
             auto feats = csaransh::clusterFeatures(
                 defects, clusterIdMap, clusterSizeMap, latticeConst);
-            REQUIRE(feats.size() == 1);
+            REQUIRE(feats.size() == 0);
+            /*
             const auto &distFeat = std::get<0>(std::begin(feats)->second);
             REQUIRE(distFeat[0] + distFeat[distFeat.size() - 1] == 1.0); // TODO
             REQUIRE(distFeat[0] == Approx(2.0 / 6.0)); // TODO
@@ -678,39 +683,8 @@ SCENARIO("Given xyz coordinates of all the lattice atoms, output only the "
             REQUIRE(adjFeat[2] == Approx(1.0));
             REQUIRE(std::accumulate(begin(adjFeat), end(adjFeat), 0.0) ==
                     Approx(1.0));
+                    */
           }
-          /*
-          SECTION("Check angle and distance distribution") {
-            ExtraInfo info;
-            info.xrec = vacancyCoord[0];
-            info.yrec = vacancyCoord[1];
-            info.zrec = vacancyCoord[2];
-            info.isPkaGiven = true;
-            auto distances = csaransh::getDistanceDistribution(defects, info);
-            REQUIRE(distances[0].size() == 1);
-            REQUIRE(distances[1].size() == 1);
-            REQUIRE(distances[0][0] != 0.0);
-            REQUIRE(distances[1][0] == 0.0);
-            auto angles = csaransh::getAngularDistribution(defects, info);
-            REQUIRE(angles[0].size() == 1);
-            REQUIRE(angles[1].size() == 1);
-            REQUIRE(angles[0][0] != 0.0);
-            REQUIRE(angles[1][0] == 0.0);
-            info.xrec = interstitialCoord[0];
-            info.yrec = interstitialCoord[1];
-            info.zrec = interstitialCoord[2];
-            distances = csaransh::getDistanceDistribution(defects, info);
-            REQUIRE(distances[0].size() == 1);
-            REQUIRE(distances[1].size() == 1);
-            REQUIRE(distances[0][0] == 0.0);
-            REQUIRE(distances[1][0] != 0.0);
-            angles = csaransh::getAngularDistribution(defects, info);
-            REQUIRE(angles[0].size() == 1);
-            REQUIRE(angles[1].size() == 1);
-            REQUIRE(angles[0][0] == 0.0);
-            REQUIRE(angles[1][0] != 0.0);
-          } // End of angle and dist distribution
-          */
         }   // ndefects and cluster sizes
       }     // cluster grouping
     }       // End of Single Dumbbell test
