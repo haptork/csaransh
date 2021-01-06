@@ -380,7 +380,7 @@ def supervisedClustersClassification(testFeat):
                 soft_ensemble_labels[-1].append(label)
             else:
                 soft_ensemble_labels[-1].append("noise")
-    return soft_ensemble_labels[0], tsne_feat[len(trainFeat):].tolist()
+    return soft_ensemble_labels[0], tsne_feat[len(trainFeat):]
 
 
 def unsupervisedClustersClassification(feat):
@@ -405,22 +405,28 @@ def classesDataToSave(cluster_labels, show_dim, tag):
         class_tags[label].append(tag[i])
     return class_points, class_tags
 
-
 def clusterClasses(data):
     feat, tag = clusterClassData(data)
     classesData = [{}] # first item reserved for line-comp
     show_dim = []
     if len(feat) == 0: return classesData
     try:
-        supervisedLabels, show_dim = supervisedClustersClassification(feat)
+        supervisedLabels, show_dim1 = supervisedClustersClassification(feat)
+        show_dim = np.zeros(show_dim1.shape, dtype=np.float64)
+        np.round(show_dim1, 2, show_dim)
+        show_dim = show_dim.tolist()
         classesData.append({'name': 'supervised (kNN)', 'data': classesDataToSave(
             supervisedLabels, show_dim, tag)})
     except:
         print(sys.exc_info()[0])
         print("Continuing with non-fatal error in supervised classification")
         rndSeed = 7
-        show_dim = TSNE(n_components=2, metric=quad,
-                        random_state=rndSeed).fit_transform(feat).tolist()
+        show_dim1 = TSNE(n_components=2, metric=quad,
+                        random_state=rndSeed).fit_transform(feat)
+        show_dim = np.zeros(show_dim1.shape, dtype=np.float64)
+        np.round(show_dim1, 2, show_dim)
+        show_dim = show_dim.tolist()
+        print(show_dim[:100])
     try:
         unsupervisedLabels = unsupervisedClustersClassification(feat)
         classesData.append({'name': 'unsupervised (UMAP + HDBSCAN)',

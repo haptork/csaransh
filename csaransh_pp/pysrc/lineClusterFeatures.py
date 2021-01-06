@@ -190,7 +190,7 @@ def forceAlign(line):
     lineN = Line(p1, Point(p1.r - milDir))
     angles = getSymmetricPlaneAngle(lineN)
     angErr = line.angle_to(lineN)
-    rawDir = tuple(sorted(abs(milBasic))[:-1])
+    rawDir = tuple(map(lambda x: round(x,2), sorted(abs(milBasic))[:-1]))
     return {"type": milFam, 'type1': milFamOne, 'dir': rawDir, 'eq':lineN, 'angles': angles, 'err': (perfect, milErrSum, milErrMax, angErr)}
 
 # In[1104]:
