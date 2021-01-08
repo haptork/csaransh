@@ -331,7 +331,7 @@ export class CascadeVisualizer3D extends React.Component {
           this.all_frames[this.last_frame_name]["xyzFilePath"] = this_frame_data['xyzFilePath'];
           var energy = this_frame_data["energy"];
           var frequency = this_frame_data["clusterSizes"];
-          var classes = this_frame_data.hasOwnProperty("clusterClasses") ? this_frame_data["clusterClasses"] : {};
+          var classes = this_frame_data.hasOwnProperty("clusterClasses") ? this_frame_data.clusterClasses.savi : {};
           var clusterids = new Set();
           var points_dict = {};
           coords.forEach(c => {

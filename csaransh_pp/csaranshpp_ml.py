@@ -441,8 +441,8 @@ def clusterClasses(data):
           else: compLabels.append("0-?")
           continue
         addFullComponentInfo(data[tcas], tcid)
-        compLabels.append(data[tcas]['clusterClasses']['comp'][tcid])
-    classesData[0] = {'name': 'line-graph-components',
+        compLabels.append(data[tcas]['clusterClasses']['savi'][tcid])
+    classesData[0] = {'name': 'line-graph-components (savi)',
                             'data': classesDataToSave(compLabels, show_dim, tag)}
     return classesData
 
@@ -518,8 +518,7 @@ def analyseAndClassify(cascades, isAddClusterComparison=True, isAddClassificatio
     for label in res[1]:
         for tag in res[1][label]:
             if not 'clusterClasses' in cascades[tag[0]]:
-                cascades[tag[0]]['clusterClasses'] = {}
-            cascades[tag[0]]['clusterClasses'][tag[1]] = label
+                cascades[tag[0]]['clusterClasses'] = {tag[1]:label}
     print("finished.")
     sys.stdout.flush()
     return cascades, classifications

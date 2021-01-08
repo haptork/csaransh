@@ -25,6 +25,10 @@ import StepButton from '@material-ui/core/StepButton';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
+const getClass = (row, cid) => {
+    return (row.hasOwnProperty("clusterClasses") && row.clusterClasses.savi.hasOwnProperty(cid) && row.clusterClasses.savi[cid] !== -1 && row.clusterClasses.savi[cid] !== "noise") ? "; class-" + row.clusterClasses.savi[cid] : "";
+}
+
 const getClusterVar = (row, cid) => {
   if (cid) {
     return row.eigen_features[cid].var[0] + ", " + row.eigen_features[cid].var[1];
@@ -35,9 +39,9 @@ const getClusterVar = (row, cid) => {
 const getClusterTypeAndClass = (row, cid) => {
   if (cid) {
     const typeInfo = (row.clusterSizes[cid] > 0) ? "majority interstitials" : "majority vacancies";
-    const classInfo = (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty(cid) && row.clusterClasses[cid] !== -1 && row.clusterClasses[cid] !== "noise") ? "; class-" + row.clusterClasses[cid] : "";
-    const componentClassInfo = (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty("comp") && row.clusterClasses.comp.hasOwnProperty(cid) && row.clusterClasses.comp[cid] !== -1 && row.clusterClasses.comp[cid] !== "noise") ? "; component class-" + row.clusterClasses.comp[cid] : "";
-    return [typeInfo, classInfo + ' ' + componentClassInfo];
+    const classInfo = getClass(row, cid);
+    //const componentClassInfo = (row.hasOwnProperty("clusterClasses") && row.clusterClasses.hasOwnProperty("comp") && row.clusterClasses.comp.hasOwnProperty(cid) && row.clusterClasses.comp[cid] !== -1 && row.clusterClasses.comp[cid] !== "noise") ? "; component class-" + row.clusterClasses.comp[cid] : "";
+    return [typeInfo, classInfo];
   }
   return [-1, -1];
 };
@@ -88,7 +92,7 @@ const getCmpCids = (row, cid, data, mode, isSize, shortName) => {
   return scores.map(x => {
     const name = "cid " + x[2] + ' of ' + shortName(data[x[1]]);
     const iorv = (data[x[1]].clusterSizes[x[2]] > 0) ? "; inter." : "; vac.";
-    const clabel = (data[x[1]].hasOwnProperty("clusterClasses") && data[x[1]].clusterClasses.hasOwnProperty(x[2]) && data[x[1]].clusterClasses[x[2]] !== -1 && data[x[1]].clusterClasses[x[2]] !== "noise") ? ("; class-" + data[x[1]].clusterClasses[x[2]]) : ""; 
+    const clabel = getClass(data[x[1]], x[2])
     // TODO: add component class
     const info = "diff: " + (x[0]).toFixed(2) + " eigen-var: " + 
            data[x[1]].eigen_features[x[2]]["var"][0] + ", " + data[x[1]].eigen_features[x[2]]["var"][1] +

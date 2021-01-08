@@ -27,11 +27,6 @@ const getTags = () => {
     if (key.startsWith('line')) {
       picked = key;
     }
-    /*
-    if (key.startsWith('supervised')) {
-      picked = key;
-    }
-    */
   }
   if ((picked.length) == 0) return {};
   return clusterClasses[picked].tags;

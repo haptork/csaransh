@@ -72,8 +72,8 @@ def addComponentInfo(lineComponents, curClassName, cascade, tcid):
         color = [int(lineComponents[i][1][0]), int(lineComponents[i][0])]
         cascade['features'][tcid]['lines']['cLinesT'].append(color)
     if not 'clusterClasses' in cascade: cascade['clusterClasses'] = {}
-    if not 'comp' in cascade['clusterClasses']: cascade['clusterClasses']['comp'] = {}
-    cascade['clusterClasses']['comp'][tcid] = curClassName
+    if not 'savi' in cascade['clusterClasses']: cascade['clusterClasses']['savi'] = {}
+    cascade['clusterClasses']['savi'][tcid] = curClassName
     """
     di = {'lines':[], 'linesT':[], 'pointsI':lineC['pointsI'], 'pointsV': lineC['pointsV']}
     #print(lineC)
