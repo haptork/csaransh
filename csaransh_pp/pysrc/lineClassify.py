@@ -141,12 +141,13 @@ def findRandomLabels(attrs, randomIndices, latticeConst):
     nn2 = latticeConst
     nn3 = latticeConst * 1.414213
     tol = 0.3
+    epsilon = 0.000001
     for r_idx in randomIndices:
         distRow = matrix1[r_idx, :].toarray()
         angleRow = matrix2[r_idx, :].toarray()
-        distMask = mask & (distRow > -0.1)
+        distMask = mask & (distRow > epsilon)
         distRow2 = matrix3[r_idx, :].toarray()
-        distMask2 = mask & (distRow2 < math.ceil(nn2)) & (distRow2 > -0.1) & (angleRow <= angleTol)
+        distMask2 = mask & (distRow2 < math.ceil(nn2)) & (distRow2 > epsilon) & (angleRow <= angleTol)
         resultMat[r_idx, :] = distMask | distMask2
     graph = csr_matrix(resultMat)
     n_components, labels = connected_components(csgraph=graph, directed=False, return_labels=True)
@@ -269,22 +270,23 @@ def getParallelGroups(attrs, latticeConst):
     nn1 = math.ceil(latticeConst * 0.8660254)
     nn2 = math.ceil(latticeConst)
     nn3 = math.ceil(latticeConst * 1.414213)
+    epsilon = 1e-6
     if attrs['nMain'] < 2: return resultMat, 0, np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
     for r_idx in range(resultMat.shape[0]):
         angRow = matrix2[r_idx, :].toarray()
         distRow = matrix1[r_idx, :].toarray()
-        angleMask = (angRow <= angleTol) & (distRow > -0.1) & (matrix3[r_idx, :]).toarray()
-        #angleMask = (angRow <= angleTol).minimum(distRow > -0.1).minimum(matrix3[r_idx, :])
+        angleMask = (angRow <= angleTol) & (distRow > epsilon) & (matrix3[r_idx, :]).toarray()
+        #angleMask = (angRow <= angleTol).minimum(distRow > epsilon).minimum(matrix3[r_idx, :])
         angleMaskedDist = distRow[angleMask]
         if angleMaskedDist.shape[0] >= 1:
             minimum = math.ceil(max(min(angleMaskedDist), nn2) + 0.001)
             resultMat[r_idx, :] = (angleMask) & (distRow <= minimum)
             #resultMat[r_idx, :] = (angleMask).minimum(distRow <= minimum)
         distRow2 = matrix4[r_idx, :].toarray()
-        #resultMat4[r_idx, :] =(distRow2 <= nn1) & (distRow2 > -0.1) & (angRow < angleTolStrict)
-        resultMat2[r_idx, :] =(distRow2 <= nn3) & (distRow2 > -0.1) & (angRow > angleTol)
+        #resultMat4[r_idx, :] =(distRow2 <= nn1) & (distRow2 > epsilon) & (angRow < angleTolStrict)
+        resultMat2[r_idx, :] =(distRow2 <= nn3) & (distRow2 > epsilon) & (angRow > angleTol)
         resultMat3[r_idx, :] = resultMat2[r_idx, :] & (angRow > angleBlocking)
-        #resultMat2[r_idx, :] =(distRow2 <= nn3).minimum(distRow2 > -0.1).minimum(angRow > angleTol)
+        #resultMat2[r_idx, :] =(distRow2 <= nn3).minimum(distRow2 > epsilon).minimum(angRow > angleTol)
         #resultMat3[r_idx, :] = resultMat2[r_idx, :].minimum(angRow > angleBlocking)
     graph = csr_matrix(resultMat)
     graph = resultMat
@@ -325,6 +327,7 @@ def filterRingGroups1(attrs, probLabelNames, labels, latticeConst):
     neighs = []
     grouping = np.zeros(len(labels), dtype=int)
     groupingPar = np.zeros(len(labels), dtype=int)
+    epsilon = 1e-6
     for r_idx in range(len(labels)):#strayIndices:
         distRow = matrix1[r_idx, :].toarray()
         angleRow = matrix2[r_idx, :].toarray()
@@ -337,7 +340,7 @@ def filterRingGroups1(attrs, probLabelNames, labels, latticeConst):
         angleMask2 = distMask & ((angleRow > 46))
         angleMask1 = distMask & (((angleRow < (ang1 + tol2)) & (angleRow > (ang1 - tol2)))
                            | (angleRow > (ang2 - tol2)))
-        distMask2 = (distRow2 > -0.1) & (distRow2 < math.ceil(nn1)) & (angleRow < 27)
+        distMask2 = (distRow2 > epsilon) & (distRow2 < math.ceil(nn1)) & (angleRow < 27)
         if r_idx in strayIndices:
             resultMat[r_idx, :] = angleMask2
             resultMat2[r_idx, :] = distMask2
@@ -463,18 +466,18 @@ def findComponents(curAttrs, cascade):
                 if x in single or x in stray: continue
                 isMain = x in big
                 result1[x] = (i, isMain)
-                result2[i].append((isMain, x, np.arange(len(randomLabels))[randomLabels==x]))
+                result2[i].append([isMain, x, np.arange(len(randomLabels))[randomLabels==x]])
         for x in par:
             if x in single or x in stray: continue
             isMain = x in big
             result1[x] = (0, isMain)
-            result2[0].append((isMain, x, np.arange(len(randomLabels))[randomLabels==x]))
+            result2[0].append([isMain, x, np.arange(len(randomLabels))[randomLabels==x]])
         for x in single: 
             result1[x] = (4, False)
-            result2[4].append((False, x, np.arange(len(randomLabels))[randomLabels==x]))
+            result2[4].append([False, x, np.arange(len(randomLabels))[randomLabels==x]])
         for x in stray: 
             result1[x] = (5, False)
-            result2[5].append((False, x, np.arange(len(randomLabels))[randomLabels==x]))
+            result2[5].append([False, x, np.arange(len(randomLabels))[randomLabels==x]])
         result3 = [(x, result1[x], (p, q, r)) for x, p, q, r in zip(randomLabels, countPar, countNonPar, countBlocking)]
         extraRings = 0
         if curAttrs['nfreeIs'] > 0 and len(pLabels) <= 1 and extraRings < 1 and len(trueRandom) <= 1:
@@ -486,16 +489,16 @@ def findComponents(curAttrs, cascade):
         result2 = [[], [], [], [], [], []]
         for x in big: 
             result1[x] = (0, True)
-            result2[0].append((True, x, np.arange(len(parLabels))[parLabels==x]))
+            result2[0].append([True, x, np.arange(len(parLabels))[parLabels==x]])
         for x in small: 
             result1[x] = (0, False)
-            result2[0].append((False, x, np.arange(len(parLabels))[parLabels==x]))
+            result2[0].append([False, x, np.arange(len(parLabels))[parLabels==x]])
         for x in single: 
             result1[x] = (4, False)
-            result2[4].append((False, x, np.arange(len(parLabels))[parLabels==x]))
+            result2[4].append([False, x, np.arange(len(parLabels))[parLabels==x]])
         for x in stray: 
             result1[x] = (5, False)
-            result2[5].append((False, x, np.arange(len(parLabels))[parLabels==x]))
+            result2[5].append([False, x, np.arange(len(parLabels))[parLabels==x]])
         result3 = [(x, result1[x], (p, q, r)) for x, p, q, r in zip(parLabels, countPar, countNonPar, countBlocking)]
         nRings = 1 if curAttrs['nfreeIs'] > 0 and len(big) < 2 else 0
         return (result1, result2, result3, nRings)
@@ -521,8 +524,18 @@ def acceptableBlocking(components, lines):
 def calcBiggest(components):
     res = 0
     for comp in components:
-        if len(comp[2]) > res: res = len(comp[2])
+        if len(comp[2]) > res: 
+            res = len(comp[2])
     return res
+
+def calcBiggestDislocation(components):
+    res = 0
+    orient = 0
+    for comp in components:
+        if len(comp[2]) > res: 
+            res = len(comp[2])
+            orient = comp[3]
+    return res, orient
 
 def calcCentComps(components):
     res = np.zeros(len(components))
@@ -535,6 +548,61 @@ def calcCentComps(components):
     return res
 
 def findComponentClass(attrs, labels, components, lines, ringFreeIs):
+    sizesMain = np.array([len(list(filter(lambda y: y[0], x))) for x in components])
+    centComps = calcCentComps(components)
+    allParSizes = [(len(x[2]), x[3]) for x in components[0]]
+    allParSizes.sort(key=lambda x: x[0], reverse=True)        
+    allRingSizes  = [len(x[2]) for x in components[1]]
+    allRingSizes.sort(reverse=True)
+    allRandomSizes  = [len(x[2]) for x in components[2]]
+    allRandomSizes.sort(reverse=True)
+    onlyParallel = sizesMain[0] > 0 and all(sizesMain[1:] == 0) and centComps[0] > 0.7
+    nLineTol = 15
+    #print(centComps)
+    #print(sizesMain)
+    if onlyParallel:
+        alone = (sizesMain[0] == 1 or allParSizes[1][0] / allParSizes[0][0] < 0.2 and allParSizes[1][0] < 6)
+        if alone:
+            if ringFreeIs > 0:
+                if allParSizes[0][0] < 20: return (2, "c", "||@") # TODO check type of ring
+            orientV = allParSizes[0][1]['verdict']
+            if orientV == 3: return (1, "a", "||")
+            if orientV == 1: return (1, "b", "||-!")
+            return (4, "a", "#")
+        return (1, "c", "||//")
+    sizesAny = np.array([len(x) for x in components[0:3]])
+    maxRingSize = 0 if len(allRingSizes) == 0 else allRingSizes[0]
+    maxRandomSize = 0 if len(allRandomSizes) == 0 else allRandomSizes[0]
+    #print(centComps)
+    if ringFreeIs > 0 and attrs['nMain'] < 3: return (3, "a", "@")
+    if centComps[1] > 0.4:
+        #print("cent ring:", centComps[0], centComps[1], sum(centComps[2:]))
+        if centComps[1] < 0.75 and centComps[0] > sum(centComps[2:]): return (3, "b", "@||")
+        if centComps[1] < 0.75 and sum(sizesAny[2:]) >= 3: return (3, "c", "@#")
+        return (3, "a", "@")
+    #print('mxP', maxParSize)
+    if centComps[0] > 0.4 and allParSizes[0][0] > 2:
+        #print("cent par:", centComps[0], centComps[1], centComps[2], sum(centComps[3:]))
+        if (ringFreeIs > 0 and sum(centComps[2:]) < 0.2) or centComps[1] > 0.2 or maxRingSize > 2:
+            return (2, "c", "||@")
+        stillParallel = len(allParSizes) > 0 and maxRingSize / allParSizes[0][0] < 0.4
+        stillParallel = stillParallel and maxRandomSize / allParSizes[0][0] < 0.4 and allParSizes[0][0] > 3
+        stillParallel = maxRandomSize < 5 and maxRingSize < 3
+        if stillParallel:
+            if centComps[2] > 0.5 and sizesMain[2] > 0: return (4, "c", "||#")
+            if sizesMain[0] > 1: return (1, "c", "||//")
+            orient = allParSizes[0][1]['verdict']
+            if orient == 1: return (1, "b", "||-!")
+            if orient == 3: return (1, "a", "||")        
+            return (4, "c", "||#")            
+        if (sizesAny[1] > 0) and centComps[1] <= 0.2:  return (2, "c", "||#")
+    if (centComps[0] < 0.2 or allParSizes[0][0] <= 2) and sizesMain[1] == 0 and ringFreeIs == 0: return (4, "a", "#")
+    if sizesAny[1] > 0 or ringFreeIs > 0: return (4, "b", "#@")
+    if sizesMain[0] == 1:  return (4, "c", "||#")
+    if sizesMain[0] > 1: return (1, "c", "||//")
+    return (5, "a", "?")
+
+def findComponentClassOld(attrs, labels, components, lines, ringFreeIs):
     sizesMain = np.array([len(list(filter(lambda y: y[0], x))) for x in components])
     centComps = calcCentComps(components)
     onlyParallel = sizesMain[0] > 0 and all(sizesMain[1:] == 0) and centComps[0] > 0.7
@@ -609,15 +677,42 @@ def qualifyCycle(indices, attrs, latticeConst):
     namesDi = {(x[0], x[1]): i for i, x in enumerate(names)}
     """
 
+def findDislocationDirection(comp, lines):
+    res = {'total': [0, 0, 0, 0], 'ratio': [0, 0, 0, 0], 'verdict':()}
+    for curLineIndex in comp[2]:
+        if curLineIndex >= len(lines): continue
+        val = sum(lines[curLineIndex]['forceAlign']['type1'])
+        res['total'][val] += 1
+    lineCount = sum(res['total'])
+    if lineCount == 0: return res
+    for i in range(len(res['ratio'])):
+        res['ratio'][i] = res['total'][i] / lineCount
+    maxIndex = max(range(len(res['total'])), key=res['total'].__getitem__)
+    res['verdict'] = maxIndex
+    return res
+    
+
 def addFullComponentInfo(cascade, cid):
     if cascade['clusterSizes'][cid] < 2: return
     linesData = lineFeatsForCluster(cascade, cid)
     addLineFeat(cascade, cid, linesData)
-    attrs = cookLineAttrs(cascade, cid, linesData['allLines'], linesData['pointsI'])
+    attrs = cookLineAttrs(cascade, cid, linesData['lines'], linesData['pointsI'])
     components = findComponents(attrs, cascade)
+    for comp in components[1][0]:
+        comp.append(findDislocationDirection(comp, linesData['lines']))
     curClass = findComponentClass(attrs, *components)
     curClassName = '-'.join([str(x) for x in curClass])
     addComponentInfo(components[2], curClassName, cascade, cid)
+
+def getSaviDetails(cascade, cid):
+    if cascade['clusterSizes'][cid] < 2: return
+    linesData = lineFeatsForCluster(cascade, cid)
+    attrs = cookLineAttrs(cascade, cid, linesData['lines'], linesData['pointsI'])
+    components = findComponents(attrs, cascade)
+    for comp in components[1][0]:
+        comp.append(findDislocationDirection(comp, linesData['lines']))
+    return linesData, attrs, components
+
 
 ######-------
 """
@@ -842,6 +937,9 @@ def cookLineAttrs(cascade, cid, clusterLines, freeIs):
             if lineDistPar > distTol: 
                 curJ += 1
                 continue
+            if lineDist < 0.000001: lineDist = 0.02
+            if lineDistPar < 0.000001: lineDistPar = 0.02
+            if lineDistParOnly < 0.000001: lineDistParOnly = 0.02
             if lineDist < distTol: 
                 res['adjacencyDist'][curI,curJ] = lineDist
             res['adjacencyDistPar'][curI,curJ] = lineDistPar
