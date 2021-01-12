@@ -409,7 +409,7 @@ def clusterClasses(data):
     feat, tag = clusterClassData(data)
     classesData = [{}] # first item reserved for line-comp
     show_dim = []
-    if len(feat) == 0: return classesData
+    if len(feat) == 0: return []
     try:
         supervisedLabels, show_dim1 = supervisedClustersClassification(feat)
         show_dim = np.zeros(show_dim1.shape, dtype=np.float64)
