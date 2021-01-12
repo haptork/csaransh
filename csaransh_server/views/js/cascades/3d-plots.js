@@ -360,6 +360,8 @@ export class Cluster2CmpPlot extends React.Component {
     } else {
       mn = Math.min(...coords[0], ...coords[1], ...coords[2]);
       mx = Math.max(...coords[0], ...coords[1], ...coords[2]);
+      mn = [mn, mn, mn];
+      mx = [mx, mx, mx];
       const colorIndex = parseInt(cid);
       plotData = cookDataCmp(coords, colorIndex);
     }
@@ -381,6 +383,8 @@ export const ClusterClassPlot = props => {
   } else {
     mn = Math.min(...coords[0], ...coords[1], ...coords[2]);
     mx = Math.max(...coords[0], ...coords[1], ...coords[2]);
+    mn = [mn, mn, mn];
+    mx = [mx, mx, mx];
     const colorIndex = parseInt(curIndex);
     plotData = cookDataCmp(coords, colorIndex);
   }
