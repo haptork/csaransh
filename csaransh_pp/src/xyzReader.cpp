@@ -76,7 +76,7 @@ getCoordCdb(const std::string &line, const csaransh::frameStatus &fs,
       return std::make_pair(lineStatus::frameBorder, c);
     }
   }
-  if (columnStart == 1) columnStart = 2;
+  if (columnStart <= 1) columnStart = 2;
   for (int i = 1; i < columnStart; ++i) {
     first = std::find_if(second, end(line),
                          [](int ch) { return !std::isspace(ch); });
@@ -84,7 +84,7 @@ getCoordCdb(const std::string &line, const csaransh::frameStatus &fs,
         std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
     if (first >= second) return std::make_pair(lineStatus::garbage, c);
   }
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 3 && first < second; ++i) {
     try {
       c[i] = std::stod(std::string{first, second});
     } catch (const std::invalid_argument &) {
@@ -96,7 +96,7 @@ getCoordCdb(const std::string &line, const csaransh::frameStatus &fs,
                          [](int ch) { return !std::isspace(ch); });
     second =
         std::find_if(first, end(line), [](int ch) { return std::isspace(ch); });
-    if (first >= second) return std::make_pair(lineStatus::garbage, c);
+    if (first >= second && i < 2) return std::make_pair(lineStatus::garbage, c);
 
   }
   return std::make_pair(lineStatus::inFrameCoords, c);
