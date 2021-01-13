@@ -358,10 +358,16 @@ export class Cluster2CmpPlot extends React.Component {
     if (coordType == 1) {
       [plotData, mn, mx] = cookDataLineCmp(coords);
     } else {
-      mn = Math.min(...coords[0], ...coords[1], ...coords[2]);
-      mx = Math.max(...coords[0], ...coords[1], ...coords[2]);
-      mn = [mn, mn, mn];
-      mx = [mx, mx, mx];
+      mn = [10000000000.0, 10000000000.0, 10000000000.0]; // TODO: float max
+      mx = [-10000000000.0, -10000000000.0, -10000000000.0];
+      for (var i = 0; i < 3; i++) {
+        mn[i] = Math.min(mn[i], ...coords[i]);
+        mx[i] = Math.max(mn[i], ...coords[i]);
+      }
+      const maxDiff = Math.max(Math.abs(mx[0] - mn[0]), Math.abs(mx[1] - mn[1]), Math.abs(mx[2] - mn[2]));
+      mx[0] = mn[0] + maxDiff;
+      mx[1] = mn[1] + maxDiff;
+      mx[2] = mn[2] + maxDiff;
       const colorIndex = parseInt(cid);
       plotData = cookDataCmp(coords, colorIndex);
     }
@@ -381,10 +387,16 @@ export const ClusterClassPlot = props => {
   if (coordType == 1) {
     [plotData, mn, mx] = cookDataLineCmp(coords);
   } else {
-    mn = Math.min(...coords[0], ...coords[1], ...coords[2]);
-    mx = Math.max(...coords[0], ...coords[1], ...coords[2]);
-    mn = [mn, mn, mn];
-    mx = [mx, mx, mx];
+    mn = [10000000000.0, 10000000000.0, 10000000000.0]; // TODO: float max
+    mx = [-10000000000.0, -10000000000.0, -10000000000.0];
+    for (var i = 0; i < 3; i++) {
+      mn[i] = Math.min(mn[i], ...coords[i]);
+      mx[i] = Math.max(mn[i], ...coords[i]);
+    }
+    const maxDiff = Math.max(Math.abs(mx[0] - mn[0]), Math.abs(mx[1] - mn[1]), Math.abs(mx[2] - mn[2]));
+    mx[0] = mn[0] + maxDiff;
+    mx[1] = mn[1] + maxDiff;
+    mx[2] = mn[2] + maxDiff;
     const colorIndex = parseInt(curIndex);
     plotData = cookDataCmp(coords, colorIndex);
   }

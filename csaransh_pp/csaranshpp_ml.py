@@ -101,7 +101,7 @@ def addEigenAndSubcascades(data):
                 ec, ev, _ = findEigen(c, [])
                 eigen_features[x] = {'coords': ec, 'var': ev}
             else:
-                eigen_features[x] = {'coords': c, 'var': 1.0}
+                eigen_features[x] = {'coords': [fdata['coords'][y][:3] for y in fdata['clusters'][x]], 'var': 1.0}
         fdata['eigen_features'] = eigen_features
         if len(fdata['coords']) == 0:
             fdata['eigen_coords'] = []
