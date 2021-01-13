@@ -96,11 +96,12 @@ def addEigenAndSubcascades(data):
         # eigen coords and variance for each cluster
         eigen_features = {}
         for x in fdata['clusters']:
-            if len(fdata['clusters'][x]) < 3:
-                continue
-            c = [fdata['coords'][y][:3] for y in fdata['clusters'][x]]
-            ec, ev, _ = findEigen(c, [])
-            eigen_features[x] = {'coords': ec, 'var': ev}
+            if len(fdata['clusters'][x]) >= 3:
+                c = [fdata['coords'][y][:3] for y in fdata['clusters'][x]]
+                ec, ev, _ = findEigen(c, [])
+                eigen_features[x] = {'coords': ec, 'var': ev}
+            else:
+                eigen_features][x] = {'coords': c, 'var': 1.0}
         fdata['eigen_features'] = eigen_features
         if len(fdata['coords']) == 0:
             fdata['eigen_coords'] = []
