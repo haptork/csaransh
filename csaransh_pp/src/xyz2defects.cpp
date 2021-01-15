@@ -654,7 +654,7 @@ csaransh::DefectRes csaransh::displacedAtoms2defects(
   const auto threshDistSqr = threshDist * threshDist;
   const auto recombDist = latticeConst;//latticeConst; //0.345 * latticeConst + 1e-4;
   const auto recombDistSqr = recombDist * recombDist;
-  const auto vacGroupDist = nn/2;
+  const auto vacGroupDist = nn;
   const auto vacGroupDistSqr = vacGroupDist * vacGroupDist;
   const auto maxSqrDist = (recombDistSqr > vacGroupDistSqr) ? recombDistSqr : vacGroupDistSqr;
   std::vector<int> freeIs;
