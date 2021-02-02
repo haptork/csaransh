@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
   int curIndex = 0;
   csaransh::InputInfo info;
   csaransh::ExtraInfo extraInfo;
-  bool isInfo;
+  auto isInfo = false;
   for (const auto &file : files) {
     std::cout << "\rCurrently processing file " << curIndex + 1 << std::flush;
     Logger::inst().log_info("Started processing file \"" + file + "\"");
