@@ -6,6 +6,15 @@
 
 [![Run on Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1PmXmoPo7_hGqTK62serwlx4hdksCuGQO) (prefer [binder](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh-pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) for inline webapp)
 
+What's new in Version (0.4):
+===========
+__Check latest [release](https://github.com/haptork/csaransh/releases/tag/0.4) or develop branch to get this version.__
+
+
+- No need for input files, the inputs are now also taken from stdin if no input file is found.
+- The new cluster plots use _SaVi_ algorithm to plot the lines along the string of displaced atoms / crowdions / dumbbells.
+- Minor fixes and improvements.
+
 Csaransh
 ==================================
 
