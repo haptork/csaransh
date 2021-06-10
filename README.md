@@ -46,7 +46,13 @@ Play with the cascades database youself by running the example notebook online [
 
 You can check the web page for the project ([link](https://haptork.github.io/csaransh/)) and read the [manual](https://github.com/haptork/csaransh#getting-started) to go through the different sections. The web page shows the results for the MD [database of IAEA Challenge on Materials for Fusion 2018](https://www-amdis.iaea.org/CDB/challenge/).
 
-For detailed discussion on defect identification algorithm used and classification of clusters please refer to this [paper](https://doi.org/10.1016/j.commatsci.2019.109364) or check the [interactive slides](https://haptork.github.io/csaransh/presentation/index.html) presented at [MoD-PMI 2019](http://dpc.nifs.ac.jp/dkato/MoD-PMI2019/). For citation use [JOSS paper](http://joss.theoj.org/papers/72f2ddde2112497826753319956ea8ab).
+Publications and Talks:
+
+- _SaVi_ defect morphology algorithm: [paper](https://www.sciencedirect.com/science/article/abs/pii/S0927025621001993)
+- Potential comparison based on morphology using _SaVi_: [paper](https://doi.org/10.1088/1361-651X/ac095d)
+- Unsupervised morphology classification and searching similar defects: [paper](https://doi.org/10.1016/j.commatsci.2019.109364)
+- [MoD-PMI 2019](http://dpc.nifs.ac.jp/dkato/MoD-PMI2019/) talk on  defect identification algorithm used and classification of clusters [presentation](https://haptork.github.io/csaransh/presentation/index.html).
+- For citation of Csaransh use [JOSS paper](http://joss.theoj.org/papers/72f2ddde2112497826753319956ea8ab).
 
 The initial version was submitted to the
 [IAEA Challenge on Materials for Fusion 2018](https://challenge.iaea.org/challenges/2018-NA-Mat-Fusion) as an
