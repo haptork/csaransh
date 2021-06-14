@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>SIA defect morphologies in W collision cascade simulations</title>
+
+	<meta name="description"
+		content="Presentation on methods and results of classification of clusters in Molecular Dynamics Simulations of collision cascades">
+	<meta name="author" content="Utkarsh Bhardwaj">
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+	<link rel="stylesheet" href="lib/reveal.js/css/reveal.css">
+	<link rel="stylesheet" href="lib/reveal.js/css/theme/sky.css" id="theme">
+
+	<!-- Code syntax highlighting -->
+	<link rel="stylesheet" href="lib/reveal.js/lib/css/zenburn.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'lib/reveal.js/css/print/pdf.css' : 'lib/reveal.js/css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+
+	<!--[if lt IE 9]>
+		<script src="lib/reveal.js/lib/js/html5shiv.js"></script>
+		<![endif]-->
+
+	<style>
+		.reveal .slide-number {
+			font-size: 0.35em;
+			position: fixed;
+			left: 45%;
+			width: 10%;
+			text-align: center;
+		}
+
+		.fork-reveal {
+			display: none;
+		}
+
+		.reveal .superscript {
+			top: -0.5em;
+			position: relative;
+			font-style: italic;
+		}
+
+		.reveal .footer {
+			position: fixed;
+			bottom: 2.0em;
+			font-size: 60%;
+			left: 0.0px;
+			text-align: center;
+			width: 100%;
+			pointer-events: all;
+		}
+		.reveal .dark_box {
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0, 0.5), 0 5px 25px rgba(0, 0, 0, 0.2);
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			padding: 7px;
+			pointer-events: none;
+		}
+
+		.dark_box_text {
+			color: #fff !important;
+			pointer-events: all;
+		}
+
+		.reveal .collision_cascade1 {
+			position: absolute;
+			width: 40%;
+			right: 0;
+			top: -200px;
+			text-align: right;
+		}
+
+		.reveal .clusters_in_cascade {
+			position: absolute;
+			width: 30%;
+			right: 19%;
+			text-align: center;
+		}
+
+		.reveal .clustersiv {
+			position: absolute;
+			top: 300px;
+			left: 0.0px;
+			width: 100%;
+		}
+
+		.reveal .flowimgs {
+			border: 0;
+			background: 0;
+			box-shadow: none;
+			align-self: center;
+			position: relative;
+		}
+
+		.reveal .flowdivs {
+			position: absolute;
+		}
+
+		.reveal .imgnoborder {
+			border: 0;
+			background: 0;
+			box-shadow: none;
+			align-self: center;
+			margin: 0px;
+		}
+        .container{
+            display: flex;
+        }
+        .col{
+            flex: 1;
+        }
+        .reveal small {
+            vertical-align: baseline;
+        }
+        .reveal small * {
+            vertical-align: baseline;
+        }
+	</style>
+</head>
+
+<body>
+
+	<div class="reveal">
+
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section data-menu-title="home" id="home">
+				<h3>SIA Defect Morphologies in W</h3>
+                <h4> Collision Cascade simulations  </h4>
+				<p>
+					<small><a href="https://github.com/haptork">
+							Utkarsh Bhardwaj</a><sup class=superscript>a</sup>, <a
+							href="mailto:andrea.sand@helsinki.fi">Andrea E. Sand</a><sup class=superscript>b</sup> and <a
+							href="mailto:manojwar@barc.gov.in">Manoj Warrier</a><sup class=superscript>a</sup>
+						<p>
+							<small>
+								<sup class=superscript>| a</sup> Bhabha Atomic Research Centre, Vizag, India;
+								<sup class=superscript>| b</sup> Aalto University, Finland
+							</small>
+						</p>
+            <p>
+              *(Play audio from the player at the bottom)
+            </p>
+						<div class=footer>
+							<div>
+								-- Presenting at
+								<a href="https://www.fz-juelich.de/conferences/PFMC-18/EN/MoD-PMI-2021/artikel.html"> MoD-PMI 2021 -- </a>
+							</div>
+							<div>
+								Find the project on github
+								<a href="https://github.com/haptork/csaransh"> @Csaransh </a>
+							</div>
+						</div>
+					</small>
+				</p>
+				<aside class="notes">
+					<p>
+					  Hello, Good Evening, everyone.
+					  I'm going to talk about self interstitial defect morphologies in W Collision Cascades. We have developed an effective algorithm that uses graph theory to resolve the morphological components of a defect. I will present some interesting results we got by applying the algorithm to MD simulations of collision cascades in W. This work is done by Me and my co-authors, Manoj and Andrea.
+Let's go through some basic background quickly...
+					</p>
+				</aside>
+			</section>
+
+			<section id="Introduction" data-menu-title="Background">
+				<section data-background-iframe="pages/grapho_cascade/cascade_evolve.html" data-background-interactive data-menu-title="A Collision Cascade">
+					<div class="collision_cascade1 dark_box">
+						<h3 class="dark_box_text">A Collision Cascade</h3>
+            <small>(interactive slide)</small>
+				    </div>
+					<aside class="notes" data-markdown>
+						<textarea data-template>
+                        - Here is the evolution of a collision cascade, reds with
+                        flat crossed glyphs are vacancies, green with metal
+                        glyphs are interstitials.
+                        - The cascade is shown to reach the peak state. After the peak most of the
+                        displaced atoms recombine and we see the relatively stable primary
+                        damage state. 
+                        - At this point we have not only single point
+                        defects but clusters of interstitials and
+                        vacancies of many sizes and shapes.
+					</textarea>
+					</aside>
+				</section>
+				<section data-background-iframe="pages/grapho_cascade/clusters_in_cascades_savi.html"
+					data-background-interactive data-menu-title="Ex. Cluster" >
+					<div class="clusters_in_cascade dark_box">
+						<h3 class="dark_box_text">Clusters </h3>
+						<p class="dark_box_text">IN CASCADES</p>
+            <small>(interactive slide)</small>
+						<small>
+					</small>
+					</div>
+					<aside class="notes" data-markdown>
+						<textarea data-template>
+            Here we have the primary damage from four cascades in W at 100 keV.
+            - The first one shows a couple of big defects that have crowdions arranged in parallel fashion. This is how dislocations look if we look at the displaced atoms picture. However, on closer look there appears to be multiple components of parallel crowdions in this single defect.
+            - Let's look at this peculiar defect of the second cascade. On closer look it looks like a couple of parallel dumbbells surrounded by random dumbbells on the fringes.
+            - The third cascade has a couple of smaller dislocations and here is a ring like arrangement. But visually it might be difficult to acertain its exact configuration.
+            - The last cascade one has a lot of small parallel bunches of crowdions but also this peculiar arrangement of dumbbels.
+            - We can get point defects and cluster sizes using well established algorithms to find point defects and displaced atoms. but what about the morphologies which are an important aspect of the evolution of crystal microstructure and its response to stress.
+            - It is not easy to visually understand the various shapes especially some complex mixed ones. Especially, given the large datasets that we deal with today, it seems impossible to extract all the morphological information reliably without an efficient algorithm that automatically does so.
+            </textarea>
+					</aside>
+				</section>
+				<section data-menu-title="Morphology matters" id="Morphology-Matters">
+					<h4>Defect Morphology Matters</h4>
+					<small>
+					<ul>
+                    <li> Decides diffusion (sessile / glissile) </li>
+					<li> Decides interaction with other defects </li>
+					<li> Decides thermal stability</li>
+					</ul>
+					<p style="text-align:left">
+					Higher scale models can use the distribution of different morphologies along with their properties as inputs.
+                    </p>
+				    </small>
+                    <blockquote style="width:100%; text-align:justify">
+                      <small>
+                       In terms of the development of models to describe the evolution of radiation
+                       damage and its role in irradiation-induced changes in material properties,
+                       the important parameters are not only the total number of Frenkel defects
+                       per cascade but also the distribution of their population in clusters and
+                       <span style="color:maroon; text-decoration:underline; text-decoration-style:dotted;">the form and mobility of these clusters</span>. 
+                      <p style="display:flex; flex-direction: row-reverse; margin:0px;">
+                      <a href=" https://doi.org/10.1016/S0022-3115(99)00165-8">D.J. Bacon, F. Gao, Y.N. Osetsky, J. Nucl. Mater., 276 (1–3) (2000), pp. 1-12</a> --- 
+                      </p>
+                      </small>
+                    </blockquote>
+                    <aside class="notes">
+						- Defect morphology determines the diffusion, interaction and stability of a defect. We must use the distribution of morphologies and their properties for better modeling of irradiation at higher scales.
+                        - And this is well understood fact as it is clear from the following quote from a year 2000 paper by Bacon and others.
+                    </aside>
+				</section>
+				<section data-menu-title="Challenges">
+                  <div class="container">
+                    <div class="col">
+                      <h4> Challenges </h4> 
+                      <ul>
+                        <li> Mixed morphologies <small>complex configurations, intermediate configurations during annealing and interactions</small></li>
+                        <li> Morphological details <small>such as Burgers vector and magnitude for dislocations</small></li>
+                        <li> Internal details <small>such as length & orientation of crowdions/dumbbells in a cluster</small></li>
+                        <li> Efficiency <small>Big databases, big simulation boxes</small></li>
+                        <li> Accuracy </li>
+                      </ul>
+                    </div>
+                    <div class="col">
+					<h4>Current methods</h4>
+					<ul>
+                      <li> Visual inspection 
+                        <small> becomes intractable and unreliable for bigger databases.</small>
+                      </li>
+                      <li> Dislocation Analysis
+                        <small> ineffective for non-dislocations & small defects, inefficient for big system size. </small>
+                      </li>
+                      <li> Traditional geometrical methods
+                        <small>such as CNA, CSP: label atoms as known crystals but lack morphology.</small>
+                      </li>
+					  <li> Newer geometrical features
+                          <small> unsupervised classification, statistical distance (distortion score) etc. </small>
+                      </li>
+					</ul>
+                    </div>
+                 </div>
+                    <aside class="notes">
+				    - Let's see what are the challenges in determining defect morphologies and how does the different available methods perform on these challenges.
+- The basic requirement is to identify all the morhpologies present efficiently and with a decent accuracy. There are algorithms that work well to identify particular structures only that includes Dislocation analysis and some new geometrical features that are yet to demonstrate their accuracy and efficiency on a big database having myriad of defect morphologies.
+
+- Beyond the simple homogenous morpholgies, there are several studies that have indicated complex morphologies or defects composed of components with different morphologies. Several of the methods such as dislocation analsis, unsupervised machine learning classification that we presented in last MoD-PMI do not perform very well in identifying components with-in a defect.
+
+- We also would like the algorithm to give various morphological details such as if it is a edge dislocation what is the direction of the Burger's vector. Does the dislocation have other smaller dumbbell's or crowdions or ring like structures attached to it that can alter its properties by say restricting its diffusion.
+
+- Now let us have a brief overview of our algorithm, SaVi, which fairs well in these aspects.
+                    </aside>
+				</section>
+			</section>
+			<section data-menu-title="SaVi Overview">
+				<h3>SaVi Algorithm Overview</h3>
+					<img style="width:120%; max-width:130%; margin-left:-100px;" src="images_savi/fig-1.jpeg"/>
+
+                    <blockquote style="width:100%; text-align:left" >
+                    <small> Graph theory based approach to characterize self interstitial defect morphology, Computational Material Science, Elsevier, 2021</small>
+                    </blockquote>
+				<aside class="notes" data-markdown>
+				    <textarea data-template>
+- The initial inputs to the morphology identification are the atomic coordinates of point defects in the cluster and their nearest lattice points. We get these inputs using an efficient implementation of W-S and ES. This input is what is shown figure (a). The triads represent the two atoms that share the same lattice point and the pair of points represent a displaced atom and its nearest lattice point. We then define parametric line equations that passes through the atoms or through the lattice site and displaced atom in case of a pair as shown in figure (b). Now we have a lot of small lines. We then merge the coinciding lines as shown in figure (c) and then we have a single line for each string of displaced atoms. We then connect all the neighbouring lines that have a specific angle and distance relationship. All the lines that share a specific relationship form a component characterised by that relationship. We can see that there are three components in (d). The tripod component at the top has three lines with approximately 60 degree angles while the two parallel components has all the lines that are parallel to each other. This clearly shows that this algorithm can resolve different morphological components in a composite defect.
+
+Now, reducing this problem to the computational graph data structure gives us a way to formalize the relationships and find connected components efficiently. In computational graph terms, each line can be seen as a node and each connection as an edge. For a parallel component, a connecting edge between two neighboring nodes is added if the lines they represent are parallel. In contrast, for a ring, an edge is added if the angle between 1NN neighboring lines is approximately 60 or 90 degrees. If we wish to characterize new morphologies, we can add new relationship rule.
+
+Since, we are using graphs, we find cycles in a graph to verify rings. This verification step for rings adds robustness to the algorithm against errors that can arise due to thermal vibrations.
+
+We can find orientation of each dumbbell or crowdion from the parametric line equation. From this we can find the orientation of the dislocation they together form. The number of surviving point defects in the lines decide the magnitude of the Burgers vector of the dislocation.                     </textarea>
+				</aside>
+			</section>
+			<section id="SaVi Results">
+                <section data-menu-title="Savi Result Morphologies">
+				    <h6>SaVi Applications</h6>
+				    <h3>1 - Defect Morphologies in W</h3>
+                    <small>
+                      139 high energy collision cascades having 1170 clusters
+                      simulated with Derlet potential stiffened by Bjorkas.
+                    </small>
+                    <aside class="notes" data-markdown>
+                      - Let us look at the defect morphologies formed after
+                      high energy collision cascades in W. These results follow from the analysis of 139 collision cascades simulated using Derlet potential stiffended by Bjorkas. The cascades have over 1000 clusters.
+                    </aside>
+				</section>
+                <section data-menu-title="Morphologies in W"><!--data-menu-title="Feature Vector">-->
+				    <h6>W Cluster Morphologies</h6>
+                    <!--<img src="images/fig-2.png" style='width:80%;'/>-->
+                    <div class="fragment fade-down">
+                    <div class="fragment grow">
+                    <img class="fragment shrink" src="images_savi/fig-2a.png" style='width:90%; border:none; margin-bottom:-10px; margin-top:-10px;'/>
+                    </div>
+                    </div>
+                    <div class="fragment fade-in">
+                    <div class="fragment grow">
+                    <img class="fragment shrink" src="images_savi/fig-2b.png" style='width:90%; border:none; margin-bottom:-10px; margin-top:-10px;'/>
+                    </div>
+                    </div>
+                    <div class="fragment fade-up">
+                    <div class="fragment grow">
+                    <img class="fragment shrink" src="images_savi/fig-2c.png" style='width:90%; border:none; margin-bottom:-10px; margin-top:-10px;'/>
+                    </div>
+                    </div>
+				    <aside class="notes" data-markdown>
+                    </aside>
+				</section>
+				<section data-menu-title="DXA Comparison">
+				    <h6>Comparison with DXA</h6>
+                    <!--<img src="images_savi/fig-3.png" style='width:80%' />-->
+                    <img class="fragment fade-in-then-semi-out" src="images_savi/fig-3a.png" style='width:80%; border:none; margin:0px;'/>
+                    <img class="fragment fade-up" src="images_savi/fig-3b.png" style='width:80%; border:none; margin:0px;'/>
+                    <aside class="notes" data-markdown>
+                      Here are a few examples comparing DXA dislocation analysis
+                      from ovito and our results. The dislocations found by DXA
+                      are always identified with our method. However, the
+morphological details such as presence of 〈111〉crowdions around the 〈100〉dislocation loop in (a) can not be obtained with dislocation analysis alone. Moreover, The DXA algorithm can sometimes ignore the smaller defect components of around size ten or less. For composite clusters such as Fig. 4(d) and (e), the omission of a defect component may incorrectly suggest that the defect is a glissile dislocation. The DXA algorithm creates a mesh or blob around the smaller identified defects and other dislocations (Fig. 4(f) and (g)). In contrast, SaVi clearly distinguishes between ring morphology, smaller point defect clusters forming a parallel bundle of dumbbells as dislocations, and other specific configurations such as orthogonal pair of dumbbells. It  can also be  extended to  identify any configuration composed of dumbbells and crowdions arranged in a specific order. 
+                    </aside>
+				</section>
+                <!--
+				<section>
+				    <h6>Morphology distribution with DND-BN</h6>
+                    <img class="fragment fade-in-then-semi-out" src="images_savi/fig-4a.png" style='width:70%; border:none; margin:0px;'/>
+                    <img class="fragment fade-up" src="images_savi/fig-4b.png" style='width:70%; border:none; margin:0px;'/>
+                    <aside class="notes" data-markdown>
+                      Now let us look at the statistical distribution of defects in different morphologies.
+                      (a) shows an average number of point defects per cascade &
+                      fraction of point defects in a cluster.
+                      (b) Shows the  relative distribution of  in-cluster defects among morphol-ogies across PKA energies. The second plot shows the average number of  times a defect morphology appears in a cascade. (c) Shows the size distribution of each morphology. The insets show size distribution with energy and components for multi-component dislocations.
+
+                      If we look at the number of defects that are part of a parallel component represented by this black line, we find majority of defects have parallel morphology. The glissile <111> edge dislocations, represented by blue, are predominantly of small size, however as the PKA energy increases, the number and size of sessile multi-component, represented by orange, dislocations also increase. Although rarer than dislocations, the sessile rings can play an essential role in the cascade’s thermal evolution by acting as  trapping sites for  dislocations due to  their sessile nature. However, the  extent of  their role will depend on  the  morphological stability and nature of interactions with other defects.
+
+                      The size for multi-component loops (||//) shows a definite increasing trend with energy and is shown separately on the right inset. Other morphologies do not show a clear trend with energy. The number of components and their sizes are shown on the left.  The number of distinct loops in a single multi- component dislocation goes up to six (left inset).
+                    </aside>
+				</section>
+                -->
+            </section>
+
+			<section id="Potential Comparison">
+                <section data-menu-title="Pot. Comparison - 3 Pots">
+				    <h6>SaVi Applications</h6>
+				    <h3>2 - Potential Comaparison</h3>
+                    <ul>
+                      <li>DND-BN: <small>by Derlet et al. with repulsive part fitted by Bjo ̈rkas et al.</small></li>
+                      <li>JW: <small>Finnis-Sinclair potential, modified by Juslin et al.</small></li>
+                      <li>M-S: <small>EAM4 by Marinica et al., stiffened by Sand et al. (M-S_h)</small></li>
+                    </ul>
+                    <blockquote style="width:100%; text-align:left" >
+                    <small> Comparison of SIA Defect Morphologies from Different Interatomic Potentials for Collision Cascades in W, MSMSE, 2021</small>
+                    </blockquote>
+                    <aside class="notes" data-markdown>
+                      Now, we will compare the three widely used W potentials based on the defect morphologies produced in collision cascades.
+                      The kind of defect morphologies found for all the three interatomic potentials are broadly the same. However, the proportions and sizes of the morphologies differ substantially.
+                    </aside>
+				</section>
+				<section data-menu-title="Morphology Distribution">
+				    <h6>Potential Comparison - Morphology Distribution</h6>
+                    <div style="flex-direction:column">
+                    <img class="fragment fade-right" src="images_savi/fig-5a.png" style='width:20.6%; border:none; margin:0px;'/>
+                    <img class="fragment fade-left" src="images_savi/fig-5b.png" style='width:60%; border:none; margin:0px;'/>
+                    </div>
+                    <aside class="notes" data-markdown>
+Here, we have fraction of in-cluster defects from all the potentials and fraction of those in-cluster defects in each of the morphology. From figure (a) we see that the in-cluster defects are highest in DND-BN, then JW and lowest in M-S. Another interesting difference that stands out is from this plot in (c). The M-S potential shows relatively very high preference for forming rings as opposed to DND-BN and JW that prefer components composed of parallel crowdions and dumbbells. From the distribution among morphologies we see that DND-BN shows a greater preference for multi-component dislocation loops (||//) than JW potential which prefers ⟨111⟩ dislocation loops (||) (Figure 2 c-i, c-ii). 
+
+Another difference that we see is that The fraction of defects forming || morphology is lesser at 200 keV than in 100 keV for both JW and DND-BN but not for M-S (Figure 2 c-i). The drop in the || and ||−! morphology in DND-BN and JW at 200 keV is compensated by the stark increase in ||// morphology (Figure 2 b-ii). 
+                    </aside>
+				</section>
+				<section data-menu-title="Morphology Sizes">
+				    <h6 >Potential Comparison - Morphology Size Distribution</h6>
+                    <div class="fragment fade-down">
+                    <div class="fragment grow">
+                    <img class="fragment shrink" src="images_savi/fig-6a.png" style='border:none; margin:0px;'/>
+                    </div>
+                    </div>
+                    <div class="fragment fade-up">
+                    <div class="fragment grow">
+                    <img class="fragment shrink" src="images_savi/fig-6b.png" style='border:none; margin:0px;'/>
+                    </div>
+                    </div>
+                    <aside class="notes" data-markdown>
+Here are the size distribution for each morphology with the different potentials.
+                      The defects with non-parallel morphology are small when compared to the dislocations. The DND-BN potential has large clusters with parallel components especially multi-component dislocations. For the M-S potential, most of the clusters in the || class are of size two. For non-parallel classes, the size distribution is spread out. For JW potential, there are no unordered arrangements, the only cluster that appears in class #, is a pair of orthogonal dumbbells(the first defect in Figure 1 (e)). For class @ in JW, mostly all the defects are of size two while a few also have size three.
+
+we note that the JW potential displays the strongest tendency to form ideal dislocation loops with single Burgers vectors of either ⟨111⟩ or ⟨100⟩ direction, whereas the DND-BN potential additionally predicts the frequent formation of very large multi-component loops, where different parts have different Burgers vectors. The M-S potential, on the other hand, predicts a large fraction of defects that do not display a dislocation loop character, but rather contain components of 2D or 3D rings, including small clusters with a C15 structure. These clusters are typically much smaller than the well-formed dislocation loops, and would be below the resolution limit of TEM.
+                    </aside>
+				</section>
+            </section>
+			<section id="Stability Analysis">
+				<section data-menu-title="Morph. Stability">
+				    <h4>SaVi Applications</h4>
+				    <h3>3 - Stability of Defects </h3>
+                    <aside class="notes" data-markdown>
+                      Let's look at the insights we can get about stability and
+                      mechanisms of transition using SaVi. The stability of a
+                      defect morphology also decides the significance of the 
+                      differences in distribution of that morphology using different
+                      potential. We know that the most stable configuration in W is glissile <111> dislocations. With stability analysis, we want to find out if a defect morphology transitions to some other morphology which exhibits different character.
+                    </aside>
+                </section>
+                <section data-menu-title="MD set-up">
+                  <h4>MD set-up for Stability and Transitions</h4>
+                  <small>
+                  <ul>
+                    <li> Extract out the defect with some extra unit-cells.</li>
+                    <li> Place the defect in a crystal with sufficient size taking care of finite size effects. </li>
+                    <li> 16 different sample NPT runs for 100ns at different temperatures. </li>
+                    <li> Track the instance where morphological changes occur using SaVi. </li>
+                    <li> Using SaVi we output various parameters such as number of lines in particular orientations at each time-step to understand transition mechanism.</li>
+                  </ul>
+                  </small>
+                </section>
+				<section data-menu-title="Overview">
+				    <h4>Oversimplified Outline</h4>
+				    <small>Details depend on Size, Internal Morphological Details & Potential Used</small>
+                    <img class="fragment fade-down" src="images_savi/fig-7a.png" style='width:80%; border:none; margin:0px;'/>
+                    <img class="fragment fade-up" src="images_savi/fig-7b.png" style='width:80%; border:none; margin:0px;'/>
+                    <aside class="notes" data-markdown>
+                      This is an oversimplified picture of what we can expect to happen. The non-specific configurations quickly transition at around room temperature, small <100> dislocations and small multi-component dislcoations also transition but at higher temperatures. Ring basis and composite clusters with rings and dislocation transition even at higher temperature. The bigger <100> dislocations, multi-component dislocations and C15 like rings are stable even at very high temperatures.
+
+                      Now, this is just a qualitative broad picture while the quantitative details of stability like transition energy depend on the size, internal morphological details and interestingly, potential used.
+                    </aside>
+				</section>
+            </section>
+            <section>
+              <section data-menu-title="<100> Dislocations">
+                  <h4> Stability of <100> dislocations</h4>
+                  <aside class="notes" data-markdown>
+                    Let's look at the factors deciding stability of a particular morphology, dislocations with Burgers vector along <100> direction.
+                  </aside>
+                </section>
+                <section data-transition="slide-in fade-out" data-menu-title="Stability Factors">
+                        <h4>Dependence on Size, Configuration and Potential</h4>
+    					<img src="images_savi/fig-8a.png" style="width:100%; border:none;"/>
+     				</section>
+    				<section data-transition="fade">
+                        <h4>Dependence on Size, Configuration and Potential</h4>
+    					<img src="images_savi/fig-8b.png" style="width:100%; border:none;"/>
+     				</section>
+    				<section data-transition="fade">
+                        <h4>Dependence on Size, Configuration and Potential</h4>
+    					<img src="images_savi/fig-8c.png" style="width:100%; border:none;"/>
+     				</section>
+    				<section data-transition="fade-in slide-out">
+                        <h4>Dependence on Size, Configuration and Potential</h4>
+    					<img src="images_savi/fig-8d.png" style="width:100%; border:none;"/>
+     				</section>
+				<section data-menu-title="Transition mechanism">
+                  <h4>Transition Mechanism and Movement</h4>
+					<img src="images_savi/fig-9.png" style="width:75%"/>
+                  <aside class="notes" data-markdown>
+                    One way the <100> dislocations thermally move is when they glide along the <100> plane. Again the quantitative details like migration energy depends on the size and configuration. Here in this diagram we are showing the movements and rotations of individual dumbbells that happen as the transition happens from <100> to <111> dislocation.  
+                    - Here are two pathways in which a size 12 defect transitions to <111>configuration. Let's first look at Path - A. The non <100> dumbbells on the fringes slowly move such that the two dumbbells are on the left side of the 100 bundle. And this movement of 111 dumbbells on the fringes is very common in all the 100 defects. Then the dumbbells in the 100 bundle start to change to non-100 slowly from the side where there are already two dumbbells. The number of non 100 dumbbells increase and then the whole structure changes to 111 dislocation. This path of transition is very common and is observed in many other defects. The other path is when the 100 bundle is not very symmetrical and the 100 dumbbells on the edges of keep rotating back and forth but there are always some non-100 dumbbells. The configuration in such defects changes very often and at certain moment when a lot of dumbbells on the edges appear as non-100 the whole structure is swayed towards 111 rather than coming back to 100.
+                  </aside>
+				</section>
+            </section>
+            <section id="Conclusions" data-menu-title="Conclusions">
+				<h3>Concluding Remarks</h3>
+				<ul>
+				  <li> SaVi automatically determines morphology and internal morphological details of SIA defects.</li>
+				  <li> Six different morphologies in W.</li>
+				  <li> The differences in defect morphology after collision cascades with different potentials is significant. </li>
+				  <li> The stability of the defects depends on their morphologies, size, internal configuration and choice of interatomic potential.</li>
+                  <li> Experiments to understand the differences in results with different potentials. </li>
+                </ul>
+			    </section>
+			<section style="text-align: left;">
+				<h2>THE END</h2>
+				<p>
+                <small>
+                <a href="https://github.com/haptork/csaransh/releases">Download Csaransh</a> and give
+					it a try on your data (https://github.com/haptork/csaransh/)
+				<p>Discuss the results, get back with suggestions and feedback at <a
+						href="https://github.com/haptork/csaransh/"> CSaransh github repository.</a>
+                </p>
+				<ul>Publications based on this work:
+                  <li>
+                  <a href="https://www.sciencedirect.com/science/article/abs/pii/S0927025621001993"> Graph theory based approach to characterize self interstitial defect morphology, Computational Materials Science, 2021</a>
+                  </li>
+                  <li>
+                  <a href="https://doi.org/10.1088/1361-651X/ac095d"> Comparison of SIA Defect Morphologies from Different Interatomic Potentials for Collision Cascades in W, MSMSE, 2021</a>
+                  </li>
+				</ul>
+			    </small>	
+				</p>
+                  <aside class="notes" data-markdown>
+                    I've shown you a lot of results in this brief time so let's quickly go through the different take aways.
+                    - SaVi is an algorithm to characterize morhpologies.
+                    - When applied to W, we found six main morphologies. While glissile dislocations and muti-component dislocations form majority, there are also C15 like rings and combination of rings, dislocations, and a few other stable defects.
+                    - We also found that the differences in morphology with different potentials is significant.
+                    - Even the stability of defects gets affected by the choice of potential in addition to size and internal configuration.
+                    - We discussed the internal configurations and transition mechanism of 100 dislocations in W, that showcase the efficacy of SaVi algorithm and the importance of internal morphological details.
+                    - Now, the comparative study of potentials leaves us in puzzle that which potential to use, and we think the way to answer this question is to take morphology studies further, use these inputs in higher scale models and also find out where we can meet the experiments to resolve this question.
+                  </aside>
+			</section>
+		</div>
+	</div>
+
+	<script src="lib/reveal.js/lib/js/head.min.js"></script>
+	<script src="lib/reveal.js/js/reveal.js"></script>
+
+	<script>
+
+		// Full list of configuration options available at:
+		// https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			history: true,
+			center: true,
+			slideNumber: true,
+
+			transition: 'convex', // none/fade/slide/convex/concave/zoom
+
+			menu: {
+				numbers: true,
+				openSlideNumber: true,
+				themes: true,
+				themesPath: 'lib/reveal.js/css/theme/',
+				transitions: true,
+				custom: [
+					{ title: 'Custom', icon: '<i class="fa fa-bookmark">', src: 'links.html' },
+				],
+                hideMissingTitles: true,
+                titleSelector: 'h1 h2 h3'
+			},
+
+      audio: {
+       prefix: 'audio_savi/',
+      },
+
+			// Optional reveal.js plugins
+			dependencies: [
+				{ src: 'lib/js/classList.js', condition: function () { return !document.body.classList;
+                                                                }
+                                                                }
+                                                                , {
+                                                                  src :
+                                                                      'lib/reveal.js/plugin/markdown/marked.js',
+                                                                  condition : function(){
+                                                                      return !!document.querySelector(
+                                                                          '[data-markdown]');
+                                                                }
+                                                                }
+                                                                , {
+                                                                  src :
+                                                                      'lib/reveal.js/plugin/markdown/markdown.js',
+                                                                  condition : function(){
+                                                                      return !!document.querySelector(
+                                                                          '[data-markdown]');
+                                                                }
+                                                                }
+                                                                , {
+                                                                  src :
+                                                                      'lib/reveal.js/plugin/highlight/highlight.js',
+                                                                  async : true,
+                                                                  callback :
+                                                                      function(){
+                                                                          hljs.initHighlightingOnLoad();
+                                                                }
+                                                                },
+				{ src: 'lib/reveal.js/plugin/search/search.js', async: true },
+				{ src: 'lib/reveal.js/plugin/zoom-js/zoom.js', async: true },
+
+				{ src: 'lib/reveal.js/plugin/notes/notes.js', async: true },
+				{ src: 'plugin/reveal.js-menu/menu.js', async: true },
+		        { src: 'lib/reveal.js/plugin/audio-slideshow/audio-slideshow.js', condition: function( ) { return !!document.body.classList; } }
+			]
+                });
+
+		/*
+			  Reveal.addEventListener( 'somestate', function() {
+				// TODO: Sprinkle magic
+			  }, false );
+			  Reveal.addEventListener( 'slidechanged', function( event ) {
+				  if(event.indexh == 1 && event.indexv == 0) {
+
+		.reveal .clustersiv {
+			position: fixed;
+			bottom: 3.0em;
+			left: 0.0px;
+			align-self: center;
+			width: 100%;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0, 0.5), 0 5px 25px rgba(0, 0, 0, 0.2);
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			padding: 10px;
+			text-align: center;
+		}
+		
+
+				  }
+				// event.previousSlide, event.currentSlide, event.indexh, event.indexv
+			  });
+			  */
+
+	</script>
+
+	<a class="fork-reveal" href="https://github.com/haptork/csaransh"><img
+			style="position: absolute; top: 0; right: 0; border: 0;" src="" alt="Fork Csaransh on GitHub"></a>
+</body>
+
+</html>
