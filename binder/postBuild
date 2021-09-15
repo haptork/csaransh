@@ -1,2 +1,2 @@
-mkdir csaransh-pp/_build 
-cd csaransh-pp/_build && cmake .. && cmake --build . --target csaransh-pp_shared
+mkdir csaransh_pp/_build 
+cd csaransh_pp/_build && cmake .. && cmake --build . --target csaransh-pp_shared
