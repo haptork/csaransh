@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/159120701.svg)](https://zenodo.org/badge/latestdoi/159120701)
 [![status](http://joss.theoj.org/papers/72f2ddde2112497826753319956ea8ab/status.svg)](http://joss.theoj.org/papers/72f2ddde2112497826753319956ea8ab)
 
-[![Run on Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1PmXmoPo7_hGqTK62serwlx4hdksCuGQO) (prefer [binder](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh-pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) for inline webapp)
+[![Run on Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1PmXmoPo7_hGqTK62serwlx4hdksCuGQO) (prefer [binder](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh_pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) for inline webapp)
 
 What's new in Version (0.4):
 ===========
@@ -20,7 +20,7 @@ Csaransh
 
 ## What is CSaransh?
 
-The sofware suite to post-process, explore and visualize Molecular Dynamics (MD) simulations of collision cascades. It is a one click solution to begin analysing, exploring patterns and statistics in a collision cascade database. Run through [this notebook](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh-pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) to jump start querying, analysing and playing with the cascadesDB database online, now.
+The sofware suite to post-process, explore and visualize Molecular Dynamics (MD) simulations of collision cascades. It is a one click solution to begin analysing, exploring patterns and statistics in a collision cascade database. Run through [this notebook](https://mybinder.org/v2/gh/haptork/csaransh/master?filepath=csaransh_pp%2Fexamples%2Fcascades-db_cascadesWithMetaFile.ipynb) to jump start querying, analysing and playing with the cascadesDB database online, now.
 
 ## Features
 
